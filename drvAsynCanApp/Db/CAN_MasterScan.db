@@ -1,0 +1,73 @@
+#######################################################
+# ###                                             ### #
+# ### EPICS Database for                          ### #
+# ### SCAN instances for CAN bus devices          ### #
+# ###                                             ### #
+# ### author: F.Feldbauer                         ### #
+# ###                                             ### #
+# ### Ref 1.0; 2012-09-17                         ### #
+# ###                                             ### #
+# ### macros: subsys    PANDA subsystem           ### #
+# ###         BUS       Unique name for this BUS  ### #
+# ###         DEV1      PV of triggerd Device 1   ### #
+# ###         DEV2      PV of triggerd Device 2   ### #
+# ###         DEV3      PV of triggerd Device 3   ### #
+# ###         DEV4      PV of triggerd Device 4   ### #
+# ###         DEV5      PV of triggerd Device 5   ### #
+# ###         DEV6      PV of triggerd Device 6   ### #
+# ###         DEV7      PV of triggerd Device 7   ### #
+# ###         DEV8      PV of triggerd Device 8   ### #
+# ###         DEV9      PV of triggerd Device 9   ### #
+# ###         DEVA      PV of triggerd Device 10  ### #
+# ###         DEL2      trigger delay for Dev 2   ### #
+# ###         DEL3      trigger delay for Dev 3   ### #
+# ###         DEL4      trigger delay for Dev 4   ### #
+# ###         DEL5      trigger delay for Dev 5   ### #
+# ###         DEL6      trigger delay for Dev 6   ### #
+# ###         DEL7      trigger delay for Dev 7   ### #
+# ###         DEL8      trigger delay for Dev 8   ### #
+# ###         DEL9      trigger delay for Dev 9   ### #
+# ###         DELA      trigger delay for Dev 10  ### #
+#######################################################
+
+##########################
+# ### scan instances ### #
+##########################
+record (seq, "PANDA:$(subsys):CANbus:$(hadcon):masterSCAN") {
+  field (SCAN, "Passive")
+  # Selection Algorithm
+  field (SELM, "All")
+  # Output Delay in seconds
+  field (DLY1, "0.")
+  field (DLY2, "$(DEL2)")
+  field (DLY3, "$(DEL3)")
+  field (DLY4, "$(DEL4)")
+  field (DLY5, "$(DEL5)")
+  field (DLY6, "$(DEL6)")
+  field (DLY7, "$(DEL7)")
+  field (DLY8, "$(DEL8)")
+  field (DLY9, "$(DEL9)")
+  field (DLYA, "$(DELA)")
+  # Desired Output Links
+  field (DOL1, "1")
+  field (DOL2, "1")
+  field (DOL3, "1")
+  field (DOL4, "1")
+  field (DOL5, "1")
+  field (DOL6, "1")
+  field (DOL7, "1")
+  field (DOL8, "1")
+  field (DOL9, "1")
+  field (DOLA, "1")
+  # Output links
+  field (LNK1, "$(DEV1)")
+  field (LNK2, "$(DEV2)")
+  field (LNK3, "$(DEV3)")
+  field (LNK4, "$(DEV4)")
+  field (LNK5, "$(DEV5)")
+  field (LNK6, "$(DEV6)")
+  field (LNK7, "$(DEV7)")
+  field (LNK8, "$(DEV8)")
+  field (LNK9, "$(DEV9)")
+  field (LNKA, "$(DEVA)")
+}

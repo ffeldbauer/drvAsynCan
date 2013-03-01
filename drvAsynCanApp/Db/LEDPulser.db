@@ -1,0 +1,125 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ### LED Pulser CAN Communication          ### #
+# ###                                       ### #
+# ### author: C.Motzko                      ### #
+# ###                                       ### #
+# ### Ref 1.0; 2011-08-03                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         sector  Sector of subsys      ### #
+# ###         ID      CAN id of pulser      ### #
+# ###         BUS     AsynPort              ### #
+#################################################
+
+########################
+# ### set commands ### #
+########################
+
+record (ao, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):wIntensity") {
+  field (DTYP, "asynFloat64")
+  field (OUT,  "@asyn($(BUS),0,1)LEDPULSER_INTENSITY")
+  # Limits
+  field (DRVH, "1")
+  field (DRVL, "0")
+  # display parameters
+  field (EGU,  "a.u.")
+  field (PREC, "2")
+}
+
+record (ao, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):wFreq") {
+  field (DTYP, "asynFloat64")
+  field (OUT,  "@asyn($(BUS),0,1)LEDPULSER_FREQUENCY")
+  # limits
+  field (DRVH, "500")
+  field (DRVL, "0")
+  # display parameters
+  field (EGU,  "kHz")
+  field (PREC, "2")
+}
+
+record (ao, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):wCycles") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)LEDPULSER_CYCLES")
+  # Limits
+  field (DRVH, "65535")
+  field (DRVL, "0")
+  # display parameters
+  field (EGU,  "counts")
+  field (PREC, "0")
+}
+
+record (mbbo, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):wColor") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,3,1)LEDPULSER_COLOR")
+  field (ZRST, "blue")
+  field (ONST, "green")
+  field (TWST, "red")
+  field (THST, "off")
+}
+
+record (bo, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):wTRGmode") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,1,1)LEDPULSER_TRG_MODE")
+  field (ZNAM, "int")
+  field (ONAM, "ext")
+}
+
+record (ao, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):write") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)LEDPULSER_WRITE")
+}
+
+#########################
+# ### Read Commands ### #
+#########################
+
+record (ai, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):rIntensity") {
+  field (DTYP, "asynFloat64")
+  field (INP,  "@asyn($(BUS),0,1)LEDPULSER_INTENSITY")
+  field (SCAN, "I/O Intr")
+  # display parameters
+  field (EGU,  "a.u.")
+  field (PREC, "2")
+}
+
+record (ai, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):rFreq") {
+  field (DTYP, "asynFloat64")
+  field (INP,  "@asyn($(BUS),0,1)LEDPULSER_FREQUENCY")
+  field (SCAN, "I/O Intr")
+  # display parameters
+  field (EGU,  "kHz")
+  field (PREC, "2")
+}
+
+record (mbbi, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):rColor") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,3,1)LEDPULSER_COLOR")
+  field (SCAN, "I/O Intr")
+  field (ZRST, "blue")
+  field (ONST, "green")
+  field (TWST, "red")
+  field (THST, "off")
+}
+
+record (bi, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):rTRGmode") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,1,1)LEDPULSER_TRG_MODE")
+  field (SCAN, "I/O Intr")
+  field (ZNAM, "internal")
+  field (ONAM, "external")
+}
+
+record (ai, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):rCycles") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)LEDPULSER_CYCLES")
+  field (SCAN, "I/O Intr")
+  field (EGU,  "counts")
+  field (PREC, "0")
+}
+
+record (ao, "PANDA:$(subsys):$(sector):LEDPulser:$(ID):read") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)LEDPULSER_READ")
+}

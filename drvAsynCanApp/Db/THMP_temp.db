@@ -1,0 +1,64 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ### THMP Temperature Sensor Read out      ### #
+# ###                                       ### #
+# ### author: F.Feldbauer                   ### #
+# ###                                       ### #
+# ### Ref 1.0; 2012-09-17                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         sector  Sector (e.g. crystal) ### #
+# ###         no      channel number        ### #
+# ###         BUS     AsynPort              ### #
+# ###         P0      calibration param 0   ### #
+# ###         P1      calibration param 1   ### #
+# ###         P2      calibration param 2   ### #
+# ###         P3      calibration param 3   ### #
+#################################################
+
+#######################
+# ### Calibration ### #
+#######################
+
+record (ai, "PANDA:$(subsys):TEMP:$(sector):Traw") {
+  field (DTYP, "asynInt32")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asyn($(BUS),$(no),1)THMP_RAWVALUE")
+  field (FLNK, "PANDA:$(subsys):TEMP:$(sector):Tmom.PROC")
+  field (ADEL, "1")
+  field (MDEL, "1")
+}
+
+record (sub, "PANDA:$(subsys):TEMP:$(sector):Tmom") {
+
+  # subroutines
+  field (SNAM, "thmpSolveCubic")
+
+  # display parameters
+  field (HOPR, "40")
+  field (LOPR, "-40")
+  field (EGU,  "degC")
+  field (PREC, "2")
+
+  # alarm/warning parameters
+  field (HIHI, "40")
+  field (HIGH, "35")
+  field (LOW,  "-35")
+  field (LOLO, "-30")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+
+  # inputs
+  field (INPA, "$(P0)")
+  field (INPB, "$(P1)")
+  field (INPC, "$(P2)")
+  field (INPD, "$(P3)")
+  field (INPE, "PANDA:$(subsys):TEMP:$(sector):Traw.VAL NPP")
+
+  # Archive and Monitor deadbands
+  field (ADEL, "0.05")
+  field (MDEL, "0.05")
+}

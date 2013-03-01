@@ -1,0 +1,697 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ### Wiener VME Crate Communication        ### #
+# ###                                       ### #
+# ### author: F.Feldbauer                   ### #
+# ###                                       ### #
+# ### Ref 1.0; 2012-09-17                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         BUS     AsynPort              ### #
+# ###         ID      crate id (1-126)      ### #
+#################################################
+
+##################################
+# ### Read Status from Crate ### #
+##################################
+
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte0") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS0")
+  field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C0:Vmom")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte1") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS1")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte2") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS,0,0xff,1),0,1)WIENER_VME_STATUS2")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte3") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS3")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte4") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS4")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte5") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS5")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte6") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS6")
+  field (SCAN, "I/O Intr")
+}
+record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte7") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS7")
+  field (SCAN, "I/O Intr")
+}
+
+### Statusbyte 0
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Sysfail") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B7 CP")
+  field (ZNAM, "active")
+  field (ONAM, "inactive")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Tripofferror") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B6 CP")
+  field (ZNAM, "disabled")
+  field (ONAM, "enabled")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Tripofffans") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B5 CP")
+  field (ZNAM, "disabled")
+  field (ONAM, "enabled")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Fans") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B4 CP")
+  field (ZNAM, "broken")
+  field (ONAM, "OK")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Powersupplyerror") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B3 CP")
+  field (ZNAM, "Yes")
+  field (ONAM, "No")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Supply") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B2 CP")
+  field (ZNAM, "Power fail")
+  field (ONAM, "OK")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Externalpowerinhibit") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B1 CP")
+  field (ZNAM, "Yes")
+  field (ONAM, "No")
+  field (ZSV, "MAJOR")
+  field (OSV, "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Power") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte0.B0 CP")
+  field (ZNAM, "Off")
+  field (ONAM, "On")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+### STATUSbyte 1
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Writeprotect") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B7 CP")
+  field (ZNAM, "No")
+  field (ONAM, "hardware")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Checksumerror") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B6 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MINOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Eepromdata") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B5 CP")
+  field (ZNAM, "Not Changed")
+  field (ONAM, "Changed")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:Softstart") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B4 CP")
+  field (ZNAM, "No")
+  field (ONAM, "In progress")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:BINERROR") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:PSandBIN") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B2 CP")
+  field (ZNAM, "Compatible")
+  field (ONAM, "Not compatible")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):STATUS:CAN") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte1.B1 CP")
+  field (ZNAM, "read/write")
+  field (ONAM, "read only")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+### Under Voltage Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:UVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte2.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:UVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte2.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:UVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte2.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:UVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte2.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+### Over Voltage Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:OVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte3.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:OVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte3.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:OVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte3.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:OVEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte3.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+### External Temperature Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:ETEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte4.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:ETEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte4.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:ETEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte4.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:ETEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte4.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+### Over Current Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:OCEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte5.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:OCEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte5.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:OCEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte5.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:OCEflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte5.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+### OVP Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:OVPflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte6.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:OVPflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte6.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:OVPflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte6.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:OVPflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte6.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+### Power Supply Temperature Error flags (only channels 0,1,3,5 are of interest)
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C0:PSTflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte7.B0 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C1:PSTflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte7.B1 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C3:PSTflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte7.B3 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:PSTflag") {
+  field (INP,  "PANDA:$(subsys):VME$(ID):Statusbyte7.B5 CP")
+  field (ZNAM, "OK")
+  field (ONAM, "Error")
+  field (ZSV, "NO_ALARM")
+  field (OSV, "MAJOR")
+}
+
+###############################################################
+# ### Read measured Voltage and Current of channels 0...7 ### #
+###############################################################
+
+### Read measured Voltage and Current of channel 0 (channel 4 not connected)
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Vmom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM0")
+  field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C1:Vmom")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "V")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "5.4")
+  field (HIGH, "5.2")
+  field (LOW,  "4.8")
+  field (LOLO, "4.6")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Imom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM0")
+  field (SCAN, "I/O Intr")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "A")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "14")
+  field (HIGH, "12")
+  field (LOW,  "0")
+  field (LOLO, "0")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+}
+
+### Read measured Voltage and Current of channel 1/5
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Vmom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM1")
+  field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C3:Vmom")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "V")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "12.4")
+  field (HIGH, "12.2")
+  field (LOW,  "11.8")
+  field (LOLO, "11.6")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR)"
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Imom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM1")
+  field (SCAN, "I/O Intr")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "A")
+  field (PREC, "2")
+
+  # alarm/warning parameters
+  field (HIHI, "14")
+  field (HIGH, "12")
+  field (LOW,  "0")
+  field (LOLO, "0")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Vmom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM5")
+  field (SCAN, "I/O Intr")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "V")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "-11.6")
+  field (HIGH, "-11.8")
+  field (LOW,  "-12.2")
+  field (LOLO, "-12.4")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Imom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM5")
+  field (SCAN, "I/O Intr")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "A")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "14")
+  field (HIGH, "12")
+  field (LOW,  "0")
+  field (LOLO, "0")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+}
+
+### (channels 2 and 6 not connected)
+
+### Read measured Voltage and Current of channel 3 (channel 7 not connected)
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Vmom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM3")
+  field (FLNK, "PANDA:$(subsys):VME$(ID):MiddleFanSpeed")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "V")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "3.9")
+  field (HIGH, "3.7")
+  field (LOW,  "3.3")
+  field (LOLO, "3.1")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Imom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM3")
+  field (SCAN, "I/O Intr")
+  # Conversion
+  field (ASLO, "0.01")
+  field (AOFF, "0")
+  # display parameters
+  field (EGU,  "A")
+  field (PREC, "2")
+  # alarm/warning parameters
+  field (HIHI, "14")
+  field (HIGH, "12")
+  field (LOW,  "0")
+  field (LOLO, "0")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+}
+
+##########################
+# ### Read Fan speed ### #
+##########################
+
+record (ai, "PANDA:$(subsys):VME$(ID):MiddleFanSpeed") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FANMIDDLE")
+  field (FLNK, "PANDA:$(subsys):VME$(ID):TEMP:Tmom")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):C1:FanSpeed") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN1")
+  field (SCAN, "I/O Intr")
+  # Display Parameters
+  field (EGU,  "rpm")
+  field (PREC, "0")
+  field (HOPR, "3800")
+  field (LOPR, "0")
+  # Conversion
+  field (ASLO, "60")
+  field (AOFF, "0")
+  # alarm/warning parameters
+  field (HIHI, "3800")
+  field (HIGH, "3700")
+  field (LOW,  "3500")
+  field (LOLO, "3000")
+  field (HHSV, "NO_ALARM")
+  field (HSV,  "NO_ALARM")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):C2:FanSpeed") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN2")
+  field (SCAN, "I/O Intr")
+  # Display Parameters
+  field (EGU,  "rpm")
+  field (PREC, "0")
+  field (HOPR, "3800")
+  field (LOPR, "0")
+  # Conversion
+  field (ASLO, "60")
+  field (AOFF, "0")
+  # alarm/warning parameters
+  field (HIHI, "3800")
+  field (HIGH, "3700")
+  field (LOW,  "3500")
+  field (LOLO, "3000")
+  field (HHSV, "NO_ALARM")
+  field (HSV,  "NO_ALARM")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+record (ai, "PANDA:$(subsys):VME$(ID):C3:FanSpeed") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN3")
+  field (SCAN, "I/O Intr")
+  # Display Parameters
+  field (EGU,  "rpm")
+  field (PREC, "0")
+  field (HOPR, "3800")
+  field (LOPR, "0")
+  # Conversion
+  field (ASLO, "60")
+  field (AOFF, "0")
+  # alarm/warning parameters
+  field (HIHI, "3800")
+  field (HIGH, "3700")
+  field (LOW,  "3500")
+  field (LOLO, "3000")
+  field (HHSV, "NO_ALARM")
+  field (HSV,  "NO_ALARM")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+}
+
+
+############################
+# ### Read Temperature ### #
+############################
+
+record (ai, "PANDA:$(subsys):VME$(ID):TEMP:Tmom") {
+  field (DTYP, "asynInt32")
+  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_TEMP1")
+  # Alarm Limits
+  field (HIHI, "50")
+  field (HIGH, "40")
+  # Alarm Severities
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+  # Display Parameter
+  field (PREC, "1")
+  field (EGU,  "degC")
+  field (HOPR, "60")
+  field (LOPR, "0")
+}
+
+################################
+# ### Send Control Command ### #
+################################
+
+record (bo, "PANDA:$(subsys):VME$(ID):SwitchCrate") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,1,1)WIENER_VME_SWITCHONOFF")
+  field (ZNAM, "Off")
+  field (ONAM, "On")
+}
+
+record (bo, "PANDA:$(subsys):VME$(ID):Sysreset") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)WIENER_VME_SYSRESET")
+}
+
+record (ao, "PANDA:$(subsys):VME$(ID):ChangeFanSpeed") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)WIENER_VME_FANSPEED")
+  field (EGU,  "rps")
+  field (DRVH, "64")
+  field (DRVL, "0")
+}
+
+###############
+# ### EOF ### #
+###############

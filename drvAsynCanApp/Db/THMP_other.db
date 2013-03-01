@@ -1,0 +1,58 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ### THMP Read out of sensor               ### #
+# ###                                       ### #
+# ### author: F.Feldbauer                   ### #
+# ###                                       ### #
+# ### Ref 1.0; 2012-09-17                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         sector  Sector of subsys      ### #
+# ###         type    Type of Sensor        ### #
+# ###         unit    EGU for data          ### #
+# ###         no      channel number        ### #
+# ###         BUS     AsynPort              ### #
+# ###         P0      calibration param 0   ### #
+# ###         P1      calibration param 1   ### # 
+# ###         hh      Alarm limit HIHI      ### #
+# ###         hi      Alarm limit HIGH      ### #
+# ###         lo      Alarm limit LOW       ### #
+# ###         ll      Alarm limit LOLO      ### #
+# ###         lsv     Alarm severity LOW    ### #
+# ###         llvs    Alarm severity LOLO   ### #
+#################################################
+
+#######################
+# ### Calibration ### #
+#######################
+
+record (ai, "PANDA:$(subsys):$(type):$(sector):$(valtype)mom") {
+  field (DTYP, "asynInt32")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asyn($(BUS),$(no),1)THMP_RAWVALUE")
+
+  # display parameters
+  field (EGU,  "$(unit)")
+  field (PREC, "2")
+
+  # Conversion parameters
+  field (ASLO, "$(P1)")
+  field (AOFF, "$(P0)")
+
+  # Alarm Limits
+  field (HIHI, "$(hh)")
+  field (HIGH, "$(hi)")
+  field (LOW,  "$(lo)")
+  field (LOLO, "$(ll)")
+
+  # Alarm Severities
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "$(lsv)")
+  field (LLSV, "$(llsv)")
+
+  # Archive and Monitor deadbands
+  field (ADEL, "0.05")
+  field (MDEL, "0.05")
+}

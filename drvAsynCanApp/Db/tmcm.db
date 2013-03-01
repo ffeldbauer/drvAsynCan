@@ -1,0 +1,303 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ###   TMCM 142 IF                         ### #
+# ###                                       ### #
+# ### author: F.Feldbauer                   ### #
+# ###                                       ### #
+# ### Ref 1.0; 2013-01-07                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         sector  Sector of subsys      ### #
+# ###         BUS     AsynPort              ### #
+#################################################
+
+# TMCM Status message
+# This record is updated after each read or write command
+record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):STATUS" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),0,1)TMCM142_STATUS" )
+  field( SCAN, "I/O Intr" )
+
+  # State values
+  field( ZRVL, "100" )
+  field( ONVL, "101" )
+  field( TWVL, "1" )
+  field( THVL, "2" )
+  field( FRVL, "3" )
+  field( FVVL, "4" )
+  field( SXVL, "5" )
+  field( SVVL, "6" )
+
+  # State strings
+  field( ZRST, "Successfully executed, no error" )
+  field( ONST, "Command loaded into TMCL program EEPROM" )
+  field( TWST, "Wrong checksum" )
+  field( THST, "Invalid command" )
+  field( FRST, "Wrong type" )
+  field( FVST, "Invalid value" )
+  field( SXST, "Configuration EEPROM locked" )
+  field( SVST, "Command not available" )
+
+  # State severities
+  field( ZRSV, "NO_ALARM" )
+  field( ONSV, "NO_ALARM" )
+  field( TWSV, "MAJOR" )
+  field( THSV, "MAJOR" )
+  field( FRSV, "MAJOR" )
+  field( FVSV, "MAJOR" )
+  field( SXSV, "MAJOR" )
+  field( SVSV, "MAJOR" )
+
+}
+
+# Move to an absolute position
+record( longout, "PANDA:$(subsys):MOTOR:$(sector):MVP:ABS" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),0,1)TMCM142_MVP" )
+  # Limits 
+  field( DRVH, "+2147483647" )
+  field( DRVL, "-2147483648" )
+  # Display
+  field( EGU,  "usteps" )
+  field( HOPR, "+2147483647" )
+  field( LOPR, "-2147483648" )
+}
+
+# Stop motor
+record( bo, "PANDA:$(subsys):MOTOR:$(sector):MST" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),0,1)TMCM142_MST" )
+}
+
+# set current position
+record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:ACTUALPOSITION" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),1,1)TMCM142_SAP" )
+  # Limits 
+  field( DRVH, "+2147483647" )
+  field( DRVL, "-2147483648" )
+  # Display
+  field( EGU,  "usteps" )
+  field( HOPR, "+2147483647" )
+  field( LOPR, "-2147483648" )
+}
+
+# set max positioning speed
+record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXSPEED" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),4,1)TMCM142_SAP" )
+  # Limits 
+  field( DRVH, "+2147483647" )
+  field( DRVL, "0" )
+  # Display
+  field( EGU,  "usteps/s" )
+  field( HOPR, "+2147483647" )
+  field( LOPR, "0" )
+}
+
+# Set max acceleration and deceleration
+record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXACCELERATION" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),5,1)TMCM142_SAP" )
+  # Limits 
+  field( DRVH, "16777215" )
+  field( DRVL, "1" )
+  # Display
+  field( EGU,  "usteps/s/s" )
+  field( HOPR, "16777215" )
+  field( LOPR, "1" )
+}
+
+# Set "right limit switch disable"
+record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:RIGHTLIMITSWITCH" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),12,1)TMCM142_SAP" )
+  field( ONAM, "Enabled" )
+  field( ZNAM, "Disabled" )
+}
+
+# Set "left limit switch disable"
+record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:LEFTLIMITSWITCH" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),13,1)TMCM142_SAP" )
+  field( ONAM, "Enabled" )
+  field( ZNAM, "Disabled" )
+}
+
+# Set stop deceleration
+record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:STOPDECELERATION" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),15,1)TMCM142_SAP" )
+  # Limits 
+  field( DRVH, "16777215" )
+  field( DRVL, "1" )
+  # Display
+  field( EGU,  "usteps/s/s" )
+  field( HOPR, "16777215" )
+  field( LOPR, "1" )
+}
+
+# Set switch mode
+record( mbboDirect, "PANDA:$(subsys):MOTOR:$(sector):SAP:SWITCHMODE" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),27,1)TMCM142_SAP" )
+}
+
+# Set µstep resolution
+record( mbbo, "PANDA:$(subsys):MOTOR:$(sector):SAP:USTEPRESOLUTION" ) {
+  field( DTYP, "asynUInt32" )
+  field( OUT,  "@asyn($(BUS),27,1)TMCM142_SAP" )
+
+  # state strings
+  field( ZRST, "2048 micro steps" )
+  field( ONST, "1024 micro steps" )
+  field( TWST, "512 micro steps" )
+  field( THST, "256 micro steps" )
+  field( FRST, "128 micro steps" )
+  field( FVST, "64 micro steps" )
+  field( SXST, "32 micro steps" )
+  field( SVST, "16 micro steps" )
+  field( EIST, "8 micro steps" )
+  field( NIST, "4 micro steps" )
+  field( TEST, "2 micro steps" )
+  field( ELST, "1 micro steps" )
+
+  # state values
+  field( ZRVL, "0" )
+  field( ONVL, "1" )
+  field( TWVL, "2" )
+  field( THVL, "3" )
+  field( FRVL, "4" )
+  field( FVVL, "5" )
+  field( SXVL, "6" )
+  field( SVVL, "7" )
+  field( EIVL, "8" )
+  field( NIVL, "9" )
+  field( TEVL, "10" )
+  field( ELVL, "11" )
+}
+
+######################################################################
+
+# Get current position
+record( longin, "PANDA:$(subsys):MOTOR:GAP:ACTUALPOSITION" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),1,1)TMCM142_GAP" )
+  # Display
+  field( EGU,  "usteps" )
+  field( HOPR, "+2147483647" )
+  field( LOPR, "-2147483648" )
+}
+
+# Get max positioning speed
+record( longin, "PANDA:$(subsys):MOTOR:GAP:MAXSPEED" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),4,1)TMCM142_GAP" )
+  # Display
+  field( EGU,  "usteps/s" )
+  field( HOPR, "+2147483647" )
+  field( LOPR, "0" )
+}
+
+# Get max acceleration and deceleration
+record( longin, "PANDA:$(subsys):MOTOR:GAP:MAXACCELERATION" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),5,1)TMCM142_GAP" )
+  # Limits 
+  field( DRVH, "16777215" )
+  field( DRVL, "1" )
+  # Display
+  field( EGU,  "usteps/s/s" )
+  field( HOPR, "16777215" )
+  field( LOPR, "1" )
+}
+
+# Get "right limit switch disable"
+record( bi, "PANDA:$(subsys):MOTOR:GAP:RIGHTLIMITSWITCH" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),12,1)TMCM142_GAP" )
+  field( ONAM, "Enabled" )
+  field( ZNAM, "Disabled" )
+}
+
+# Get "left limit switch disable"
+record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:LEFTLIMITSWITCH" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),13,1)TMCM142_GAP" )
+  field( ONAM, "Enabled" )
+  field( ZNAM, "Disabled" )
+}
+
+# Get stop deceleration
+record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:STOPDECELERATION" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),15,1)TMCM142_GAP" )
+  # Display
+  field( EGU,  "usteps/s/s" )
+  field( HOPR, "16777215" )
+  field( LOPR, "1" )
+}
+
+# Get switch mode
+record( mbbiDirect, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),27,1)TMCM142_GAP" )
+}
+ 
+# Left stop switch polarity
+record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE:LSTOP:POL" ) {
+  field( INP,  "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE.B2" )
+  field( ONAM, "" )
+  field( ZNAM, "" )
+}
+# Right stop switch polarity
+record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE:RSTOP:POL" ) {
+  field( INP,  "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE.B3" )
+  field( ONAM, "" )
+  field( ZNAM, "" )
+}
+# Swap left and right stop switch
+record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE:SWAPSTOP" ) {
+  field( INP,  "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE.B4" )
+  field( ONAM, "" )
+  field( ZNAM, "" )
+}
+# enable soft stop
+record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE:SOFTSTOP" ) {
+  field( INP,  "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE.B5" )
+  field( ONAM, "" )
+  field( ZNAM, "" )
+}
+
+# Get µstep resolution
+record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):GAP:USTEPRESOLUTION" ) {
+  field( DTYP, "asynUInt32" )
+  field( INP,  "@asyn($(BUS),27,1)TMCM142_GAP" )
+
+  field( ZRST, "2048 micro steps" )
+  field( ONST, "1024 micro steps" )
+  field( TWST, "512 micro steps" )
+  field( THST, "256 micro steps" )
+  field( FRST, "128 micro steps" )
+  field( FVST, "64 micro steps" )
+  field( SXST, "32 micro steps" )
+  field( SVST, "16 micro steps" )
+  field( EIST, "8 micro steps" )
+  field( NIST, "4 micro steps" )
+  field( TEST, "2 micro steps" )
+  field( ELST, "1 micro steps" )
+
+  field( ZRVL, "0" )
+  field( ONVL, "1" )
+  field( TWVL, "2" )
+  field( THVL, "3" )
+  field( FRVL, "4" )
+  field( FVVL, "5" )
+  field( SXVL, "6" )
+  field( SVVL, "7" )
+  field( EIVL, "8" )
+  field( NIVL, "9" )
+  field( TEVL, "10" )
+  field( ELVL, "11" )
+}

@@ -1,0 +1,235 @@
+##################################################################
+# ###                                                        ### #
+# ### EPICS Database for                                     ### #
+# ###   module related commands of ISEG EHS/EDS modules      ### #
+# ###                                                        ### #
+# ### author: F.Feldbauer                                    ### #
+# ###                                                        ### #
+# ### Ref 1.0; 2013-02-19                                    ### #
+# ###                                                        ### #
+# ### macros: subsys  PANDA subsystem      (e.g. FEMC)       ### #
+# ###         BUS     AsynPort                               ### #
+# ###         sector  sector inside subsys (e.g. Q1:X4:Y2)   ### #
+##################################################################
+
+##########################################################
+# ### Read out module status and module event status ### #
+##########################################################
+record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_STATUS")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):ModEventStatus")
+
+  # Bit  0: isADJ              0: fine adjustment off  1: fine adjustment on
+  # Bit  1: reserved
+  # Bit  2: isLVINS            0: no ...               1: Live Insertion mode
+  # Bit  3: reserved
+  # Bit  4: needSrvc           0:                      1: Hardware failure detected
+  # Bit  5: isHwVLIMgd         0: HwVLIM not in range  1: HwVLIM in range
+  # Bit  6: isIERR             0: no error             1: Input error in connection
+  # Bit  7: reserved
+  # Bit  8: isnoSERR           0: Error                1: sum of all channel error flags=0
+  # Bit  9: isnoRAMP           0: channel is ramping   1: no channel is ramping
+  # Bit 10: isSFLPgd           0: safety loop broken   1: Safety loop closed
+  # Bit 11: isEVNTact          0: No Event active      1: any Event active
+  # Bit 12: isMODgd            0: Module not good      1: Module is good
+  # Bit 13: isSPLYgd           0: Supply out of range  1: Supply OK
+  # Bit 14: isTMPgd            0: Temp above 55degC    1: Temperature within range
+  # Bit 15: isKILena           0: state kill disable   1: state kill enable
+}
+
+record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_EVENT_STATUS")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):BoardTemperature")
+
+  # Bit  0: reserved
+  # Bit  1: reserved
+  # Bit  2: ELVINS             0:                      1: Event live insertion to prepare a hot plug of a module
+  # Bit  3: reserved
+  # Bit  4: ESrvc              0:                      1: Hardware failure detected
+  # Bit  5: EHwVLIMngd         0:                      1: HwVLIM out of range
+  # Bit  6: EIERR              0:                      1: Input Error in connection
+  # Bit  7: reserved
+  # Bit  8: reserved
+  # Bit  9: reserved
+  # Bit 10: ESFLPngd           0:                      1: Safety loop open
+  # Bit 11: reserved
+  # Bit 12: reserved
+  # Bit 13: ESPLYngd           0:                      1: Supply is not good 
+  # Bit 14: ETMPngd            0:                      1: Temperature above 55degC
+  # Bit 15: reserved
+}
+
+######################################
+# ### Read out board temperature ### #
+######################################
+record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
+  field (DTYP, "asynFloat64")
+  field (INP,  "@asyn($(BUS),0,1)ISEGHV_TEMPERATURE")
+  # display parameters
+  field (EGU,  "degC")
+  field (PREC, "2")
+  # Alarm parameters
+  field (HIHI, "50")
+  field (HIGH, "40")
+  field (LOW,  "0")
+  field (LOLO, "0")
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "NO_ALARM")
+  field (LLSV, "NO_ALARM")
+  # thresholds
+  field (ADEL, "1")
+  field (MDEL, "0")
+}
+
+#########################
+# ### Module status ### #
+#########################
+record (bi, "PANDA:$(subsys):HV:$(sector):isADJ") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B0 CP")
+  field (ZNAM, "off")
+  field (ONAM, "on")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isLVINS") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B2 CP")
+  field (ZNAM, "off")
+  field (ONAM, "on")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):needSrvc") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B4 CP")
+  field (ZNAM, "ok")
+  field (ONAM, "Hardware failure detected")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isIERR") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B6 CP")
+  field (ZNAM, "ok")
+  field (ONAM, "Error")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MINOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isnoSERR") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B8 CP")
+  field (ZNAM, "Error")
+  field (ONAM, "ok")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isnoRAMP") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.B9 CP")
+  field (ZNAM, "channel is ramping")
+  field (ONAM, "all channels stable")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isSFLPgd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BA CP")
+  field (ZNAM, "broken")
+  field (ONAM, "closed")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isEVNTact") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BB CP")
+  field (ZNAM, "no active Event")
+  field (ONAM, "any event active")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isMODgd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BC CP")
+  field (ZNAM, "failure")
+  field (ONAM, "ok")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isSPLYgd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BD CP")
+  field (ZNAM, "Out of Range")
+  field (ONAM, "ok")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isTMPgd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BE CP")
+  field (ZNAM, "above 55 degC")
+  field (ONAM, "within range")
+  field (ZSV,  "MAJOR")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):isKILena") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModStatus.BF CP")
+  field (ZNAM, "disabled")
+  field (ONAM, "enabled")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+###############################
+# ### Module Event status ### #
+###############################
+record (bi, "PANDA:$(subsys):HV:$(sector):ELVINS") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.B2 CP")
+  field (ZNAM, "off")
+  field (ONAM, "on")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "NO_ALARM")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):ESrvc") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.B4 CP")
+  field (ZNAM, "-")
+  field (ONAM, "Hardware failure detected")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):EIERR") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.B6 CP")
+  field (ZNAM, "-")
+  field (ONAM, "Input Error in connection")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):ESFLPngd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.BA CP")
+  field (ZNAM, "-")
+  field (ONAM, "Safety loop open")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):ESPLYngd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.BD CP")
+  field (ZNAM, "-")
+  field (ONAM, "Supply is not good")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}
+
+record (bi, "PANDA:$(subsys):HV:$(sector):ETMPngd") {
+  field (INP,  "PANDA:$(subsys):HV:$(sector):ModEventStatus.BD CP")
+  field (ZNAM, "-")
+  field (ONAM, "Temperature above 55 degC")
+  field (ZSV,  "NO_ALARM")
+  field (OSV,  "MAJOR")
+}

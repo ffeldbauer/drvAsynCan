@@ -1,0 +1,67 @@
+#################################################
+# ###                                       ### #
+# ### EPICS Database for                    ### #
+# ### THMP CAN Communication                ### #
+# ###                                       ### #
+# ### author: F.Feldbauer                   ### #
+# ###                                       ### #
+# ### Ref 1.0; 2012-09-17                   ### #
+# ###                                       ### #
+# ### macros: subsys  PANDA subsystem       ### #
+# ###         BUS     Asyn Port             ### #
+# ###         ID      CAN id of THMP        ### #
+#################################################
+
+####################
+# ### Triggers ### #
+####################
+record (bo, "PANDA:$(subsys):THMP:$(ID):TriggerAdcBuffer") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)THMP_TRG_ADC")
+}
+
+record (bo, "PANDA:$(subsys):THMP:$(ID):TriggerSerials") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)THMP_TRG_SERIALS")
+}
+
+record (mbbi, "PANDA:$(subsys):THMP:$(ID):Error") {
+  field (DTYP, "asynUInt32Digital")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)THMP_ERROR")
+}
+
+#####################
+# ### I/O Board ### #
+#####################
+record (mbbiDirect, "PANDA:$(subsys):THMP:$(ID):READIO0") {
+  field (DTYP, "asynUInt32Digital")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)THMP_IOBOARD")
+}
+
+record (mbbiDirect, "PANDA:$(subsys):THMP:$(ID):READIO1") {
+  field (DTYP, "asynUInt32Digital")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asynMask($(BUS),1,0xffff,1)THMP_IOBOARD")
+}
+
+record (mbboDirect, "PANDA:$(subsys):THMP:$(ID):WRITEIO0") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,0xffff,1)THMP_IOBOARD")
+}
+
+record (mbboDirect, "PANDA:$(subsys):THMP:$(ID):WRITEIO1") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),1,0xffff,1)THMP_IOBOARD")
+}
+
+record (mbbo, "PANDA:$(subsys):THMP:$(ID):CONFIGIO0") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)THMP_CONFIG_IO")
+}
+
+record (mbbo, "PANDA:$(subsys):THMP:$(ID):CONFIGIO1") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),1,1)THMP_CONFIG_IO")
+}

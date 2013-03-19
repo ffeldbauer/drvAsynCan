@@ -195,7 +195,7 @@ asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, con
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
     // Change Bitrate
-    int bitrate;
+    epicsUInt32 bitrate;
     if( sscanf( value, "%d", &bitrate ) != 1 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "Bad number");
@@ -216,7 +216,7 @@ asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, con
     epicsUInt32 FromID = 0;
     epicsUInt32 ToID = 0;
     epicsUInt8  MSGTYPE = 0;
-    if( sscanf( value, "%x:%x:%u", &FromID, &ToID, &MSGTYPE ) != 3 ) {
+    if( sscanf( value, "%x:%x:%c", &FromID, &ToID, &MSGTYPE ) != 3 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "Bad value");
       return asynError;

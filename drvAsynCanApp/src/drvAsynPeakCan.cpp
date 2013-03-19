@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <linux/can.h>
 
 /* EPICS includes */
 #include <epicsEvent.h>
@@ -78,7 +79,7 @@ asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *generi
   can_frame_t* pframe = (can_frame_t *)genericPointer;
   TPCANRdMsg* rdmsg = new TPCANRdMsg;
 
-  int err = drvRPiCanRead( msg, mytimeout );
+  int err = drvPeakCanRead( rdmsg, mytimeout );
   
   if ( CAN_ERR_QRCVEMPTY == err )  return asynTimeout;
 
@@ -207,8 +208,8 @@ asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, co
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
     // Change Bitrate
-    int bitrate;
-    if( sscanf( value, "%d", &bitrate ) != 1 ) {
+    epicsUInt32 bitrate;
+    if( sscanf( value, "%u", &bitrate ) != 1 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "Bad number");
       return asynError;
@@ -238,13 +239,13 @@ asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, co
     epicsUInt32 FromID = 0;
     epicsUInt32 ToID = 0;
     epicsUInt8  MSGTYPE = 0;
-    if( sscanf( value, "%x:%x:%u", &FromID, &ToID, &MSGTYPE ) != 3 ) {
+    if( sscanf( value, "%x:%x:%c", &FromID, &ToID, &MSGTYPE ) != 3 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "Bad value");
       return asynError;
     }
     TPMSGFILTER filter = { FromID, ToID, MSGTYPE };
-    int err = ioctl( fd_, CAN_MSG_FILTER, &filter );
+    int err = ioctl( fd_, PCAN_MSG_FILTER, &filter );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "%s:%s: Could not add filter for interface '%s'. %s",
@@ -254,7 +255,7 @@ asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, co
 
   } else if ( epicsStrCaseCmp( key, "delfilter" ) == 0 ) {
     // delete all existing filters
-    int err = ioctl( fd_, CAN_MSG_FILTER, NULL );
+    int err = ioctl( fd_, PCAN_MSG_FILTER, NULL );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "%s:%s: Could not delete filters for interface '%s'. %s",

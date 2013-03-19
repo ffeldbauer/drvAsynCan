@@ -29,6 +29,10 @@
 #include <epicsTypes.h>
 
 //_____ D E F I N I T I O N S __________________________________________________
+#ifndef CAN_RTR_FLAG
+#define CAN_RTR_FLAG 0x40000000U /* remote transmission request */
+#endif
+
 typedef struct {
   epicsUInt32 can_id;
   epicsUInt8  can_dlc;

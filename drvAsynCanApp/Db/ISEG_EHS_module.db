@@ -84,6 +84,71 @@ record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
   field (MDEL, "0")
 }
 
+####################
+# ### switches ### #
+####################
+record (bo, "PANDA:$(subsys):HV:Switch") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask(iseg,0,1,1)ISEGHV_SWITCHONOFF")
+  field (ZNAM, "OFF")
+  field (ONAM, "ON")
+}
+
+record (bo, "PANDA:$(subsys):HV:EmergencyOff") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn(iseg,0,1)ISEGHV_EMERGENCYOFF")
+  field (ZNAM, "OFF")
+  field (ONAM, "ON")
+}
+
+##########################
+# ### Module Control ### #
+##########################
+# Bit  0: reserved
+# Bit  1: reserved
+# Bit  2: reserved
+# Bit  3: reserved
+# Bit  4: reserved
+# Bit  5: setILK: Interlock: Interlock signal CRATE_ENABLE (WIENER MPOD crate, active TTL high
+#         1: INTERLOCK singal in order to switch off HV and set bit EEINH of the EventStatus for all channels
+#         0: reset the INTERLOCK signal in order to clear the bit EEINH of the EventStatus for all channels
+# Bit  6: doCLEAR: ClearKill: Hardware ClearKill signal and clear all event singals of the module and the channels
+#         1: Hardware ClearKill signal and clear all event signals of the module and the channels
+#         0: no action
+# Bit  7: reserved
+# Bit  8: reserved
+# Bit  9: reserved
+# Bit 10: reserved
+# Bit 11: setENDN: Endian: Order of bytes in word: 0 = Little Endian (INTEL); 1 = Big Endian (MOTOROLA)
+#         1: big endian
+#         0: little endian
+#         SET CONSTANTLY TO 1
+# Bit 12: setADJ: Adjust: Switch ON of fine adjustment
+#         1: fine adjustment ON
+#         0: fine adjustment OFF
+#         SET CONSTANTLY TO 1
+# Bit 13: reserved
+# Bit 14: setKILena: KillEnable: Kill function
+#         1: kill function enable
+#         0: kill function disable
+#         SET CONSTANTLY TO 1
+# Bit 15: reserved
+
+record (bo, "PANDA:$(subsys):$(dev):HV:$(sector):doCLEAR") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_CLEAR_EVENT_STATUS")
+}
+
+record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):VoltageRampSpeed") {
+  field (DTYP, "asynFloat64")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_RAMPSPEED")
+  field (VAL,  "4")
+  field (DRVH, "20")
+  field (DRVL, "0")
+  field (PREC, "1")
+  field (EGU,  "p.c.")
+}
+
 #########################
 # ### Module status ### #
 #########################

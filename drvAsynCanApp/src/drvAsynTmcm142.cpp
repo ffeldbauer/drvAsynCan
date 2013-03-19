@@ -30,7 +30,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <linux/can.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -52,10 +51,9 @@
 #include "asynStandardInterfaces.h"
 
 #include "drvAsynTmcm142.h"
+#include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
-
-typedef struct can_frame can_frame_t;
 
 //! helper to split the 32-bit integer value from the records into 4 unsigned chars
 typedef union{

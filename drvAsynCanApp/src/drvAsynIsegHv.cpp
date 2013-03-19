@@ -29,7 +29,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <linux/can.h>
 
 /* EPICS includes */
 #include <epicsEvent.h>
@@ -48,10 +47,9 @@
 #include "asynStandardInterfaces.h"
 
 #include "drvAsynIsegHv.h"
+#include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
-
-typedef struct can_frame can_frame_t;
 
 //! used to convert 32-bit float (IEEE 754) to 4*8 bit unsigned int
 typedef union{
@@ -580,6 +578,28 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
 
   // used to convert the measured current from A to u/nA
   conversion_ = 1.e6;
+
+  isegFrame vset_cmd = { 3, 0x41, 0x00 };
+  isegFrame iset_cmd = { 3, 0x41, 0x01 };
+  isegFrame vmom_cmd = { 3, 0x41, 0x02 };
+  isegFrame imom_cmd = { 3, 0x41, 0x03 };
+  isegFrame temp_cmd = { 2, 0x11, 0x06 };
+  isegFrame ramp_cmd = { 2, 0x11, 0x00 };
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Vmom, vmom_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Imom, imom_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Vset, vset_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Iset, iset_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Temperature, temp_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_RampSpeed, ramp_cmd ) );
+
+  isegFrame chstat_cmd = { 3, 0x40, 0x00 };
+  isegFrame chesta_cmd = { 3, 0x40, 0x02 };
+  isegFrame modstat_cmd = { 2, 0x10, 0x00 };
+  isegFrame modesta_cmd = { 2, 0x10, 0x02 };
+  cmdsUIn32D_.insert( std::make_pair( P_Chan_status, chstat_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Chan_Event_status, chesta_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Mod_status, modstat_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Mod_Event_status, modesta_cmd ) );
   
   can_frame_t *pframe = new can_frame_t;
   // Send "status connected" message
@@ -645,28 +665,6 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
     myValue.fval *= 1.e6;
     setDoubleParam( i, P_Chan_Iset, myValue.fval );
   }
-
-  isegFrame vset_cmd = { 3, 0x41, 0x00 };
-  isegFrame iset_cmd = { 3, 0x41, 0x01 };
-  isegFrame vmom_cmd = { 3, 0x41, 0x02 };
-  isegFrame imom_cmd = { 3, 0x41, 0x03 };
-  isegFrame temp_cmd = { 2, 0x11, 0x06 };
-  isegFrame ramp_cmd = { 2, 0x11, 0x00 };
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Vmom, vmom_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Imom, imom_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Vset, vset_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Iset, iset_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Temperature, temp_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_RampSpeed, ramp_cmd ) );
-
-  isegFrame chstat_cmd = { 3, 0x40, 0x00 };
-  isegFrame chesta_cmd = { 3, 0x40, 0x02 };
-  isegFrame modstat_cmd = { 2, 0x10, 0x00 };
-  isegFrame modesta_cmd = { 2, 0x10, 0x02 };
-  cmdsUIn32D_.insert( std::make_pair( P_Chan_status, chstat_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Chan_Event_status, chesta_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Mod_status, modstat_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Mod_Event_status, modesta_cmd ) );
 }
 
 //******************************************************************************

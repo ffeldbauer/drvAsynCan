@@ -31,7 +31,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <linux/can.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -53,10 +52,9 @@
 #include "asynStandardInterfaces.h"
 
 #include "drvAsynLedPulser.h"
+#include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
-
-typedef struct can_frame can_frame_t;
 
 //_____ G L O B A L S __________________________________________________________
 

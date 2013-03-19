@@ -30,7 +30,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <linux/can.h>
 #include <unistd.h>
 
 /* EPICS includes */
@@ -50,9 +49,9 @@
 #include "asynStandardInterfaces.h"
 
 #include "drvAsynTHMP.h"
+#include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
-typedef struct can_frame can_frame_t;
 
 //_____ G L O B A L S __________________________________________________________
 

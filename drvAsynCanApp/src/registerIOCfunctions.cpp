@@ -41,7 +41,6 @@
 #include <iocsh.h>
 
 /* local includes */
-#include "drvAsynRPiCan.h"
 #include "drvAsynIsegHv.h"
 #include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
@@ -59,7 +58,7 @@
 
 /* Configuration routines.  Called directly, or from the iocsh function below */
 extern "C" {
-  
+
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
   //!          for the drvAsynRPiCan class.

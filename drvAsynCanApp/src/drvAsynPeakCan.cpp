@@ -32,7 +32,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <rpi_can.h>
 
 /* EPICS includes */
 #include <epicsEvent.h>
@@ -45,14 +44,15 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-#include "drvAsynRPiCan.h"
+#include "drvAsynPeakCan.h"
+#include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
 
 //_____ G L O B A L S __________________________________________________________
 
 //_____ L O C A L S ____________________________________________________________
-static const char *driverName = "drvAsynRPiCanDriver";
+static const char *driverName = "drvAsynPeakCanDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
 
@@ -70,13 +70,15 @@ static const char *driverName = "drvAsynRPiCanDriver";
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynRPiCan::drvRPiCanRead
+//! @sa      drvAsynPeakCan::drvRPiCanRead
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "readGenericPointer";
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   can_frame_t* pframe = (can_frame_t *)genericPointer;
-  int err = drvRPiCanRead( pframe, mytimeout );
+  TPCANRdMsg* rdmsg = new TPCANRdMsg;
+
+  int err = drvRPiCanRead( msg, mytimeout );
   
   if ( CAN_ERR_QRCVEMPTY == err )  return asynTimeout;
 
@@ -86,6 +88,16 @@ asynStatus drvAsynRPiCan::readGenericPointer( asynUser *pasynUser, void *generic
                    deviceName_, err, strerror( err ) );
     return asynError;
   }  
+
+  // convert PEAK msg to can_frame
+  pframe->can_id = rdmsg->Msg.ID;
+  if( rdmsg->Msg.MSGTYPE & MSGTYPE_RTR )       pframe->can_id |= CAN_RTR_FLAG;
+  if( rdmsg->Msg.MSGTYPE & MSGTYPE_EXTENDED )  pframe->can_id |= CAN_EFF_FLAG;
+  pframe->can_dlc = rdmsg->Msg.LEN;
+  for ( int i = 0; i < 8; i++ ){
+    pframe->data[i] = rdmsg->Msg.DATA[i];
+  }
+
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: received frame '%08x %d %02x %02x %02x %02x %02x %02x %02x %02x'\n", 
              driverName, functionName, pframe->can_id, pframe->can_dlc,
@@ -109,9 +121,9 @@ asynStatus drvAsynRPiCan::readGenericPointer( asynUser *pasynUser, void *generic
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynRPiCan::drvRPiCanWrite
+//! @sa      drvAsynPeakCan::drvRPiCanWrite
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynPeakCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "writeGenericPointer";
   can_frame_t *myFrame = (can_frame_t *)genericPointer;
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
@@ -122,7 +134,19 @@ asynStatus drvAsynRPiCan::writeGenericPointer( asynUser *pasynUser, void *generi
              myFrame->data[0], myFrame->data[1], myFrame->data[2], myFrame->data[3],
              myFrame->data[4], myFrame->data[5], myFrame->data[6], myFrame->data[7] );
 
-  int err = drvRPiCanWrite( myFrame, mytimeout );
+
+  // Convert can_frame to PEAK msg
+  TPCANMsg* msg = new TPCANMsg;
+  if( myFrame->can_id & CAN_RTR_FLAG )    msg->MSGTYPE = MSGTYPE_RTR;
+  else                                    msg->MSGTYPE = MSGTYPE_STANDARD;
+  if( myFrame->can_id & CAN_EFF_FLAG )    msg->MSGTYPE |= MSGTYPE_EXTENDED;
+  msg->ID  = myFrame->can_id & CAN_EFF_MASK; // remove EFF/RTR/ERR flags
+  msg->LEN = myFrame->can_dlc;
+  for ( int i = 0; i < 8; i++ ){
+    msg->DATA[i] = myFrame->data[i];
+  }
+
+  int err = drvPeakCanWrite( msg, mytimeout );
   if ( 0 != err ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "Error sending message to device '%s': %s", 
@@ -147,24 +171,12 @@ asynStatus drvAsynRPiCan::writeGenericPointer( asynUser *pasynUser, void *generi
 //!          asynError is returned. An error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::readOption( asynUser *pasynUser, const char *key,
+asynStatus drvAsynPeakCan::readOption( asynUser *pasynUser, const char *key,
                                       char *value, int maxChars ) {
   const char* functionName = "readOption";
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
-    // Get current bitrate
-    TPBTR0BTR1 ratix;
-    int err = ioctl( fd_, CAN_GET_BITRATE, &ratix );
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not read bitrate settings from interface '%s'. %s",
-                     driverName, functionName, deviceName_, strerror( errno ) );
-      return asynError;
-    }
-    char dummy[10];
-    sprintf( dummy, "%u", ratix.dwBitRate );
-    strcpy(value, dummy);
-
+    strcpy( value, "Not supported by kernel module..." );
   } else {
     // unknown option
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
@@ -190,7 +202,7 @@ asynStatus drvAsynRPiCan::readOption( asynUser *pasynUser, const char *key,
 //!          asynError is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
+asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
   const char* functionName = "writeOption";
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
@@ -203,7 +215,17 @@ asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, con
     }
     
     TPBTR0BTR1 ratix = { bitrate, 0 };
-    int err = ioctl( fd_, CAN_BITRATE, &ratix );
+    int err = ioctl( fd_, PCAN_BTR0BTR1, &ratix );
+    if ( err ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                     "%s:%s: Could not change bitrate for interface '%s'. %s",
+                     driverName, functionName, deviceName_, strerror( err ) );
+      return asynError;
+    }
+    TPCANInit myInit = { ratix.wBTR0BTR1, 
+                         MSGTYPE_EXTENDED,
+                         0 };
+    int err = ioctl( fd_, PCAN_INIT, &myInit );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "%s:%s: Could not change bitrate for interface '%s'. %s",
@@ -264,10 +286,10 @@ asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, con
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QXMTFULL is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynRPiCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
+int drvAsynPeakCan::drvPeakCanWrite( TPCANMsg *pframe, int timeout ){
 
   if ( timeout < 0)
-    return ioctl( fd_, CAN_WRITE_MSG, pframe );
+    return ioctl( fd_, PCAN_WRITE_MSG, pframe );
   
   fd_set fdWrite;
   struct timeval t;
@@ -284,7 +306,7 @@ int drvAsynRPiCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
   
   // the only one file descriptor is ready for write
   if ( err  > 0 )
-    return ioctl( fd_, CAN_WRITE_MSG, pframe );
+    return ioctl( fd_, PCAN_WRITE_MSG, pframe );
   
   // nothing is ready, timeout occured
   if ( err == 0 )
@@ -305,9 +327,9 @@ int drvAsynRPiCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QRCVEMPTY is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynRPiCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
+int drvAsynPeakCan::drvPeakCanRead( TPCANRdMsg *pframe, int timeout ){
   if ( timeout < 0)
-    return ioctl( fd_, CAN_READ_MSG, pframe );
+    return ioctl( fd_, PCAN_READ_MSG, pframe );
 
   fd_set fdRead;
   struct timeval t;
@@ -324,7 +346,7 @@ int drvAsynRPiCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
   
   // the only one file descriptor is ready for read
   if ( err  > 0 )
-    return ioctl( fd_, CAN_READ_MSG, pframe );
+    return ioctl( fd_, PCAN_READ_MSG, pframe );
   
   // nothing is ready, timeout occured
   if ( err == 0 )
@@ -333,13 +355,13 @@ int drvAsynRPiCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
 }
 
 //------------------------------------------------------------------------------
-//! @brief   Constructor for the drvAsynRPiCan class.
+//! @brief   Constructor for the drvAsynPeakCan class.
 //!          Calls constructor for the asynPortDriver base class.
 //!
 //! @param   [in]  portName The name of the asynPortDriver to be created.
 //! @param   [in]  ttyName  The name of the device
 //------------------------------------------------------------------------------
-drvAsynRPiCan::drvAsynRPiCan( const char *portName, const char *ttyName ) 
+drvAsynPeakCan::drvAsynPeakCan( const char *portName, const char *ttyName ) 
   : asynPortDriver( portName,
                     1, /* maxAddr */ 
                     0,
@@ -350,7 +372,7 @@ drvAsynRPiCan::drvAsynRPiCan( const char *portName, const char *ttyName )
                     0, /* Default priority */
                     0 ) /* Default stack size*/    
 {
-  const char *functionName = "drvAsynRPiCan";
+  const char *functionName = "drvAsynPeakCan";
     
   deviceName_ = epicsStrDup( ttyName );
   
@@ -369,21 +391,21 @@ extern "C" {
   
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynRPiCan class.
+  //!          for the drvAsynPeakCan class.
   //!
   //! @param   [in]  portName The name of the asyn port driver to be created.
   //!          [in]  ttyName  The name of the interface 
   //----------------------------------------------------------------------------
-  int drvAsynRPiCanConfigure( const char *portName, const char *ttyName ) {
-    new drvAsynRPiCan( portName, ttyName );
+  int drvAsynPeakCanConfigure( const char *portName, const char *ttyName ) {
+    new drvAsynPeakCan( portName, ttyName );
     return( asynSuccess );
   }
-  static const iocshArg initRPiCanArg0 = { "portName", iocshArgString };
-  static const iocshArg initRPiCanArg1 = { "ttyName",  iocshArgString };
-  static const iocshArg * const initRPiCanArgs[] = { &initRPiCanArg0, &initRPiCanArg1 };
-  static const iocshFuncDef initRPiCanFuncDef = { "drvAsynRPiCanConfigure", 2, initRPiCanArgs };
-  static void initRPiCanCallFunc( const iocshArgBuf *args ) {
-    drvAsynRPiCanConfigure( args[0].sval, args[1].sval );
+  static const iocshArg initPeakCanArg0 = { "portName", iocshArgString };
+  static const iocshArg initPeakCanArg1 = { "ttyName",  iocshArgString };
+  static const iocshArg * const initPeakCanArgs[] = { &initPeakCanArg0, &initPeakCanArg1 };
+  static const iocshFuncDef initPeakCanFuncDef = { "drvAsynPeakCanConfigure", 2, initPeakCanArgs };
+  static void initPeakCanCallFunc( const iocshArgBuf *args ) {
+    drvAsynPeakCanConfigure( args[0].sval, args[1].sval );
   }
   
   //----------------------------------------------------------------------------
@@ -392,7 +414,7 @@ extern "C" {
   void drvAsynCanDrvRegister( void ) {
     static int firstTime = 1;
     if ( firstTime ) {
-      iocshRegister( &initRPiCanFuncDef, initRPiCanCallFunc );
+      iocshRegister( &initPeakCanFuncDef, initPeakCanCallFunc );
       firstTime = 0;
     }
   }

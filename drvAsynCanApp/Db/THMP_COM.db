@@ -70,6 +70,9 @@ record (mbbo, "PANDA:$(subsys):THMP:$(ID):CONFIGIO1") {
   field (OUT,  "@asyn($(BUS),1,1)THMP_CONFIG_IO")
 }
 
+######################
+# ### SERIAL IDs ### #
+######################
 record (longin, "PANDA:$(subsys):THMP:$(ID):SERIAL:$(NUM):1") {
   field (DTYP, "asynUInt32Digital")
   field (INP,  "@asynMask($(BUS),$(NUM),0xffffff,1)THMP_SERIALS")

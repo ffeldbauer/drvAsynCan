@@ -578,28 +578,6 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
 
   // used to convert the measured current from A to u/nA
   conversion_ = 1.e6;
-
-  isegFrame vset_cmd = { 3, 0x41, 0x00 };
-  isegFrame iset_cmd = { 3, 0x41, 0x01 };
-  isegFrame vmom_cmd = { 3, 0x41, 0x02 };
-  isegFrame imom_cmd = { 3, 0x41, 0x03 };
-  isegFrame temp_cmd = { 2, 0x11, 0x06 };
-  isegFrame ramp_cmd = { 2, 0x11, 0x00 };
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Vmom, vmom_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Imom, imom_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Vset, vset_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Iset, iset_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Temperature, temp_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_RampSpeed, ramp_cmd ) );
-
-  isegFrame chstat_cmd = { 3, 0x40, 0x00 };
-  isegFrame chesta_cmd = { 3, 0x40, 0x02 };
-  isegFrame modstat_cmd = { 2, 0x10, 0x00 };
-  isegFrame modesta_cmd = { 2, 0x10, 0x02 };
-  cmdsUIn32D_.insert( std::make_pair( P_Chan_status, chstat_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Chan_Event_status, chesta_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Mod_status, modstat_cmd ) );
-  cmdsUIn32D_.insert( std::make_pair( P_Mod_Event_status, modesta_cmd ) );
   
   can_frame_t *pframe = new can_frame_t;
   // Send "status connected" message
@@ -610,6 +588,7 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
   status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, pframe, 1. );
 
   // Get inital value for Switch-Parameter
+  // It seems not all modules understand this command...
   pframe->can_id  = can_id_ | 1;
   pframe->can_dlc = 2;
   pframe->data[0] = 0x22;
@@ -618,12 +597,12 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
   if ( status != asynSuccess ) {
     fprintf( stderr, "\033[31;1m %s:%s:%s: Init %s: No reply from device within 1 s! \033[0m \n",
              driverName, deviceName_, functionName, P_ISEGHV_SWITCH_STRING );
-    return;
+  } else {
+    if ( pframe->data[4] & 0xff || pframe->data[5] & 0xff)
+      setUIntDigitalParam( 0, P_SwitchOnOff, 1, 1 );
+    else
+      setUIntDigitalParam( 0, P_SwitchOnOff, 0, 1 );
   }
-  if ( pframe->data[4] & 0xff || pframe->data[5] & 0xff)
-    setUIntDigitalParam( 0, P_SwitchOnOff, 1, 1 );
-  else
-    setUIntDigitalParam( 0, P_SwitchOnOff, 0, 1 );
 
   // get initial values for vset/iset parameters
   for ( unsigned int i = 0; i < 16; i++ ) {
@@ -665,6 +644,27 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName, const char *CanPort,
     myValue.fval *= 1.e6;
     setDoubleParam( i, P_Chan_Iset, myValue.fval );
   }
+  isegFrame vset_cmd = { 3, 0x41, 0x00 };
+  isegFrame iset_cmd = { 3, 0x41, 0x01 };
+  isegFrame vmom_cmd = { 3, 0x41, 0x02 };
+  isegFrame imom_cmd = { 3, 0x41, 0x03 };
+  isegFrame temp_cmd = { 2, 0x11, 0x06 };
+  isegFrame ramp_cmd = { 2, 0x11, 0x00 };
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Vmom, vmom_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Imom, imom_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Vset, vset_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Chan_Iset, iset_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_Temperature, temp_cmd ) );
+  cmdsFloat64_.insert( std::make_pair( P_RampSpeed, ramp_cmd ) );
+
+  isegFrame chstat_cmd = { 3, 0x40, 0x00 };
+  isegFrame chesta_cmd = { 3, 0x40, 0x02 };
+  isegFrame modstat_cmd = { 2, 0x10, 0x00 };
+  isegFrame modesta_cmd = { 2, 0x10, 0x02 };
+  cmdsUIn32D_.insert( std::make_pair( P_Chan_status, chstat_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Chan_Event_status, chesta_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Mod_status, modstat_cmd ) );
+  cmdsUIn32D_.insert( std::make_pair( P_Mod_Event_status, modesta_cmd ) );
 }
 
 //******************************************************************************

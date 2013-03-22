@@ -226,7 +226,7 @@ asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, co
     TPCANInit myInit = { ratix.wBTR0BTR1, 
                          MSGTYPE_EXTENDED,
                          0 };
-    int err = ioctl( fd_, PCAN_INIT, &myInit );
+    err = ioctl( fd_, PCAN_INIT, &myInit );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "%s:%s: Could not change bitrate for interface '%s'. %s",

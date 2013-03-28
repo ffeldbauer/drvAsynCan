@@ -77,9 +77,9 @@ asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *generi
   const char* functionName = "readGenericPointer";
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   can_frame_t* pframe = (can_frame_t *)genericPointer;
-  TPCANRdMsg* rdmsg = new TPCANRdMsg;
+  TPCANRdMsg rdmsg;
 
-  int err = drvPeakCanRead( rdmsg, mytimeout );
+  int err = drvPeakCanRead( &rdmsg, mytimeout );
   
   if ( CAN_ERR_QRCVEMPTY == err )  return asynTimeout;
 
@@ -91,12 +91,12 @@ asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *generi
   }  
 
   // convert PEAK msg to can_frame
-  pframe->can_id = rdmsg->Msg.ID;
-  if( rdmsg->Msg.MSGTYPE & MSGTYPE_RTR )       pframe->can_id |= CAN_RTR_FLAG;
-  if( rdmsg->Msg.MSGTYPE & MSGTYPE_EXTENDED )  pframe->can_id |= CAN_EFF_FLAG;
-  pframe->can_dlc = rdmsg->Msg.LEN;
+  pframe->can_id = rdmsg.Msg.ID;
+  if( rdmsg.Msg.MSGTYPE & MSGTYPE_RTR )       pframe->can_id |= CAN_RTR_FLAG;
+  if( rdmsg.Msg.MSGTYPE & MSGTYPE_EXTENDED )  pframe->can_id |= CAN_EFF_FLAG;
+  pframe->can_dlc = rdmsg.Msg.LEN;
   for ( int i = 0; i < 8; i++ ){
-    pframe->data[i] = rdmsg->Msg.DATA[i];
+    pframe->data[i] = rdmsg.Msg.DATA[i];
   }
 
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
@@ -137,17 +137,17 @@ asynStatus drvAsynPeakCan::writeGenericPointer( asynUser *pasynUser, void *gener
 
 
   // Convert can_frame to PEAK msg
-  TPCANMsg* msg = new TPCANMsg;
-  if( myFrame->can_id & CAN_RTR_FLAG )    msg->MSGTYPE = MSGTYPE_RTR;
-  else                                    msg->MSGTYPE = MSGTYPE_STANDARD;
-  if( myFrame->can_id & CAN_EFF_FLAG )    msg->MSGTYPE |= MSGTYPE_EXTENDED;
-  msg->ID  = myFrame->can_id & CAN_EFF_MASK; // remove EFF/RTR/ERR flags
-  msg->LEN = myFrame->can_dlc;
+  TPCANMsg msg;
+  if( myFrame->can_id & CAN_RTR_FLAG )    msg.MSGTYPE = MSGTYPE_RTR;
+  else                                    msg.MSGTYPE = MSGTYPE_STANDARD;
+  if( myFrame->can_id & CAN_EFF_FLAG )    msg.MSGTYPE |= MSGTYPE_EXTENDED;
+  msg.ID  = myFrame->can_id & CAN_EFF_MASK; // remove EFF/RTR/ERR flags
+  msg.LEN = myFrame->can_dlc;
   for ( int i = 0; i < 8; i++ ){
-    msg->DATA[i] = myFrame->data[i];
+    msg.DATA[i] = myFrame->data[i];
   }
 
-  int err = drvPeakCanWrite( msg, mytimeout );
+  int err = drvPeakCanWrite( &msg, mytimeout );
   if ( 0 != err ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "Error sending message to device '%s': %s", 

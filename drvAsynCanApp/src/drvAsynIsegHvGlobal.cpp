@@ -93,17 +93,17 @@ asynStatus drvAsynIsegHvGlobal::writeInt32( asynUser *pasynUser, epicsInt32 valu
                "%s:%s:%s: function=%d, value=%d\n", 
                driverName, deviceName_, functionName, function, value );
 
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id  = 0x004;
-  pframe->can_dlc = 6;
-  pframe->data[0] = 0xe8;
-  pframe->data[1] = 0x00;
-  pframe->data[2] = 0x60;
-  pframe->data[3] = 0x01;
-  pframe->data[4] = 0x00;
-  pframe->data[5] = 0x20;
+  can_frame_t pframe;
+  pframe.can_id  = 0x004;
+  pframe.can_dlc = 6;
+  pframe.data[0] = 0xe8;
+  pframe.data[1] = 0x00;
+  pframe.data[2] = 0x60;
+  pframe.data[3] = 0x01;
+  pframe.data[4] = 0x00;
+  pframe.data[5] = 0x20;
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, Could not send can frame.\033[0m", 
@@ -149,17 +149,17 @@ asynStatus drvAsynIsegHvGlobal::writeUInt32Digital( asynUser *pasynUser, epicsUI
                "%s:%s: function=%d, value=%d, mask=%u\n", 
                driverName, functionName, function, value, mask );
 
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id  = 0x004;
-  pframe->can_dlc = 6;
-  pframe->data[0] = 0xe8;
-  pframe->data[1] = 0x00;
-  pframe->data[2] = 0x60;
-  pframe->data[3] = 0x01;
-  pframe->data[4] = 0x00;
-  pframe->data[5] = ( value ? 0x08 : 0x00 );
+  can_frame_t pframe;
+  pframe.can_id  = 0x004;
+  pframe.can_dlc = 6;
+  pframe.data[0] = 0xe8;
+  pframe.data[1] = 0x00;
+  pframe.data[2] = 0x60;
+  pframe.data[3] = 0x01;
+  pframe.data[4] = 0x00;
+  pframe.data[5] = ( value ? 0x08 : 0x00 );
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
@@ -204,23 +204,22 @@ drvAsynIsegHvGlobal::drvAsynIsegHvGlobal( const char *portName, const char *CanP
   }
   
   // Get inital value for Switch-Parameter
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id  = ( 1 << 9 ) | 1;
-  pframe->can_dlc = 3;
-  pframe->data[0] = 0x40;
-  pframe->data[1] = 0x01;
-  pframe->data[2] = 0x00;
-  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, pframe, pframe, 1. );
+  can_frame_t pframe;
+  pframe.can_id  = ( 1 << 9 ) | 1;
+  pframe.can_dlc = 3;
+  pframe.data[0] = 0x40;
+  pframe.data[1] = 0x01;
+  pframe.data[2] = 0x00;
+  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, 1. );
   if ( status != asynSuccess ) {
     fprintf( stderr, "\033[31;1m %s:%s: Init %s: No reply from device within 1 s! \033[0m \n",
              driverName, functionName, P_ISEGHV_SWITCH_STRING );
     return;
   }
-  if ( pframe->data[4] & 0x08 )
+  if ( pframe.data[4] & 0x08 )
     setUIntDigitalParam( 0, P_SwitchOnOff, 1, 1 );
   else
     setUIntDigitalParam( 0, P_SwitchOnOff, 0, 1 );
-
 }
 
 //******************************************************************************

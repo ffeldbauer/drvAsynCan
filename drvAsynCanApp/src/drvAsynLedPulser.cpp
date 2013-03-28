@@ -154,31 +154,31 @@ asynStatus drvAsynLedPulser::writeInt32( asynUser *pasynUser, epicsInt32 value )
                driverName, deviceName_, functionName, function, value );
 
   if ( function == P_write ) {
-    can_frame_t *pframe = new can_frame_t;
-    pframe->can_id  = can_id_;
-    pframe->can_dlc = 8;
+    can_frame_t pframe;
+    pframe.can_id  = can_id_;
+    pframe.can_dlc = 8;
 
     epicsInt32 dummyInt;
     epicsUInt32 dummyUInt;
     epicsFloat64 dummyFloat;
 
     getUIntDigitalParam( P_Color, &dummyUInt, 3 );
-    pframe->data[0] = (epicsUInt8)dummyUInt;
+    pframe.data[0] = (epicsUInt8)dummyUInt;
 
     getDoubleParam( P_Intensity, &dummyFloat );
-    setIntensity( dummyFloat, pframe->data[1], pframe->data[2] );
+    setIntensity( dummyFloat, pframe.data[1], pframe.data[2] );
 
     getIntegerParam( P_Cycles, &dummyInt );
-    pframe->data[3] = (epicsUInt8)( ( dummyInt & 0xff00 ) >> 8 );
-    pframe->data[4] = (epicsUInt8)( dummyInt & 0x00ff );
+    pframe.data[3] = (epicsUInt8)( ( dummyInt & 0xff00 ) >> 8 );
+    pframe.data[4] = (epicsUInt8)( dummyInt & 0x00ff );
 
     getUIntDigitalParam( P_Trg_Mode, &dummyUInt, 1 );
-    pframe->data[0] = (epicsUInt8)dummyUInt;
+    pframe.data[0] = (epicsUInt8)dummyUInt;
 
     getDoubleParam( P_Frequency, &dummyFloat );
-    setIntensity( dummyFloat, pframe->data[6], pframe->data[7] );
+    setIntensity( dummyFloat, pframe.data[6], pframe.data[7] );
 
-    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, pframe, pframe, pasynUser->timeout );
+    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, pasynUser->timeout );
     if ( status ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, No reply from device within %f s.\033[0m", 
@@ -187,23 +187,23 @@ asynStatus drvAsynLedPulser::writeInt32( asynUser *pasynUser, epicsInt32 value )
     }
   }
   if ( function == P_read ) {
-    can_frame_t *pframe = new can_frame_t;
-    pframe->can_id  = can_id_;
-    pframe->can_dlc = 1;
-    pframe->data[0] = 0;
+    can_frame_t pframe;
+    pframe.can_id  = can_id_;
+    pframe.can_dlc = 1;
+    pframe.data[0] = 0;
 
-    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, pframe, pframe, pasynUser->timeout );
+    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, pasynUser->timeout );
     if ( status ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, No reply from device within %f s.\033[0m", 
                      driverName, deviceName_, functionName, function, pasynUser->timeout );
       return asynError;
     }
-    epicsUInt16  readColor     = pframe->data[0];
-    epicsFloat64 readIntensity = getIntensity( pframe->data[1], pframe->data[2] );
-    epicsUInt16  readCycles    = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
-    epicsUInt16  readTrgMode   = pframe->data[5];
-    epicsFloat64 readFrequency = getFrequency( pframe->data[6], pframe->data[7] );
+    epicsUInt16  readColor     = pframe.data[0];
+    epicsFloat64 readIntensity = getIntensity( pframe.data[1], pframe.data[2] );
+    epicsUInt16  readCycles    = ( pframe.data[3] << 8 ) | ( pframe.data[4]);
+    epicsUInt16  readTrgMode   = pframe.data[5];
+    epicsFloat64 readFrequency = getFrequency( pframe.data[6], pframe.data[7] );
     
     setUIntDigitalParam( P_Color, readColor, 3 );
     setDoubleParam( P_Intensity, readIntensity );
@@ -305,29 +305,28 @@ drvAsynLedPulser::drvAsynLedPulser( const char *portName, const char *CanPort,
   }
   
   // Get inital value for Switch-Parameter
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id  = can_id_;
-  pframe->can_dlc = 1;
-  pframe->data[0] = 0x00;
-  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, pframe, pframe, 1. );
+  can_frame_t pframe;
+  pframe.can_id  = can_id_;
+  pframe.can_dlc = 1;
+  pframe.data[0] = 0x00;
+  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, 1. );
   if ( status != asynSuccess ) {
     fprintf( stderr, "\033[31;1m%s:%s:%s: No reply from device within 1 s!\033[0m\n",
              driverName, deviceName_, functionName );
     return;
   }
 
-  epicsUInt16  initColor     = pframe->data[0];
-  epicsFloat64 initIntensity = getIntensity( pframe->data[1], pframe->data[2] );
-  epicsUInt16  initCycles    = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
-  epicsUInt16  initTrgMode   = pframe->data[5];
-  epicsFloat64 initFrequency = getFrequency( pframe->data[6], pframe->data[7] );
+  epicsUInt16  initColor     = pframe.data[0];
+  epicsFloat64 initIntensity = getIntensity( pframe.data[1], pframe.data[2] );
+  epicsUInt16  initCycles    = ( pframe.data[3] << 8 ) | ( pframe.data[4]);
+  epicsUInt16  initTrgMode   = pframe.data[5];
+  epicsFloat64 initFrequency = getFrequency( pframe.data[6], pframe.data[7] );
   
   setUIntDigitalParam( P_Color, initColor, 3 );
   setDoubleParam( P_Intensity, initIntensity );
   setIntegerParam( P_Cycles, initCycles );
   setUIntDigitalParam( P_Trg_Mode, initTrgMode, 1 );
   setDoubleParam( P_Frequency, initFrequency );
-
 }
 
 //******************************************************************************

@@ -198,6 +198,7 @@ void drvAsynTHMP::readPoller() {
       break;
     }
   }
+  delete pframe;
 }
 
 //------------------------------------------------------------------------------
@@ -222,32 +223,32 @@ void drvAsynTHMP::readPoller() {
 
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
   
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id = can_id_;
+  can_frame_t pframe;
+  pframe.can_id = can_id_;
   if ( function == P_ConfigIO ) {
     if ( addr > 1 ) return asynError;
-    pframe->can_dlc = 3;
-    pframe->data[0] = 0x05;
-    pframe->data[1] = (epicsUInt8)( addr & 0xff );
-    pframe->data[2] = (epicsUInt8)( value & 0xff );
+    pframe.can_dlc = 3;
+    pframe.data[0] = 0x05;
+    pframe.data[1] = (epicsUInt8)( addr & 0xff );
+    pframe.data[2] = (epicsUInt8)( value & 0xff );
   } else if ( function == P_Trg_ADC ) {
     if ( addr != 0 ) return asynError;
-    pframe->can_dlc = 1;
-    pframe->data[0] = 0x01;
+    pframe.can_dlc = 1;
+    pframe.data[0] = 0x01;
   } else if ( function == P_Trg_IO ) {
     if ( addr != 0 ) return asynError;
-    pframe->can_dlc = 2;
-    pframe->data[0] = 0x03;
-    pframe->data[1] = (epicsUInt8) ( addr & 0xff );
+    pframe.can_dlc = 2;
+    pframe.data[0] = 0x03;
+    pframe.data[1] = (epicsUInt8) ( addr & 0xff );
   } else if ( function == P_Trg_Serials ) {
     if ( addr != 0 ) return asynError;
-    pframe->can_dlc = 1;
-    pframe->data[0] = 0x04;
+    pframe.can_dlc = 1;
+    pframe.data[0] = 0x04;
   } else {
     return asynError;
   }
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
@@ -298,15 +299,15 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
                "%s:%s:%s: function=%d, value=%d, mask=%u\n", 
                driverName, deviceName_, functionName, function, value, mask );
   
-  can_frame_t *pframe = new can_frame_t;
-  pframe->can_id = can_id_;
-  pframe->can_dlc = 4;
-  pframe->data[0] = 0x02;
-  pframe->data[1] = (epicsUInt8)( addr & 0xff );
-  pframe->data[2] = (epicsUInt8)( value >> 8 );
-  pframe->data[3] = (epicsUInt8)( value & 0xff );
+  can_frame_t pframe;
+  pframe.can_id = can_id_;
+  pframe.can_dlc = 4;
+  pframe.data[0] = 0x02;
+  pframe.data[1] = (epicsUInt8)( addr & 0xff );
+  pframe.data[2] = (epicsUInt8)( value >> 8 );
+  pframe.data[3] = (epicsUInt8)( value & 0xff );
   
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
   
   return status;
 }

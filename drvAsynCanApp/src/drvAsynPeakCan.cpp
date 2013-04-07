@@ -71,9 +71,9 @@ static const char *driverName = "drvAsynPeakCanDriver";
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynPeakCan::drvRPiCanRead
+//! @sa      drvAsynCan::drvRPiCanRead
 //------------------------------------------------------------------------------
-asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "readGenericPointer";
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   can_frame_t* pframe = (can_frame_t *)genericPointer;
@@ -122,9 +122,9 @@ asynStatus drvAsynPeakCan::readGenericPointer( asynUser *pasynUser, void *generi
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynPeakCan::drvRPiCanWrite
+//! @sa      drvAsynCan::drvRPiCanWrite
 //------------------------------------------------------------------------------
-asynStatus drvAsynPeakCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "writeGenericPointer";
   can_frame_t *myFrame = (can_frame_t *)genericPointer;
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
@@ -172,7 +172,7 @@ asynStatus drvAsynPeakCan::writeGenericPointer( asynUser *pasynUser, void *gener
 //!          asynError is returned. An error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynPeakCan::readOption( asynUser *pasynUser, const char *key,
+asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
                                       char *value, int maxChars ) {
   const char* functionName = "readOption";
 
@@ -203,7 +203,7 @@ asynStatus drvAsynPeakCan::readOption( asynUser *pasynUser, const char *key,
 //!          asynError is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
+asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
   const char* functionName = "writeOption";
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
@@ -287,7 +287,7 @@ asynStatus drvAsynPeakCan::writeOption( asynUser *pasynUser, const char *key, co
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QXMTFULL is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynPeakCan::drvPeakCanWrite( TPCANMsg *pframe, int timeout ){
+int drvAsynCan::drvPeakCanWrite( TPCANMsg *pframe, int timeout ){
 
   if ( timeout < 0)
     return ioctl( fd_, PCAN_WRITE_MSG, pframe );
@@ -328,7 +328,7 @@ int drvAsynPeakCan::drvPeakCanWrite( TPCANMsg *pframe, int timeout ){
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QRCVEMPTY is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynPeakCan::drvPeakCanRead( TPCANRdMsg *pframe, int timeout ){
+int drvAsynCan::drvPeakCanRead( TPCANRdMsg *pframe, int timeout ){
   if ( timeout < 0)
     return ioctl( fd_, PCAN_READ_MSG, pframe );
 
@@ -356,13 +356,13 @@ int drvAsynPeakCan::drvPeakCanRead( TPCANRdMsg *pframe, int timeout ){
 }
 
 //------------------------------------------------------------------------------
-//! @brief   Constructor for the drvAsynPeakCan class.
+//! @brief   Constructor for the drvAsynCan class.
 //!          Calls constructor for the asynPortDriver base class.
 //!
 //! @param   [in]  portName The name of the asynPortDriver to be created.
 //! @param   [in]  ttyName  The name of the device
 //------------------------------------------------------------------------------
-drvAsynPeakCan::drvAsynPeakCan( const char *portName, const char *ttyName ) 
+drvAsynCan::drvAsynCan( const char *portName, const char *ttyName ) 
   : asynPortDriver( portName,
                     1, /* maxAddr */ 
                     0,
@@ -373,7 +373,7 @@ drvAsynPeakCan::drvAsynPeakCan( const char *portName, const char *ttyName )
                     0, /* Default priority */
                     0 ) /* Default stack size*/    
 {
-  const char *functionName = "drvAsynPeakCan";
+  const char *functionName = "drvAsynCan";
     
   deviceName_ = epicsStrDup( ttyName );
   
@@ -392,21 +392,21 @@ extern "C" {
   
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynPeakCan class.
+  //!          for the drvAsynCan class.
   //!
   //! @param   [in]  portName The name of the asyn port driver to be created.
   //!          [in]  ttyName  The name of the interface 
   //----------------------------------------------------------------------------
-  int drvAsynPeakCanConfigure( const char *portName, const char *ttyName ) {
-    new drvAsynPeakCan( portName, ttyName );
+  int drvAsynCanConfigure( const char *portName, const char *ttyName ) {
+    new drvAsynCan( portName, ttyName );
     return( asynSuccess );
   }
   static const iocshArg initPeakCanArg0 = { "portName", iocshArgString };
   static const iocshArg initPeakCanArg1 = { "ttyName",  iocshArgString };
   static const iocshArg * const initPeakCanArgs[] = { &initPeakCanArg0, &initPeakCanArg1 };
-  static const iocshFuncDef initPeakCanFuncDef = { "drvAsynPeakCanConfigure", 2, initPeakCanArgs };
+  static const iocshFuncDef initPeakCanFuncDef = { "drvAsynCanConfigure", 2, initPeakCanArgs };
   static void initPeakCanCallFunc( const iocshArgBuf *args ) {
-    drvAsynPeakCanConfigure( args[0].sval, args[1].sval );
+    drvAsynCanConfigure( args[0].sval, args[1].sval );
   }
   
   //----------------------------------------------------------------------------

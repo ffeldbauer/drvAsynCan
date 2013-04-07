@@ -45,14 +45,14 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-#include "drvAsynRPiCan.h"
+#include "drvAsynCan.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
 
 //_____ G L O B A L S __________________________________________________________
 
 //_____ L O C A L S ____________________________________________________________
-static const char *driverName = "drvAsynRPiCanDriver";
+static const char *driverName = "drvAsynCanDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
 
@@ -70,9 +70,9 @@ static const char *driverName = "drvAsynRPiCanDriver";
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynRPiCan::drvRPiCanRead
+//! @sa      drvAsynCan::drvRPiCanRead
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "readGenericPointer";
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   can_frame_t* pframe = (can_frame_t *)genericPointer;
@@ -109,9 +109,9 @@ asynStatus drvAsynRPiCan::readGenericPointer( asynUser *pasynUser, void *generic
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //!
-//! @sa      drvAsynRPiCan::drvRPiCanWrite
+//! @sa      drvAsynCan::drvRPiCanWrite
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
+asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   const char* functionName = "writeGenericPointer";
   can_frame_t *myFrame = (can_frame_t *)genericPointer;
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
@@ -147,7 +147,7 @@ asynStatus drvAsynRPiCan::writeGenericPointer( asynUser *pasynUser, void *generi
 //!          asynError is returned. An error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::readOption( asynUser *pasynUser, const char *key,
+asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
                                       char *value, int maxChars ) {
   const char* functionName = "readOption";
 
@@ -190,7 +190,7 @@ asynStatus drvAsynRPiCan::readOption( asynUser *pasynUser, const char *key,
 //!          asynError is returned. A error message is stored
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
+asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
   const char* functionName = "writeOption";
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
@@ -264,7 +264,7 @@ asynStatus drvAsynRPiCan::writeOption( asynUser *pasynUser, const char *key, con
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QXMTFULL is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynRPiCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
+int drvAsynCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
 
   if ( timeout < 0)
     return ioctl( fd_, CAN_WRITE_MSG, pframe );
@@ -305,7 +305,7 @@ int drvAsynRPiCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
 //! @return  In case of no error occured 0 is returned. In case of a timeout
 //!          CAN_ERR_QRCVEMPTY is returned. Otherwise ERRNO is returned
 //------------------------------------------------------------------------------
-int drvAsynRPiCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
+int drvAsynCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
   if ( timeout < 0)
     return ioctl( fd_, CAN_READ_MSG, pframe );
 
@@ -333,13 +333,13 @@ int drvAsynRPiCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
 }
 
 //------------------------------------------------------------------------------
-//! @brief   Constructor for the drvAsynRPiCan class.
+//! @brief   Constructor for the drvAsynCan class.
 //!          Calls constructor for the asynPortDriver base class.
 //!
 //! @param   [in]  portName The name of the asynPortDriver to be created.
 //! @param   [in]  ttyName  The name of the device
 //------------------------------------------------------------------------------
-drvAsynRPiCan::drvAsynRPiCan( const char *portName, const char *ttyName ) 
+drvAsynCan::drvAsynCan( const char *portName, const char *ttyName ) 
   : asynPortDriver( portName,
                     1, /* maxAddr */ 
                     0,
@@ -350,7 +350,7 @@ drvAsynRPiCan::drvAsynRPiCan( const char *portName, const char *ttyName )
                     0, /* Default priority */
                     0 ) /* Default stack size*/    
 {
-  const char *functionName = "drvAsynRPiCan";
+  const char *functionName = "drvAsynCan";
     
   deviceName_ = epicsStrDup( ttyName );
   
@@ -369,21 +369,21 @@ extern "C" {
   
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynRPiCan class.
+  //!          for the drvAsynCan class.
   //!
   //! @param   [in]  portName The name of the asyn port driver to be created.
   //!          [in]  ttyName  The name of the interface 
   //----------------------------------------------------------------------------
-  int drvAsynRPiCanConfigure( const char *portName, const char *ttyName ) {
-    new drvAsynRPiCan( portName, ttyName );
+  int drvAsynCanConfigure( const char *portName, const char *ttyName ) {
+    new drvAsynCan( portName, ttyName );
     return( asynSuccess );
   }
   static const iocshArg initRPiCanArg0 = { "portName", iocshArgString };
   static const iocshArg initRPiCanArg1 = { "ttyName",  iocshArgString };
   static const iocshArg * const initRPiCanArgs[] = { &initRPiCanArg0, &initRPiCanArg1 };
-  static const iocshFuncDef initRPiCanFuncDef = { "drvAsynRPiCanConfigure", 2, initRPiCanArgs };
+  static const iocshFuncDef initRPiCanFuncDef = { "drvAsynCanConfigure", 2, initRPiCanArgs };
   static void initRPiCanCallFunc( const iocshArgBuf *args ) {
-    drvAsynRPiCanConfigure( args[0].sval, args[1].sval );
+    drvAsynCanConfigure( args[0].sval, args[1].sval );
   }
   
   //----------------------------------------------------------------------------

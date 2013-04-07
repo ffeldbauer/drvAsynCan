@@ -64,22 +64,22 @@ extern "C" {
   //!          for the drvAsynIsegHv class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  RPiCanPort  The name of the interface 
+  //!          [in]  CanPort     The name of the interface 
   //!          [in]  crate_id    The id of the crate
   //!          [in]  module_id   The id of the module inside the crate
   //----------------------------------------------------------------------------
-  int drvAsynIsegHvConfigure( const char *portName, const char *RPiCanPort,
+  int drvAsynIsegHvConfigure( const char *portName, const char *CanPort,
                               const int crate_id, const int module_id ) {
     if ( crate_id < 0 || crate_id > 7 ||
          module_id < 0 || module_id > 7 ) {
       printf("ERROR: Could not configure drvAsynIsegHv: invalid crate/module id: %d, %d", crate_id, module_id );
       return( asynError );
     }
-    new drvAsynIsegHv( portName, RPiCanPort, crate_id, module_id );
+    new drvAsynIsegHv( portName, CanPort, crate_id, module_id );
     return( asynSuccess );
   }
   static const iocshArg initIsegHvArg0 = { "portName",   iocshArgString };
-  static const iocshArg initIsegHvArg1 = { "RPiCanPort", iocshArgString };
+  static const iocshArg initIsegHvArg1 = { "CanPort",    iocshArgString };
   static const iocshArg initIsegHvArg2 = { "crate_id",   iocshArgInt };
   static const iocshArg initIsegHvArg3 = { "module_id",  iocshArgInt };
   static const iocshArg * const initIsegHvArgs[] = { &initIsegHvArg0, &initIsegHvArg1,
@@ -90,8 +90,8 @@ extern "C" {
   }
 
   // For global ISEG HV driver
-  int drvAsynIsegHvGlobalConfigure( const char *portName, const char *RPiCanPort ) {
-    new drvAsynIsegHvGlobal( portName, RPiCanPort );
+  int drvAsynIsegHvGlobalConfigure( const char *portName, const char *CanPort ) {
+    new drvAsynIsegHvGlobal( portName, CanPort );
     return( asynSuccess );
   }
   static const iocshArg * const initIsegHvGlobalArgs[] = { &initIsegHvArg0, &initIsegHvArg1 };
@@ -105,20 +105,20 @@ extern "C" {
   //!          for the drvAsynWienerVme class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  RPiCanPort  The name of the interface 
+  //!          [in]  CanPort     The name of the interface 
   //!          [in]  crate_id    The id of the crate
   //----------------------------------------------------------------------------
-  int drvAsynWienerVmeConfigure( const char *portName, const char *RPiCanPort,
+  int drvAsynWienerVmeConfigure( const char *portName, const char *CanPort,
                                  const int crate_id ) {
     if ( crate_id < 1 || crate_id > 127 ) {
       printf("ERROR: Could not configure drvAsynWienerVme: invalid crate id: %d", crate_id );
       return( asynError );
     }
-    new drvAsynWienerVme( portName, RPiCanPort, crate_id );
+    new drvAsynWienerVme( portName, CanPort, crate_id );
     return( asynSuccess );
   }
   static const iocshArg initWienerVmeArg0 = { "portName",   iocshArgString };
-  static const iocshArg initWienerVmeArg1 = { "RPiCanPort", iocshArgString };
+  static const iocshArg initWienerVmeArg1 = { "CanPort",    iocshArgString };
   static const iocshArg initWienerVmeArg2 = { "crate_id",   iocshArgInt };
   static const iocshArg * const initWienerVmeArgs[] = { &initWienerVmeArg0, &initWienerVmeArg1,
                                                         &initWienerVmeArg2 };
@@ -132,20 +132,20 @@ extern "C" {
   //!          for the drvAsynTHMP class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  RPiCanPort  The name of the interface 
+  //!          [in]  CanPort     The name of the interface 
   //!          [in]  can_id      The CAN id of this THMP
   //----------------------------------------------------------------------------
-  int drvAsynTHMPConfigure( const char *portName, const char *RPiCanPort,
+  int drvAsynTHMPConfigure( const char *portName, const char *CanPort,
                             const int can_id ) {
     if ( can_id < 0x700 || can_id > 0x7ff ) {
       printf("ERROR: Could not configure drvAsynTHMP: invalid CAN id: %x", can_id );
       return( asynError );
     }
-    new drvAsynTHMP( portName, RPiCanPort, can_id );
+    new drvAsynTHMP( portName, CanPort, can_id );
     return( asynSuccess );
   }
   static const iocshArg initThmpArg0 = { "portName",   iocshArgString };
-  static const iocshArg initThmpArg1 = { "RPiCanPort", iocshArgString };
+  static const iocshArg initThmpArg1 = { "CanPort",    iocshArgString };
   static const iocshArg initThmpArg2 = { "can_id",     iocshArgInt };
   static const iocshArg * const initThmpArgs[] = { &initThmpArg0, &initThmpArg1, &initThmpArg2 };
   static const iocshFuncDef initThmpFuncDef = { "drvAsynTHMPConfigure", 3, initThmpArgs };
@@ -158,17 +158,17 @@ extern "C" {
   //!          for the drvAsynLedPulser class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  RPiCanPort  The name of the interface 
+  //!          [in]  CanPort     The name of the interface 
   //!          [in]  can_id      The CAN id of this Led Pulser
   //!          [in]  filename    The Name of the file containing DAC and Intensity values
   //----------------------------------------------------------------------------
-  int drvAsynLedPulserConfigure( const char *portName, const char *RPiCanPort,
+  int drvAsynLedPulserConfigure( const char *portName, const char *CanPort,
                                  const int can_id, const char *filename ) {
-    new drvAsynLedPulser( portName, RPiCanPort, can_id, filename );
+    new drvAsynLedPulser( portName, CanPort, can_id, filename );
     return( asynSuccess );
   }
   static const iocshArg initLedPulserArg0 = { "portName",   iocshArgString };
-  static const iocshArg initLedPulserArg1 = { "RPiCanPort", iocshArgString };
+  static const iocshArg initLedPulserArg1 = { "CanPort",    iocshArgString };
   static const iocshArg initLedPulserArg2 = { "can_id",     iocshArgInt };
   static const iocshArg initLedPulserArg3 = { "filename",   iocshArgString };
   static const iocshArg * const initLedPulserArgs[] = { &initLedPulserArg0, &initLedPulserArg1,
@@ -183,17 +183,17 @@ extern "C" {
   //!          for the drvAsynTmcm142 class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  RPiCanPort  The name of the interface 
+  //!          [in]  CanPort     The name of the interface 
   //!          [in]  can_id_w    The CAN id of this TMCM142 driver
   //!          [in]  can_id_r    The CAN Reply id of this TMCM142 driver
   //----------------------------------------------------------------------------
-  int drvAsynTmcm142Configure( const char *portName, const char *RPiCanPort,
+  int drvAsynTmcm142Configure( const char *portName, const char *CanPort,
                                const int can_id_w, const int can_id_r ) {
-    new drvAsynTmcm142( portName, RPiCanPort, can_id_w, can_id_r );
+    new drvAsynTmcm142( portName, CanPort, can_id_w, can_id_r );
     return( asynSuccess );
   }
   static const iocshArg initTmcm142Arg0 = { "portName",   iocshArgString };
-  static const iocshArg initTmcm142Arg1 = { "RPiCanPort", iocshArgString };
+  static const iocshArg initTmcm142Arg1 = { "CanPort",    iocshArgString };
   static const iocshArg initTmcm142Arg2 = { "can_id_w",   iocshArgInt };
   static const iocshArg initTmcm142Arg3 = { "can_id_r",   iocshArgInt };
   static const iocshArg * const initTmcm142Args[] = { &initTmcm142Arg0, &initTmcm142Arg1,

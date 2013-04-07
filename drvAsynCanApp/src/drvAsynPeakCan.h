@@ -45,9 +45,9 @@
 //! It provides the asynGenericPointer interface to higher level
 //! asynPortDrivers.\n
 //! The genericPointers should be of type struct can_frame.
-class drvAsynPeakCan : public asynPortDriver {
+class drvAsynCan : public asynPortDriver {
  public:
-  drvAsynPeakCan( const char *portName, const char *ttyName );
+  drvAsynCan( const char *portName, const char *ttyName );
 
   /* These are the methods that we override from asynPortDriver */
   virtual asynStatus readGenericPointer( asynUser *pasynUser, void *pointer );

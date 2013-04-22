@@ -45,7 +45,7 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-#include "drvAsynCan.h"
+#include "drvAsynRPiCan.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
 

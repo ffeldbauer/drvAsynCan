@@ -35,39 +35,41 @@
 
 /* These are the drvInfo strings that are used to identify the parameters.
  * They are used by asyn clients, including standard asyn device support */
-#define P_TMCM142_ROR_STRING       "TMCM142_ROR"        /* asynInt32,       r/w */
-#define P_TMCM142_ROL_STRING       "TMCM142_ROL"        /* asynInt32,       r/w */
-#define P_TMCM142_MST_STRING       "TMCM142_MST"        /* asynInt32,       r/w */
-#define P_TMCM142_MVP_STRING       "TMCM142_MVP"        /* asynInt32,       r/w */
-#define P_TMCM142_SAP_STRING       "TMCM142_SAP"        /* asynInt32,       r/w */
-#define P_TMCM142_GAP_STRING       "TMCM142_GAP"        /* asynInt32,       r/w */
-#define P_TMCM142_STAP_STRING      "TMCM142_STAP"       /* asynInt32,       r/w */
-#define P_TMCM142_RSAP_STRING      "TMCM142_RSAP"       /* asynInt32,       r/w */
-#define P_TMCM142_SGP_STRING       "TMCM142_SGP"        /* asynInt32,       r/w */
-#define P_TMCM142_GGP_STRING       "TMCM142_GGP"        /* asynInt32,       r/w */
-#define P_TMCM142_STGP_STRING      "TMCM142_STGP"       /* asynInt32,       r/w */
-#define P_TMCM142_RSGP_STRING      "TMCM142_RSGP"       /* asynInt32,       r/w */
-#define P_TMCM142_RFS_STRING       "TMCM142_RFS"        /* asynInt32,       r/w */
-#define P_TMCM142_SIO_STRING       "TMCM142_SIO"        /* asynInt32,       r/w */
-#define P_TMCM142_GIO_STRING       "TMCM142_GIO"        /* asynInt32,       r/w */
-#define P_TMCM142_CALC_STRING      "TMCM142_CALC"       /* asynInt32,       r/w */
-#define P_TMCM142_COMP_STRING      "TMCM142_COMP"       /* asynInt32,       r/w */
-#define P_TMCM142_JC_STRING        "TMCM142_JC"         /* asynInt32,       r/w */
-#define P_TMCM142_JA_STRING        "TMCM142_JA"         /* asynInt32,       r/w */
-#define P_TMCM142_CSUB_STRING      "TMCM142_CSUB"       /* asynInt32,       r/w */
-#define P_TMCM142_RSUB_STRING      "TMCM142_RSUB"       /* asynInt32,       r/w */
-#define P_TMCM142_WAIT_STRING      "TMCM142_WAIT"       /* asynInt32,       r/w */
-#define P_TMCM142_STOP_STRING      "TMCM142_STOP"       /* asynInt32,       r/w */
-#define P_TMCM142_SCO_STRING       "TMCM142_SCO"        /* asynInt32,       r/w */
-#define P_TMCM142_GCO_STRING       "TMCM142_GCO"        /* asynInt32,       r/w */
-#define P_TMCM142_CCO_STRING       "TMCM142_CCO"        /* asynInt32,       r/w */
-#define P_TMCM142_CALCX_STRING     "TMCM142_CALCX"      /* asynInt32,       r/w */
-#define P_TMCM142_AAP_STRING       "TMCM142_AAP"        /* asynInt32,       r/w */
-#define P_TMCM142_AGP_STRING       "TMCM142_AGP"        /* asynInt32,       r/w */
-#define P_TMCM142_CLE_STRING       "TMCM142_CLE"        /* asynInt32,       r/w */
-#define P_TMCM142_ACO_STRING       "TMCM142_ACO"        /* asynInt32,       r/w */
+#define P_TMCM142_ROR_STRING       "TMCM142_ROR"        /* asynInt32,         r/w */
+#define P_TMCM142_ROL_STRING       "TMCM142_ROL"        /* asynInt32,         r/w */
+#define P_TMCM142_MST_STRING       "TMCM142_MST"        /* asynInt32,         r/w */
+#define P_TMCM142_MVP_STRING       "TMCM142_MVP"        /* asynInt32,         r/w */
+#define P_TMCM142_SAP_STRING       "TMCM142_SAP"        /* asynInt32,         r/w */
+#define P_TMCM142_GAP_STRING       "TMCM142_GAP"        /* asynInt32,         r/w */
+#define P_TMCM142_SAP_U_STRING     "TMCM142_SAP_U"      /* asynUInt32Digital, r/w */
+#define P_TMCM142_GAP_U_STRING     "TMCM142_GAP_U"      /* asynUInt32Digital, r/w */
+#define P_TMCM142_STAP_STRING      "TMCM142_STAP"       /* asynInt32,         r/w */
+#define P_TMCM142_RSAP_STRING      "TMCM142_RSAP"       /* asynInt32,         r/w */
+#define P_TMCM142_SGP_STRING       "TMCM142_SGP"        /* asynInt32,         r/w */
+#define P_TMCM142_GGP_STRING       "TMCM142_GGP"        /* asynInt32,         r/w */
+#define P_TMCM142_STGP_STRING      "TMCM142_STGP"       /* asynInt32,         r/w */
+#define P_TMCM142_RSGP_STRING      "TMCM142_RSGP"       /* asynInt32,         r/w */
+#define P_TMCM142_RFS_STRING       "TMCM142_RFS"        /* asynInt32,         r/w */
+#define P_TMCM142_SIO_STRING       "TMCM142_SIO"        /* asynInt32,         r/w */
+#define P_TMCM142_GIO_STRING       "TMCM142_GIO"        /* asynInt32,         r/w */
+#define P_TMCM142_CALC_STRING      "TMCM142_CALC"       /* asynInt32,         r/w */
+#define P_TMCM142_COMP_STRING      "TMCM142_COMP"       /* asynInt32,         r/w */
+#define P_TMCM142_JC_STRING        "TMCM142_JC"         /* asynInt32,         r/w */
+#define P_TMCM142_JA_STRING        "TMCM142_JA"         /* asynInt32,         r/w */
+#define P_TMCM142_CSUB_STRING      "TMCM142_CSUB"       /* asynInt32,         r/w */
+#define P_TMCM142_RSUB_STRING      "TMCM142_RSUB"       /* asynInt32,         r/w */
+#define P_TMCM142_WAIT_STRING      "TMCM142_WAIT"       /* asynInt32,         r/w */
+#define P_TMCM142_STOP_STRING      "TMCM142_STOP"       /* asynInt32,         r/w */
+#define P_TMCM142_SCO_STRING       "TMCM142_SCO"        /* asynInt32,         r/w */
+#define P_TMCM142_GCO_STRING       "TMCM142_GCO"        /* asynInt32,         r/w */
+#define P_TMCM142_CCO_STRING       "TMCM142_CCO"        /* asynInt32,         r/w */
+#define P_TMCM142_CALCX_STRING     "TMCM142_CALCX"      /* asynInt32,         r/w */
+#define P_TMCM142_AAP_STRING       "TMCM142_AAP"        /* asynInt32,         r/w */
+#define P_TMCM142_AGP_STRING       "TMCM142_AGP"        /* asynInt32,         r/w */
+#define P_TMCM142_CLE_STRING       "TMCM142_CLE"        /* asynInt32,         r/w */
+#define P_TMCM142_ACO_STRING       "TMCM142_ACO"        /* asynInt32,         r/w */
 
-#define P_TMCM142_STATUS_STRING    "TMCM142_STATUS"     /* asynInt32,       r   */
+#define P_TMCM142_STATUS_STRING    "TMCM142_STATUS"     /* asynInt32,         r   */
 
 //! @brief   asynPortDriver for TMCM142 1-axis stepper controller/driver
 //!
@@ -81,6 +83,8 @@ class drvAsynTmcm142 : public asynPortDriver {
                   const int can_id_w, const int can_id_r );
 
   /* These are the methods that we override from asynPortDriver */
+  virtual asynStatus readUInt32Digital( asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask );
+  virtual asynStatus writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask );
   virtual asynStatus writeInt32( asynUser *pasynUser, epicsInt32 value );
   virtual asynStatus readInt32( asynUser *pasynUser, epicsInt32 *value );
 
@@ -98,6 +102,8 @@ class drvAsynTmcm142 : public asynPortDriver {
   int P_GCO;
   int P_SAP;
   int P_GAP;
+  int P_SAP_U;
+  int P_GAP_U;
   int P_STAP;
   int P_RSAP;
   int P_SGP;

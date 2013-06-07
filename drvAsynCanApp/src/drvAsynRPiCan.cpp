@@ -20,12 +20,12 @@
 //
 // brief   AsynPortDriver for PANDA Raspberry Pi CAN interface
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
 
-/* ANSI C includes  */
+// ANSI C includes
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <rpi_can.h>
 
-/* EPICS includes */
+// EPICS includes
 #include <epicsEvent.h>
 #include <epicsExport.h>
 #include <epicsMutex.h>
@@ -46,6 +46,7 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
+// local includes
 #include "drvAsynRPiCan.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
@@ -87,6 +88,9 @@ asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPoi
                    deviceName_, err, strerror( err ) );
     return asynError;
   }  
+
+  doCallbacksGenericPointer( genericPointer, P_GENERIC, 0 );
+
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: received frame '%08x %d %02x %02x %02x %02x %02x %02x %02x %02x'\n", 
              driverName, functionName, pframe->can_id, pframe->can_dlc,
@@ -342,19 +346,20 @@ int drvAsynCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
 //------------------------------------------------------------------------------
 drvAsynCan::drvAsynCan( const char *portName, const char *ttyName ) 
   : asynPortDriver( portName,
-                    1, /* maxAddr */ 
+                    1, // maxAddr
                     0,
-                    asynCommonMask | asynGenericPointerMask | asynOptionMask | asynDrvUserMask, /* Interface mask */
-                    asynCommonMask | asynGenericPointerMask,  /* Interrupt mask */
-                    ASYN_CANBLOCK, /* asynFlags.  This driver does not block and it is not multi-device, so flag is 0 */
-                    1, /* Autoconnect */
-                    0, /* Default priority */
-                    0 ) /* Default stack size*/    
+                    asynCommonMask | asynGenericPointerMask | asynOptionMask | asynDrvUserMask, // Interface mask
+                    asynCommonMask | asynGenericPointerMask,  // Interrupt mask
+                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, // asynFlags
+                    1,  // Autoconnect
+                    0,  // Default priority
+                    0 ) // Default stack size
 {
   const char *functionName = "drvAsynCan";
     
   deviceName_ = epicsStrDup( ttyName );
-  
+  P_GENERIC = 1;
+
   // open interface
   fd_ = open( deviceName_, O_RDWR );
   if ( 0 > fd_ ){
@@ -362,10 +367,10 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
              driverName, functionName, deviceName_, strerror( errno ) );
     return;
   }
-      
+
 }
 
-/* Configuration routines.  Called directly, or from the iocsh function below */
+// Configuration routines.  Called directly, or from the iocsh function below
 extern "C" {
   
   //----------------------------------------------------------------------------

@@ -20,12 +20,12 @@
 //
 // brief   AsynPortDriver for PEAK Systems CAN bus interfaces
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
 
-/* ANSI C includes  */
+// ANSI C includes
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <linux/can.h>
 
-/* EPICS includes */
+// EPICS includes
 #include <epicsEvent.h>
 #include <epicsExport.h>
 #include <epicsMutex.h>
@@ -99,6 +99,8 @@ asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPoi
   for ( int i = 0; i < 8; i++ ){
     pframe->data[i] = rdmsg.Msg.DATA[i];
   }
+
+  doCallbacksGenericPointer( genericPointer, P_GENERIC, pframe->can_id & CAN_EFF_MASK );
 
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: received frame '%08x %d %02x %02x %02x %02x %02x %02x %02x %02x'\n", 
@@ -377,7 +379,8 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
   const char *functionName = "drvAsynCan";
     
   deviceName_ = epicsStrDup( ttyName );
-  
+  P_GENERIC = 1;
+
   // open interface
   fd_ = open( deviceName_, O_RDWR );
   if ( 0 > fd_ ){
@@ -388,7 +391,7 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
       
 }
 
-/* Configuration routines.  Called directly, or from the iocsh function below */
+// Configuration routines.  Called directly, or from the iocsh function below
 extern "C" {
   
   //----------------------------------------------------------------------------

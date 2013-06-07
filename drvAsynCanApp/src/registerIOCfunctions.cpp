@@ -25,12 +25,12 @@
 
 //_____ I N C L U D E S _______________________________________________________
 
-/* ANSI C includes  */
+// ANSI C++ includes
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-/* EPICS includes */
+// EPICS includes
 #include <epicsEvent.h>
 #include <epicsExport.h>
 #include <epicsMutex.h>
@@ -41,8 +41,10 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-/* local includes */
-#include "drvAsynIsegHv.h"
+// local includes
+#include "drvAsynIsegHvModule.h"
+#include "drvAsynIsegHvChannel.h"
+//#include "drvAsynIsegHv.h"
 #include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
 #include "drvAsynTHMP.h"
@@ -57,7 +59,7 @@
 
 //_____ F U N C T I O N S ______________________________________________________
 
-/* Configuration routines.  Called directly, or from the iocsh function below */
+// Configuration routines.  Called directly, or from the iocsh function below 
 extern "C" {
 
   //----------------------------------------------------------------------------
@@ -66,30 +68,31 @@ extern "C" {
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
   //!          [in]  CanPort     The name of the interface 
-  //!          [in]  crate_id    The id of the crate
-  //!          [in]  module_id   The id of the module inside the crate
+  //!          [in]  module_id   The id of the module
   //----------------------------------------------------------------------------
   int drvAsynIsegHvConfigure( const char *portName, const char *CanPort,
-                              const int crate_id, const int module_id ) {
-    if ( crate_id < 0 || crate_id > 7 ||
-         module_id < 0 || module_id > 7 ) {
-      printf("ERROR: Could not configure drvAsynIsegHv: invalid crate/module id: %d, %d", crate_id, module_id );
+                              const int module_id, const int channels ) {
+    if ( module_id < 0 || module_id > 129 ) {
+      printf("ERROR: Could not configure drvAsynIsegHv: invalid module id: %d\n", module_id );
       return( asynError );
     }
-    new drvAsynIsegHv( portName, CanPort, crate_id, module_id );
+    char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
+    new drvAsynIsegHvChannel( portNameChan, CanPort, module_id, channels );
+    new drvAsynIsegHvModule( portName, CanPort, module_id, channels );
+    //new drvAsynIsegHv( portName, CanPort, module_id );
     return( asynSuccess );
   }
-  static const iocshArg initIsegHvArg0 = { "portName",   iocshArgString };
-  static const iocshArg initIsegHvArg1 = { "CanPort",    iocshArgString };
-  static const iocshArg initIsegHvArg2 = { "crate_id",   iocshArgInt };
-  static const iocshArg initIsegHvArg3 = { "module_id",  iocshArgInt };
+  static const iocshArg initIsegHvArg0 = { "portName",  iocshArgString };
+  static const iocshArg initIsegHvArg1 = { "CanPort",   iocshArgString };
+  static const iocshArg initIsegHvArg2 = { "module_id", iocshArgInt };
+  static const iocshArg initIsegHvArg3 = { "channels",  iocshArgInt };
   static const iocshArg * const initIsegHvArgs[] = { &initIsegHvArg0, &initIsegHvArg1,
                                                      &initIsegHvArg2, &initIsegHvArg3 };
   static const iocshFuncDef initIsegHvFuncDef = { "drvAsynIsegHvConfigure", 4, initIsegHvArgs };
   static void initIsegHvCallFunc( const iocshArgBuf *args ) {
     drvAsynIsegHvConfigure( args[0].sval, args[1].sval, args[2].ival, args[3].ival );
   }
-
+  
   // For global ISEG HV driver
   int drvAsynIsegHvGlobalConfigure( const char *portName, const char *CanPort ) {
     new drvAsynIsegHvGlobal( portName, CanPort );

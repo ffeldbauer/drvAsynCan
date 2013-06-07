@@ -58,12 +58,11 @@ class drvAsynTHMP : public asynPortDriver {
   virtual asynStatus writeInt32( asynUser *pasynUser, epicsInt32 value );
   virtual asynStatus writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask );
 
-  void readPoller( void );
+  void asynReadHandler( void* pframe );
 
  protected:
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
   int P_RawValue;       //!< index of parameter "THMP_RAWVALUE"
-#define FIRST_THMP_COMMAND P_RawValue
   int P_IoBoard;        //!< index of parameter "THMP_IOBOARD"
   int P_Serials;        //!< index of parameter "THMP_SERIALS"
   int P_ConfigIO;       //!< index of parameter "THMP_CONFIG_IO"
@@ -72,13 +71,18 @@ class drvAsynTHMP : public asynPortDriver {
   int P_Trg_ADC;        //!< index of parameter "THMP_TRG_ADC"
   int P_Trg_IO;         //!< index of parameter "THMP_TRG_IO"
   int P_Trg_Serials;    //!< index of parameter "THMP_TRG_SERIALS"
-#define LAST_THMP_COMMAND P_Trg_Serials
+#define FIRST_THMP_COMMAND P_RawValue
+#define LAST_THMP_COMMAND  P_Trg_Serials
 
  private:
-  epicsEventId    eventId_;
-  char           *deviceName_;
-  epicsUInt32     can_id_;
-  asynUser       *pAsynUserGenericPointer_;
+  char                *deviceName_;
+  epicsUInt32          can_id_;
+  asynUser            *pasynUser_;
+  asynCommon          *pasynCommon_;
+  void                *pvtCommon_;
+  asynGenericPointer  *pasynGenericPointer_;
+  void                *pvtGenericPointer_;
+  void                *intrPvtGenericPointer_;
 };
 
 #define NUM_THMP_PARAMS (&LAST_THMP_COMMAND - &FIRST_THMP_COMMAND + 1)

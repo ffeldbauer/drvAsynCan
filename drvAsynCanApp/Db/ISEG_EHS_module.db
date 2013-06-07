@@ -67,6 +67,7 @@ record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
 record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
   field (DTYP, "asynFloat64")
   field (INP,  "@asyn($(BUS),0,1)ISEGHV_TEMPERATURE")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanStat")
   # display parameters
   field (EGU,  "degC")
   field (PREC, "2")
@@ -80,8 +81,31 @@ record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
   field (LSV,  "NO_ALARM")
   field (LLSV, "NO_ALARM")
   # thresholds
-  field (ADEL, "1")
+  field (ADEL, "0.5")
   field (MDEL, "0")
+}
+
+###########################
+# ### read parameters ### #
+###########################
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanStat" ) {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_STATUS")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat")
+}
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat" ) {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_EVENT_STATUS")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanVmom")
+}
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanVmom" ) {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_VMOM")
+  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanImom")
+}
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanImom" ) {
+  field (DTYP, "asynUInt32Digital")
+  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_IMOM")
 }
 
 ####################
@@ -135,8 +159,8 @@ record (bo, "PANDA:$(subsys):HV:EmergencyOff") {
 # Bit 15: reserved
 
 record (bo, "PANDA:$(subsys):$(dev):HV:$(sector):doCLEAR") {
-  field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_CLEAR_EVENT_STATUS")
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,0x0040,1)ISEGHV_MOD_CTRL")
 }
 
 record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):VoltageRampSpeed") {

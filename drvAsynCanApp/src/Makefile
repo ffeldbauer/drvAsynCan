@@ -12,12 +12,15 @@ ifeq ($(T_A), linux-arm)
 else
   drvAsynCan_SRCS += drvAsynPeakCan.cpp
 endif
-drvAsynCan_SRCS += drvAsynIsegHv.cpp
+drvAsynCan_SRCS += drvAsynIsegHvModule.cpp
+drvAsynCan_SRCS += drvAsynIsegHvChannel.cpp
+#drvAsynCan_SRCS += drvAsynIsegHv.cpp
 drvAsynCan_SRCS += drvAsynIsegHvGlobal.cpp
 drvAsynCan_SRCS += drvAsynWienerVME.cpp
 drvAsynCan_SRCS += drvAsynTHMP.cpp
 drvAsynCan_SRCS += drvAsynLedPulser.cpp
 drvAsynCan_SRCS += drvAsynTmcm142.cpp
+drvAsynCan_SRCS += ReadPoller.cpp
 drvAsynCan_SRCS += registerIOCfunctions.cpp
 drvAsynCan_LIBS += asyn
 drvAsynCan_LIBS += $(EPICS_BASE_IOC_LIBS)

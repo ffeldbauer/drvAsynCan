@@ -23,8 +23,8 @@
 // version 1.0.0; Nov. 27, 2012
 //******************************************************************************
 
-#ifndef __ASYN_ISEG_HV_H__
-#define __ASYN_ISEG_HV_H__
+#ifndef __ASYN_ISEG_HV_CHAN_H__
+#define __ASYN_ISEG_HV_CHAN_H__
 
 //_____ I N C L U D E S _______________________________________________________
 #include <map>
@@ -45,28 +45,6 @@
 #define P_ISEGHV_IBOUNDS_STRING            "ISEGHV_CHAN_IBOUNDS"            /* asynFloat64,        r/w */
 #define P_ISEGHV_VNOM_STRING               "ISEGHV_CHAN_VNOMINAL"           /* asynFloat64,        r   */
 #define P_ISEGHV_INOM_STRING               "ISEGHV_CHAN_INOMINAL"           /* asynFloat64,        r   */
-#define P_ISEGHV_R_CHANSTATUS_STRING       "ISEGHV_READ_CHAN_STATUS"        /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_CHAN_CTRL_STRING        "ISEGHV_READ_CHAN_CTRL"          /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_CHANEVTSTATUS_STRING    "ISEGHV_READ_CHAN_EVENT_STATUS"  /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_VSET_STRING             "ISEGHV_READ_CHAN_VSET"          /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_ISET_STRING             "ISEGHV_READ_CHAN_ISET"          /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_VMOM_STRING             "ISEGHV_READ_CHAN_VMOM"          /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_IMOM_STRING             "ISEGHV_READ_CHAN_IMOM"          /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_VBOUNDS_STRING          "ISEGHV_READ_CHAN_VBOUNDS"       /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_IBOUNDS_STRING          "ISEGHV_READ_CHAN_IBOUNDS"       /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_VNOM_STRING             "ISEGHV_READ_CHAN_VNOMINAL"      /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_R_INOM_STRING             "ISEGHV_READ_CHAN_INOMINAL"      /* asynUInt32Digital,  r/w */
-
-#define P_ISEGHV_MODSTATUS_STRING          "ISEGHV_MOD_STATUS"              /* asynUInt32Digital,  r   */
-#define P_ISEGHV_MODCTRL_STRING            "ISEGHV_MOD_CTRL"                /* asynUInt32Digital,  r/w */
-#define P_ISEGHV_MODEVTSTATUS_STRING       "ISEGHV_MOD_EVENT_STATUS"        /* asynUInt32Digital,  r   */
-#define P_ISEGHV_VRAMPSPEED_STRING         "ISEGHV_V_RAMPSPEED"             /* asynFloat64,        r/w */
-#define P_ISEGHV_IRAMPSPEED_STRING         "ISEGHV_I_RAMPSPEED"             /* asynFloat64,        r/w */
-#define P_ISEGHV_SUPPLY24_STRING           "ISEGHV_SUPPLY24"                /* asynFloat64,        r   */
-#define P_ISEGHV_SUPPLY5_STRING            "ISEGHV_SUPPLY5"                 /* asynFloat64,        r   */
-#define P_ISEGHV_TEMPERATURE_STRING        "ISEGHV_TEMPERATURE"             /* asynFloat64,        r   */
-
-#define P_ISEGHV_CLEAREVTSTATUS_STRING     "ISEGHV_CLEAR_EVENT_STATUS"      /* asynInt32,          w   */
 
 //! @brief   asynPortDriver for ISEG EDS/EHS high voltage modules
 //!
@@ -74,16 +52,13 @@
 //! EDS/EHS high voltage modules of ISEG Spezialelektronik GmbH.\n
 //! It needs a lower level driver with a asynGenericPointer interface for
 //! accessing the hardware of the CAN bus interface.
-class drvAsynIsegHv : public asynPortDriver {
+class drvAsynIsegHvChannel : public asynPortDriver {
  public:
-  drvAsynIsegHv( const char *portName, const char *CanPort, const int module_id );
+  drvAsynIsegHvChannel( const char *portName, const char *CanPort, const int module_id, const int channels );
 
   /* These are the methods that we override from asynPortDriver */
-  virtual asynStatus writeInt32( asynUser *pasynUser, epicsInt32 value );
   virtual asynStatus writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask );
-  virtual asynStatus readUInt32Digital( asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask );
   virtual asynStatus writeFloat64( asynUser *pasynUser, epicsFloat64 value );
-  virtual asynStatus readFloat64( asynUser *pasynUser, epicsFloat64 *value );
 
   void asynReadHandler( void* pframe );
 
@@ -91,7 +66,6 @@ class drvAsynIsegHv : public asynPortDriver {
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
 
   int P_Chan_status;         //!< index of Parameter "ISEGHV_CHAN_STATUS"
-#define FIRST_ISEGHV_COMMAND P_Chan_status
   int P_Chan_Ctrl;           //!< index of Parameter "ISEGHV_CHAN_CTRL       "
   int P_Chan_Event_status;   //!< index of Parameter "ISEGHV_CHAN_EVENT_STATUS"
   int P_Chan_Vset;           //!< index of Parameter "ISEGHV_CHAN_VSET"
@@ -102,27 +76,8 @@ class drvAsynIsegHv : public asynPortDriver {
   int P_Chan_Ibounds;        //!< index of Parameter "ISEGHV_CHAN_IBOUNDS"
   int P_Chan_Vnom;           //!< index of Parameter "ISEGHV_CHAN_VNOMINAL"
   int P_Chan_Inom;           //!< index of Parameter "ISEGHV_CHAN_INOMINAL"
-  int P_R_Chan_status;       //!< index of Parameter "ISEGHV_READ_CHAN_STATUS"
-  int P_R_Chan_Ctrl;         //!< index of Parameter "ISEGHV_READ_CHAN_CTRL"
-  int P_R_Chan_Event_status; //!< index of Parameter "ISEGHV_READ_CHAN_EVENT_STATUS"
-  int P_R_Chan_Vset;         //!< index of Parameter "ISEGHV_READ_CHAN_VSET"
-  int P_R_Chan_Iset;         //!< index of Parameter "ISEGHV_READ_CHAN_ISET"
-  int P_R_Chan_Vmom;         //!< index of Parameter "ISEGHV_READ_CHAN_VMOM"
-  int P_R_Chan_Imom;         //!< index of Parameter "ISEGHV_READ_CHAN_IMOM"
-  int P_R_Chan_Vbounds;      //!< index of Parameter "ISEGHV_READ_CHAN_VBOUNDS"
-  int P_R_Chan_Ibounds;      //!< index of Parameter "ISEGHV_READ_CHAN_IBOUNDS"
-  int P_R_Chan_Vnom;         //!< index of Parameter "ISEGHV_READ_CHAN_VNOMINAL"
-  int P_R_Chan_Inom;         //!< index of Parameter "ISEGHV_READ_CHAN_INOMINAL"
-  int P_Mod_status;          //!< index of Parameter "ISEGHV_MOD_STATUS"
-  int P_Mod_Ctrl;            //!< index of Parameter "ISEGHV_MOD_CTRL"
-  int P_Mod_Event_status;    //!< index of Parameter "ISEGHV_MOD_EVENT_STATUS"
-  int P_VRampSpeed;          //!< index of Parameter "ISEGHV_V_RAMPSPEED"
-  int P_IRampSpeed;          //!< index of Parameter "ISEGHV_I_RAMPSPEED"
-  int P_Supply24;            //!< index of Parameter "ISEGHV_SUPPLY24"
-  int P_Supply5;             //!< index of Parameter "ISEGHV_SUPPLY5"
-  int P_Temperature;         //!< index of Parameter "ISEGHV_TEMPERATURE"
-  int P_ClearEvtStatus;      //!< index of Parameter "ISEGHV_CLEAR_EVENT_STATUS"
-#define LAST_ISEGHV_COMMAND P_ClearEvtStatus
+#define FIRST_ISEGHV_CHAN_COMMAND P_Chan_status
+#define LAST_ISEGHV_CHAN_COMMAND  P_Chan_Inom
 
  private:
   struct isegFrame {
@@ -131,10 +86,10 @@ class drvAsynIsegHv : public asynPortDriver {
     epicsUInt8    data1;
   };
 
-  std::map<int, isegFrame> cmdsFloat64_;
-  std::map<int, isegFrame> cmdsUInt32D_;
+  std::map<int, isegFrame> cmds_;
 
   char                *deviceName_;
+  const int            channels_;
   epicsUInt32          can_id_;
   asynUser            *pasynUser_;
   asynCommon          *pasynCommon_;
@@ -145,7 +100,7 @@ class drvAsynIsegHv : public asynPortDriver {
 
 };
 
-#define NUM_ISEGHV_PARAMS (&LAST_ISEGHV_COMMAND - &FIRST_ISEGHV_COMMAND + 1)
+#define NUM_ISEGHV_CHAN_PARAMS (&LAST_ISEGHV_CHAN_COMMAND - &FIRST_ISEGHV_CHAN_COMMAND + 1)
 
 #endif
 

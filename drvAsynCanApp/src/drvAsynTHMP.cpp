@@ -26,14 +26,15 @@
 
 //_____ I N C L U D E S _______________________________________________________
 
-/* ANSI C includes  */
+// ANSI C includes
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <unistd.h>
 
-/* EPICS includes */
+// EPICS includes
 #include <epicsEvent.h>
 #include <epicsExport.h>
 #include <epicsMutex.h>
@@ -44,12 +45,13 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-/* ASYN includes */
+// ASYN includes
 #include "asynDriver.h"
-#include "asynGenericPointerSyncIO.h"
+#include "asynGenericPointer.h"
 #include "asynStandardInterfaces.h"
 
 #include "drvAsynTHMP.h"
+#include "ReadPoller.h"
 #include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
@@ -61,145 +63,123 @@ static const char *driverName = "drvAsynTHMPDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
 
-//------------------------------------------------------------------------------
-//! @brief   Background process to periodically poll for CAN frames from CanPort
-//!
-//! @param   [in]  drvPvt Pointer to drvAsynTHMP class object
-//!
-//! @sa      drvAsynTHMP::readPoller
-//! @sa      drvAsynTHMP::drvAsynTHMP
-//------------------------------------------------------------------------------
-void THMPreadPoller( void *drvPvt ) {
-  drvAsynTHMP *pPvt = (drvAsynTHMP *)drvPvt;
-  pPvt->readPoller();
+static void myInterruptCallbackGenericPointer( void *userPvt,
+                                               asynUser *pasynUser,
+                                               void *pointer ) {
+  drvAsynTHMP* interface = static_cast<drvAsynTHMP*>( pasynUser->userPvt );
+  interface->asynReadHandler( pointer );
 }
 
-//------------------------------------------------------------------------------
-//! @brief   Background process to periodically poll for CAN frames from CanPort
-//!
-//!          Periodically poll CanPort for 1 second for new CAN frames.
-//!          If a new frame is received and its id matches can_id_ the
-//!          corresponding parameter will be updated and the callback will be called
-//!
-//! @sa      drvAsynTHMP::drvAsynTHMP
-//------------------------------------------------------------------------------
-void drvAsynTHMP::readPoller() {
-  asynStatus status;
-  const char* functionName = "readPoller";
-  can_frame_t *pframe = new can_frame_t;
-  
-  /* Loop forever */    
-  while (1) {
-    status = pasynGenericPointerSyncIO->read( pAsynUserGenericPointer_, pframe, 1. );
-    if ( status == asynTimeout )      continue;
-    if ( pframe->can_id != can_id_ )  continue;
+void drvAsynTHMP::asynReadHandler( void* pointer ) {
+  asynStatus status = asynSuccess;
+  const char* functionName = "asynReadHandler";
+  can_frame_t* pframe = (can_frame_t *)pointer;
+  if ( pframe->can_id  != can_id_ ) return;
     
-    switch ( pframe->data[0] ) {
-      
-    case 0x01: // ADC Conversion
-      if ( pframe->can_dlc != 4 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x01: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->can_dlc );
-        break;
-      }
-      if ( pframe->data[1] >= 64 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x01: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->data[1] );
-        break;
-      }
-      // epicsInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
-      status = (asynStatus) setIntegerParam( pframe->data[1], P_RawValue,
-                                             ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
-      if( status ) 
-        fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-                 driverName, deviceName_, functionName, status, P_RawValue,
-                 ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
-      callParamCallbacks( pframe->data[1], pframe->data[1] );
-      break;
-      
-    case 0x03: // I/O Board
-      if ( pframe->can_dlc != 4 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x03: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->can_dlc );
-        break;
-      }
-      if ( pframe->data[1] >= 2 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x03: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->data[1] );
-        break;
-      }
-      // epicsUInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
-      status = (asynStatus) setUIntDigitalParam( pframe->data[1], P_IoBoard,
-                                                 ( pframe->data[2] << 8 ) | ( pframe->data[3]),
-                                                 0xffff );
-      if( status ) 
-        fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-                 driverName, deviceName_, functionName, status, P_IoBoard,
-                 ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
-      callParamCallbacks( pframe->data[1], pframe->data[1] );
-      break;
-      
-    case 0x04: // Serials
-      if ( pframe->can_dlc != 8 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x04: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->can_dlc );
-        break;
-      }
-      if ( pframe->data[1] >= 9 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x04: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->data[2] );
-        break;
-      }
-      // epicsInt32 myValue = ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4]);
-      status = (asynStatus) setUIntDigitalParam( pframe->data[1], P_Serials,
-                                                 ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4] ),
-                                                 0xffffff );
-      status = (asynStatus) setUIntDigitalParam( pframe->data[1] + 9, P_Serials,
-                                                 ( pframe->data[5] << 16 ) | ( pframe->data[6] << 8 ) | ( pframe->data[7] ),
-                                                 0xffffff );
-      if( status ) 
-        fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-                 driverName, deviceName_, functionName, status, P_Serials,
-                 ( pframe->data[2] << 8 ) | ( pframe->data[4]));
-      callParamCallbacks( pframe->data[1], pframe->data[1] );
-      break;
-      
-    case 0xff: // Firmware
-      if ( pframe->can_dlc != 3 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xff: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->can_dlc );
-        break;
-      }
-      //epicsUInt32 myValue  = ( pframe->data[2] << 8 ) | ( pframe->data[3]);
-      status = (asynStatus) setUIntDigitalParam( 0, P_Firmware,
-                                                 ( pframe->data[1] << 8 ) | ( pframe->data[2]),
-                                                 0xffff );
-      if( status ) 
-        fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-                 driverName, deviceName_, functionName, status, P_Serials,
-                 ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
-      callParamCallbacks( 0, 0 );
-      break;
-      
-    case 0xe0: // Error message
-      if ( pframe->can_dlc != 3 ) {
-        fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xe0: %d\033[0m\n", 
-                 driverName, deviceName_, functionName, pframe->can_dlc );
-        break;
-      }
-      //epicsUInt32 myValue  = ( pframe->data[2] << 2 ) | ( pframe->data[3]);
-      status = (asynStatus) setUIntDigitalParam( 0, P_Error,
-                                                 ( pframe->data[1] << 8 ) | ( pframe->data[2]),
-                                                 0xffff );
-      if( status ) 
-        fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-                 driverName, deviceName_, functionName, status, P_Error, 
-                ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
-      callParamCallbacks( 0, 0 );
+  switch ( pframe->data[0] ) {
+    
+  case 0x01: // ADC Conversion
+    if ( pframe->can_dlc != 4 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x01: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->can_dlc );
       break;
     }
+    if ( pframe->data[1] >= 64 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x01: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->data[1] );
+      break;
+    }
+    // epicsInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
+    status = (asynStatus) setIntegerParam( pframe->data[1], P_RawValue,
+                                           ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+    if( status ) 
+      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
+               driverName, deviceName_, functionName, status, P_RawValue,
+               ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+    callParamCallbacks( pframe->data[1], pframe->data[1] );
+    break;
+    
+  case 0x03: // I/O Board
+    if ( pframe->can_dlc != 4 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x03: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->can_dlc );
+      break;
+    }
+    if ( pframe->data[1] >= 2 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x03: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->data[1] );
+      break;
+    }
+    // epicsUInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
+    status = (asynStatus) setUIntDigitalParam( pframe->data[1], P_IoBoard,
+                                               ( pframe->data[2] << 8 ) | ( pframe->data[3]),
+                                               0xffff );
+    if( status ) 
+      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
+               driverName, deviceName_, functionName, status, P_IoBoard,
+               ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+    callParamCallbacks( pframe->data[1], pframe->data[1] );
+    break;
+    
+  case 0x04: // Serials
+    if ( pframe->can_dlc != 8 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x04: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->can_dlc );
+      break;
+    }
+    if ( pframe->data[1] >= 9 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x04: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->data[2] );
+      break;
+    }
+    // epicsInt32 myValue = ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4]);
+    status = (asynStatus) setUIntDigitalParam( pframe->data[1], P_Serials,
+                                               ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4] ),
+                                               0xffffff );
+    status = (asynStatus) setUIntDigitalParam( pframe->data[1] + 9, P_Serials,
+                                               ( pframe->data[5] << 16 ) | ( pframe->data[6] << 8 ) | ( pframe->data[7] ),
+                                               0xffffff );
+    if( status ) 
+      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
+               driverName, deviceName_, functionName, status, P_Serials,
+               ( pframe->data[2] << 8 ) | ( pframe->data[4]));
+    callParamCallbacks( pframe->data[1], pframe->data[1] );
+    break;
+    
+  case 0xff: // Firmware
+    if ( pframe->can_dlc != 3 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xff: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->can_dlc );
+      break;
+    }
+    //epicsUInt32 myValue  = ( pframe->data[2] << 8 ) | ( pframe->data[3]);
+    status = (asynStatus) setUIntDigitalParam( 0, P_Firmware,
+                                               ( pframe->data[1] << 8 ) | ( pframe->data[2]),
+                                               0xffff );
+    if( status ) 
+      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
+               driverName, deviceName_, functionName, status, P_Serials,
+               ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
+    callParamCallbacks( 0, 0 );
+    break;
+    
+  case 0xe0: // Error message
+    if ( pframe->can_dlc != 3 ) {
+      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xe0: %d\033[0m\n", 
+               driverName, deviceName_, functionName, pframe->can_dlc );
+      break;
+    }
+    //epicsUInt32 myValue  = ( pframe->data[2] << 2 ) | ( pframe->data[3]);
+    status = (asynStatus) setUIntDigitalParam( 0, P_Error,
+                                               ( pframe->data[1] << 8 ) | ( pframe->data[2]),
+                                               0xffff );
+    if( status ) 
+      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
+               driverName, deviceName_, functionName, status, P_Error, 
+               ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
+    callParamCallbacks( 0, 0 );
+    break;
   }
-  delete pframe;
 }
 
 //------------------------------------------------------------------------------
@@ -249,7 +229,11 @@ void drvAsynTHMP::readPoller() {
     return asynError;
   }
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
+  pasynUser_->timeout = pasynUser->timeout;
+  pasynManager->lockPort( pasynUser_ );
+  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
+  pasynManager->unlockPort( pasynUser_ );
+
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
@@ -285,10 +269,10 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
   if ( addr > 1 ) return asynSuccess;
   
-  /* Set the parameter in the parameter library. */
+  // Set the parameter in the parameter library.
   status = (asynStatus) setUIntDigitalParam( addr, function, value, mask );
   
-  /* Do callbacks so higher layers see any changes */
+  // Do callbacks so higher layers see any changes 
   status = (asynStatus) callParamCallbacks( addr, addr );
   
   if (status) 
@@ -308,7 +292,10 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
   pframe.data[2] = (epicsUInt8)( value >> 8 );
   pframe.data[3] = (epicsUInt8)( value & 0xff );
   
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
+  pasynUser_->timeout = pasynUser->timeout;
+  pasynManager->lockPort( pasynUser_ );
+  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
+  pasynManager->unlockPort( pasynUser_ );
   
   return status;
 }
@@ -324,14 +311,14 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
 drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
                           const int can_id ) 
   : asynPortDriver( portName, 
-                    64, /* maxAddr */ 
+                    64, // maxAddr 
                     NUM_THMP_PARAMS,
-                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynDrvUserMask, /* Interface mask */
-                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask,  /* Interrupt mask */
-                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, /* asynFlags. */
-                    1, /* Autoconnect */
-                    0, /* Default priority */
-                    0 ) /* Default stack size*/    
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynDrvUserMask, // Interface mask
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask,  // Interrupt mask 
+                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, // asynFlags.
+                    1, // Autoconnect
+                    0, // Default priority
+                    0 ) // Default stack size
 {
   asynStatus status;
   const char *functionName = "drvAsynTHMP";
@@ -350,26 +337,58 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   deviceName_  = epicsStrDup( portName );
   can_id_      = can_id;
   
-  /* Connect to asyn generic pointer port with asynGenericPointerSyncIO */
-  status = pasynGenericPointerSyncIO->connect( CanPort, 0, &pAsynUserGenericPointer_, 0 );
-  if ( status != asynSuccess ) {
-    fprintf( stderr, "\033[31;1m%s:%s:%s: can't connect to asynGenericPointer on port '%s'\033[0m\n", 
-             driverName, deviceName_, functionName, CanPort );
+  // Connect to asyn generic pointer port with asynGenericPointer interface
+  pasynUser_ = pasynManager->createAsynUser( NULL, NULL );
+  status = pasynManager->connectDevice( pasynUser_, CanPort, can_id_ );
+  if ( asynSuccess != status ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": Unable to connect Device"
+              << std::endl;
     return;
   }
-
-  this->eventId_ = epicsEventCreate( epicsEventEmpty );
-  /* Create the thread that polls interface for received messages */
-  status = (asynStatus)( epicsThreadCreate( "drvAsynTHMPTask",
-                                            epicsThreadPriorityMedium,
-                                            epicsThreadGetStackSize(epicsThreadStackMedium),
-                                            (EPICSTHREADFUNC)::THMPreadPoller,
-                                            this ) == NULL );
-  if (status) {
-    fprintf( stderr, "\033[31;1m%s:%s: epicsThreadCreate failure\033[0m\n", driverName, functionName);
+    
+  asynInterface* pasynInterface;
+    
+  // find the asynCommon interface
+  pasynInterface = pasynManager->findInterface( pasynUser_,
+                                                asynCommonType,
+                                                true );
+  if( !pasynInterface ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": bus " << CanPort << " does not support asynCommon interface"
+              << std::endl;
     return;
   }
+  pasynCommon_ = static_cast<asynCommon*>( pasynInterface->pinterface );
+  pvtCommon_   = pasynInterface->drvPvt;
   
+  // find the asynGenericPointer interface
+  pasynInterface = pasynManager->findInterface( pasynUser_,
+                                                asynGenericPointerType,
+                                                true );
+  if( !pasynInterface ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": bus " << CanPort << " does not support asynGenericPointer interface"
+              << std::endl;
+    return;
+  }
+  pasynGenericPointer_ = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
+  pvtGenericPointer_   = pasynInterface->drvPvt;
+  pasynUser_->reason = 1;
+  status = pasynGenericPointer_->registerInterruptUser( pvtGenericPointer_,
+                                                        pasynUser_,
+                                                        myInterruptCallbackGenericPointer,
+                                                        this,
+                                                        &intrPvtGenericPointer_
+                                                        );
+  if( asynSuccess != status  ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": failed to register interrupt"
+              << std::endl;
+    return;
+  }
+  // Start polling
+  ReadPoller::create( CanPort );
 }
 
 //******************************************************************************

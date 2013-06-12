@@ -429,14 +429,14 @@ asynStatus drvAsynTmcm142::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
 drvAsynTmcm142::drvAsynTmcm142( const char *portName, const char *CanPort,
                                 const int can_id_w, const int can_id_r ) 
   : asynPortDriver( portName, 
-                    256, /* maxAddr */ 
+                    256, // maxAddr
                     NUM_TMCM142_PARAMS,
-                    asynCommonMask | asynInt32Mask | asynDrvUserMask, /* Interface mask */
-                    asynCommonMask | asynInt32Mask,  /* Interrupt mask */
-                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, /* asynFlags. */
-                    1, /* Autoconnect */
-                    0, /* Default priority */
-                    0 ) /* Default stack size*/    
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynDrvUserMask, // Interface mask
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask,  // Interrupt mask
+                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, // asynFlags.
+                    1,  // Autoconnect
+                    0,  // Default priority
+                    0 ) // Default stack size
 {
   const char *functionName = "drvAsynTmcm142";
   asynStatus status = asynSuccess;

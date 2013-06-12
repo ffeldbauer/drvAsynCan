@@ -20,7 +20,7 @@
 //
 // brief   Definition of all IOC shell functions for configuration
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -42,9 +42,7 @@
 #include <iocsh.h>
 
 // local includes
-#include "drvAsynIsegHvModule.h"
-#include "drvAsynIsegHvChannel.h"
-//#include "drvAsynIsegHv.h"
+#include "drvAsynIsegHv.h"
 #include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
 #include "drvAsynTHMP.h"
@@ -77,9 +75,7 @@ extern "C" {
       return( asynError );
     }
     char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
-    new drvAsynIsegHvChannel( portNameChan, CanPort, module_id, channels );
-    new drvAsynIsegHvModule( portName, CanPort, module_id, channels );
-    //new drvAsynIsegHv( portName, CanPort, module_id );
+    new drvAsynIsegHv( portName, CanPort, module_id, channels );
     return( asynSuccess );
   }
   static const iocshArg initIsegHvArg0 = { "portName",  iocshArgString };

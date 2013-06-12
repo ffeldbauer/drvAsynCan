@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for ISEG EHS/EDS high voltage modules using the RPi Can interface
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 #ifndef __ASYN_ISEG_HV_H__
@@ -66,8 +66,6 @@
 #define P_ISEGHV_SUPPLY5_STRING            "ISEGHV_SUPPLY5"                 /* asynFloat64,        r   */
 #define P_ISEGHV_TEMPERATURE_STRING        "ISEGHV_TEMPERATURE"             /* asynFloat64,        r   */
 
-#define P_ISEGHV_CLEAREVTSTATUS_STRING     "ISEGHV_CLEAR_EVENT_STATUS"      /* asynInt32,          w   */
-
 //! @brief   asynPortDriver for ISEG EDS/EHS high voltage modules
 //!
 //! This asynPortDriver is a higher level driver used as device support for the
@@ -76,7 +74,7 @@
 //! accessing the hardware of the CAN bus interface.
 class drvAsynIsegHv : public asynPortDriver {
  public:
-  drvAsynIsegHv( const char *portName, const char *CanPort, const int module_id );
+  drvAsynIsegHv( const char *portName, const char *CanPort, const int module_id, const int channels );
 
   /* These are the methods that we override from asynPortDriver */
   virtual asynStatus writeInt32( asynUser *pasynUser, epicsInt32 value );
@@ -91,7 +89,6 @@ class drvAsynIsegHv : public asynPortDriver {
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
 
   int P_Chan_status;         //!< index of Parameter "ISEGHV_CHAN_STATUS"
-#define FIRST_ISEGHV_COMMAND P_Chan_status
   int P_Chan_Ctrl;           //!< index of Parameter "ISEGHV_CHAN_CTRL       "
   int P_Chan_Event_status;   //!< index of Parameter "ISEGHV_CHAN_EVENT_STATUS"
   int P_Chan_Vset;           //!< index of Parameter "ISEGHV_CHAN_VSET"
@@ -121,8 +118,8 @@ class drvAsynIsegHv : public asynPortDriver {
   int P_Supply24;            //!< index of Parameter "ISEGHV_SUPPLY24"
   int P_Supply5;             //!< index of Parameter "ISEGHV_SUPPLY5"
   int P_Temperature;         //!< index of Parameter "ISEGHV_TEMPERATURE"
-  int P_ClearEvtStatus;      //!< index of Parameter "ISEGHV_CLEAR_EVENT_STATUS"
-#define LAST_ISEGHV_COMMAND P_ClearEvtStatus
+#define FIRST_ISEGHV_COMMAND P_Chan_status
+#define LAST_ISEGHV_COMMAND  P_Temperature
 
  private:
   struct isegFrame {
@@ -131,8 +128,7 @@ class drvAsynIsegHv : public asynPortDriver {
     epicsUInt8    data1;
   };
 
-  std::map<int, isegFrame> cmdsFloat64_;
-  std::map<int, isegFrame> cmdsUInt32D_;
+  std::map<int, isegFrame> cmds_;
 
   char                *deviceName_;
   epicsUInt32          can_id_;
@@ -142,6 +138,7 @@ class drvAsynIsegHv : public asynPortDriver {
   asynGenericPointer  *pasynGenericPointer_;
   void                *pvtGenericPointer_;
   void                *intrPvtGenericPointer_;
+  epicsUInt16          chanMsk_;
 
 };
 

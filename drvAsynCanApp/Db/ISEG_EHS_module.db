@@ -12,13 +12,42 @@
 # ###         sector  sector inside subsys (e.g. Q1:X4:Y2)   ### #
 ##################################################################
 
+record (seq, "PANDA:$(subsys):HV:$(sector):moduleSCAN") {
+  field (SCAN, "1 second")
+  # Selection Algorithm
+  field (SELM, "All")
+  # Output Delay in seconds
+  field (DLY1, "0.000")
+  field (DLY2, "0.001")
+  field (DLY3, "0.002")
+  field (DLY4, "0.005") 
+  field (DLY5, "0.015")
+  field (DLY6, "0.025")
+  field (DLY7, "0.035")
+  # Desired Output Links
+  field (DOL1, "1")
+  field (DOL2, "1")
+  field (DOL3, "1")
+  field (DOL4, "1")
+  field (DOL5, "1")
+  field (DOL6, "1")
+  field (DOL7, "1")
+  # Output links
+  field (LNK1, "PANDA:$(subsys):HV:$(sector):ModStatus.PROC")
+  field (LNK2, "PANDA:$(subsys):HV:$(sector):ModEventStatus.PROC")
+  field (LNK3, "PANDA:$(subsys):HV:$(sector):BoardTemperature.PROC")
+  field (LNK4, "PANDA:$(subsys):HV:$(sector):ReadChanStat.PROC")
+  field (LNK5, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat.PROC")
+  field (LNK6, "PANDA:$(subsys):HV:$(sector):ReadChanVmom.PROC")
+  field (LNK7, "PANDA:$(subsys):HV:$(sector):ReadChanImom.PROC")
+}
+
 ##########################################################
 # ### Read out module status and module event status ### #
 ##########################################################
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_STATUS")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):ModEventStatus")
+  field (INP,  "@asynMask($(BUS),0,0xffb5,1)ISEGHV_MOD_STATUS")
 
   # Bit  0: isADJ              0: fine adjustment off  1: fine adjustment on
   # Bit  1: reserved
@@ -40,8 +69,7 @@ record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
 
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_EVENT_STATUS")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):BoardTemperature")
+  field (INP,  "@asynMask($(BUS),0,0x6474,1)ISEGHV_MOD_EVENT_STATUS")
 
   # Bit  0: reserved
   # Bit  1: reserved
@@ -67,7 +95,6 @@ record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
 record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
   field (DTYP, "asynFloat64")
   field (INP,  "@asyn($(BUS),0,1)ISEGHV_TEMPERATURE")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanStat")
   # display parameters
   field (EGU,  "degC")
   field (PREC, "2")
@@ -89,23 +116,20 @@ record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
 # ### read parameters ### #
 ###########################
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanStat" ) {
-  field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_STATUS")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat")
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_STATUS")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat" ) {
-  field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_EVENT_STATUS")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanVmom")
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_EVENT_STATUS")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanVmom" ) {
-  field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_VMOM")
-  field (FLNK, "PANDA:$(subsys):HV:$(sector):ReadChanImom")
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_VMOM")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanImom" ) {
-  field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0x00ff,1)ISEGHV_READ_CHAN_IMOM")
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_IMOM")
 }
 
 ####################
@@ -158,15 +182,14 @@ record (bo, "PANDA:$(subsys):HV:EmergencyOff") {
 #         SET CONSTANTLY TO 1
 # Bit 15: reserved
 
-record (bo, "PANDA:$(subsys):$(dev):HV:$(sector):doCLEAR") {
+record (bo, "PANDA:$(subsys):HV:$(sector):doCLEAR") {
   field (DTYP, "asynUInt32Digital")
   field (OUT,  "@asynMask($(BUS),0,0x0040,1)ISEGHV_MOD_CTRL")
 }
 
-record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):VoltageRampSpeed") {
+record (ao, "PANDA:$(subsys):HV:$(sector):VoltageRampSpeed") {
   field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_RAMPSPEED")
-  field (VAL,  "4")
+  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_V_RAMPSPEED")
   field (DRVH, "20")
   field (DRVL, "0")
   field (PREC, "1")

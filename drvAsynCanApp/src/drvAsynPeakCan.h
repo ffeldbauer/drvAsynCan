@@ -20,7 +20,7 @@
 //
 // brief   Asyn port driver for Peak Systems CAN interfaces
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 #ifndef __ASYN_PEAK_CAN_H__

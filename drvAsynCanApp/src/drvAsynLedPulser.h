@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for PANDA LED Pulser
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 #ifndef __ASYN_LED_PULSER_H__

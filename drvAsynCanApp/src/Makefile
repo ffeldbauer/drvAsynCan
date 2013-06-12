@@ -12,9 +12,7 @@ ifeq ($(T_A), linux-arm)
 else
   drvAsynCan_SRCS += drvAsynPeakCan.cpp
 endif
-drvAsynCan_SRCS += drvAsynIsegHvModule.cpp
-drvAsynCan_SRCS += drvAsynIsegHvChannel.cpp
-#drvAsynCan_SRCS += drvAsynIsegHv.cpp
+drvAsynCan_SRCS += drvAsynIsegHv.cpp
 drvAsynCan_SRCS += drvAsynIsegHvGlobal.cpp
 drvAsynCan_SRCS += drvAsynWienerVME.cpp
 drvAsynCan_SRCS += drvAsynTHMP.cpp

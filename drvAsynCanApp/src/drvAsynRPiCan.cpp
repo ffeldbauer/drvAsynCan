@@ -89,10 +89,11 @@ asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPoi
     return asynError;
   }  
 
-  doCallbacksGenericPointer( genericPointer, P_GENERIC, 0 );
+  memcpy( &frame_, pframe, sizeof( frame_ ) );
+  doCallbacksGenericPointer( &frame_, frame_.can_id & CAN_EFF_MASK, 0 );
 
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
-             "%s:%s: received frame '%08x %d %02x %02x %02x %02x %02x %02x %02x %02x'\n", 
+             "%s:%s: received frame '0x%08x %d 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x'\n", 
              driverName, functionName, pframe->can_id, pframe->can_dlc,
              pframe->data[0], pframe->data[1], pframe->data[2], pframe->data[3],
              pframe->data[4], pframe->data[5], pframe->data[6], pframe->data[7] );
@@ -122,7 +123,7 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
  
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
-             "%s:%s: sending frame '%08x %d %02x %02x %02x %02x %02x %02x %02x %02x'\n", 
+             "%s:%s: sending frame '0x%08x %d 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x'\n", 
              driverName, functionName, myFrame->can_id, myFrame->can_dlc,
              myFrame->data[0], myFrame->data[1], myFrame->data[2], myFrame->data[3],
              myFrame->data[4], myFrame->data[5], myFrame->data[6], myFrame->data[7] );

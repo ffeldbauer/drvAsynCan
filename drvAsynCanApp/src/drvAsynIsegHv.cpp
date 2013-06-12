@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for ISEG EHS/EDS high voltage modules using the RPi Can interface
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -74,38 +74,50 @@ void myInterruptCallbackGenericPointer( void *userPvt,
   interface->asynReadHandler( pointer );
 }
 
+//------------------------------------------------------------------------------
+//! @brief   Callback for generic pointer interface
+//!
+//! This function works as callback for the asynGenericPointer Interface
+//! and is called each time a can frame with id == can_id_ was received
+//! by the lower level driver.
+//! Depending on the the 1st two bytes the corresponding parameter will be
+//! updated.
+//!
+//! @param   [in]  pointer    Address of the received can frame struct
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError or asynTimeout is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+//!
+//! @sa      drvAsynIsegHvChannel::drvAsynIsegHvChannel
+//------------------------------------------------------------------------------
 void drvAsynIsegHv::asynReadHandler( void* pointer ) {
   asynStatus status = asynSuccess;
   can_frame_t* pframe = (can_frame_t *)pointer;
-  if ( pframe->can_id  != can_id_ ) return;
-  
+
   int opcode = ( pframe->data[0] << 8 ) | pframe->data[1];
-  int addr = 0;
+  int addr = pframe->data[2];
   can_float_t myValue;
 
   switch( opcode ){
 
     // Channel Status
-  case 0x4000:
-    addr = pframe->data[2];
+  case 0x6000:
     status = setUIntDigitalParam( addr, P_Chan_status, ( pframe->data[3] << 8 ) | pframe->data[4], 0xffff );
     break;
 
     // Channel Control
-  case 0x4001:
-    addr = pframe->data[2];
+  case 0x6001:
     status = setUIntDigitalParam( addr, P_Chan_Event_status, ( pframe->data[3] << 8 ) | pframe->data[4], 0xffff );
     break;
 
     // Channel Event Status
-  case 0x4002: 
-    addr = pframe->data[2];
+  case 0x6002: 
     status = setUIntDigitalParam( addr, P_Chan_Event_status, ( pframe->data[3] << 8 ) | pframe->data[4], 0xffff );
     break;
 
     // Set voltage
-  case 0x4100: 
-    addr = pframe->data[2];
+  case 0x6100: 
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -114,8 +126,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Set current/trip
-  case 0x4101: 
-    addr = pframe->data[2];
+  case 0x6101: 
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -125,8 +136,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Voltage measurement
-  case 0x4102: 
-    addr = pframe->data[2];
+  case 0x6102: 
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -135,8 +145,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Current measurement
-  case 0x4103:
-    addr = pframe->data[2];
+  case 0x6103:
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -146,8 +155,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Voltage bounds
-  case 0x4104: 
-    addr = pframe->data[2];
+  case 0x6104: 
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -156,8 +164,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Current bounds
-  case 0x4105:
-    addr = pframe->data[2];
+  case 0x6105:
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -167,8 +174,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Nominal Voltage
-  case 0x4106: 
-    addr = pframe->data[2];
+  case 0x6106: 
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -177,8 +183,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
     // Nominal Current
-  case 0x4107:
-    addr = pframe->data[2];
+  case 0x6107:
     myValue.val[3] = pframe->data[3];
     myValue.val[2] = pframe->data[4];
     myValue.val[1] = pframe->data[5];
@@ -188,8 +193,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     break;
 
   default:
-    status = asynError;
-    // do nothing
+    return;
   }
   
   if ( asynSuccess != status ) {
@@ -203,10 +207,6 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
 //------------------------------------------------------------------------------
 //! @brief   Called when asyn clients call pasynInt32->write().
 //!
-//!          If pasynUser->reason is equal
-//!          - P_ClearEvtStatus  the event status register of the module and all channels is cleared
-//!          - P_EmergencyOff    all channels of the module are switched off w/o ramp.
-//!
 //! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address
 //! @param   [in]  value      Value to write
 //!
@@ -218,75 +218,22 @@ asynStatus drvAsynIsegHv::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   int function = pasynUser->reason;
   int addr = 0;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
-
-  status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
-
-  can_frame_t pframe;
-  pframe.can_id  = can_id_;
-  pframe.can_dlc = 4;
-  pframe.data[0] = 0x10;
-  pframe.data[1] = 0x01;
-  pframe.data[2] = 0x18;
-  pframe.data[3] = 0x40;
-
-  pasynManager->lockPort( pasynUser_ );
-  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
-  pasynManager->unlockPort( pasynUser_ );
-  if ( status ) {
-    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                   "%s:%s:%s: status=%d, function=%d %s", 
-                   driverName, deviceName_, functionName, status, function,
-                   pasynUser_->errorMessage );
-    return asynError;
-  }
-  return status;
-}
-
-//------------------------------------------------------------------------------
-//! @brief   Called when asyn clients call pasynUInt32Digital->write().
-//!
-//! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address
-//! @param   [in]  value      Value to write
-//! @param   [in]  mask       Mask value to use when reading the value.
-//!
-//! @return  in case of no error occured asynSuccess is returned. Otherwise
-//!          asynError or asynTimeout is returned. A error message is stored
-//!          in pasynUser->errorMessage.
-//------------------------------------------------------------------------------
-asynStatus drvAsynIsegHv::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask ){
-  int function = pasynUser->reason;
-  int addr = 0;
-  asynStatus status = asynSuccess;
   asynStatus unlockStatus = asynSuccess;
   const char* functionName = "writeUInt32Digital";
 
-  if ( function == P_Mod_status || function == P_Mod_Event_status ) return asynSuccess;
-
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
-
-  std::map<int, isegFrame>::const_iterator it = cmdsUInt32D_.find( function );
-  if( it == cmdsUInt32D_.end() ) return asynError;
-
+  
+  std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
+  if( it == cmds_.end() ) return asynError;
+  
   can_frame_t pframe;
-  pframe.can_dlc = it->second.dlc;
+  pframe.can_id  = can_id_ | 1;
+  pframe.can_dlc = it->second.dlc + 2;
   pframe.data[0] = it->second.data0;
   pframe.data[1] = it->second.data1;
-  if ( function == P_Chan_Ctrl ) {
-    pframe.can_id  = can_id_;
-    pframe.data[2] = (epicsUInt8)addr;
-    pframe.data[3] = 0;
-    pframe.data[4] = (epicsUInt8)( value & 0x00000024 );
-  } else if ( function == P_Mod_Ctrl ) {
-    pframe.can_id  = can_id_;
-    pframe.data[2] = (epicsUInt8)( value & 0x00005800 );
-    pframe.data[3] = (epicsUInt8)( value & 0x00000060 );    
-  } else {
-    pframe.can_id  = can_id_ | 1;
-    pframe.data[2] = (epicsUInt8)( mask & 0x0000ff00 );
-    pframe.data[3] = (epicsUInt8)( mask & 0x000000ff );
-    pframe.data[4] = 0;
-  }
+  pframe.data[2] = (epicsUInt8)( chanMsk_ & 0xff00 );
+  pframe.data[3] = (epicsUInt8)( chanMsk_ & 0x00ff );
+  pframe.data[4] = 0;
 
   pasynUser_->timeout = pasynUser->timeout;
   status = pasynManager->queueLockPort( pasynUser_ );
@@ -313,6 +260,74 @@ asynStatus drvAsynIsegHv::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 v
   }
   return status;
 }
+  
+//------------------------------------------------------------------------------
+//! @brief   Called when asyn clients call pasynUInt32Digital->write().
+//!
+//! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address
+//! @param   [in]  value      Value to write
+//! @param   [in]  mask       Mask value to use when reading the value.
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError or asynTimeout is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+//------------------------------------------------------------------------------
+asynStatus drvAsynIsegHv::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask ){
+  int function = pasynUser->reason;
+  int addr = 0;
+  asynStatus status = asynSuccess;
+  asynStatus unlockStatus = asynSuccess;
+  const char* functionName = "writeUInt32Digital";
+
+  if ( function == P_Mod_status  || function == P_Mod_Event_status ) return asynSuccess;
+
+  status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
+
+  std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
+  if( it == cmds_.end() ) return asynError;
+  
+  can_frame_t pframe;
+  pframe.can_dlc = it->second.dlc + 2;
+  pframe.data[0] = it->second.data0;
+  pframe.data[1] = it->second.data1;
+  if ( function == P_Chan_Ctrl ) {
+    pframe.can_id  = can_id_;
+    pframe.data[2] = (epicsUInt8)addr;
+    pframe.data[3] = 0;
+    pframe.data[4] = (epicsUInt8)( value & 0x00000024 );
+  } else { // if ( function == P_Mod_Ctrl ) {
+    pframe.can_id  = can_id_;
+    pframe.data[2] = (epicsUInt8)( value & 0x00005800 );
+    pframe.data[3] = (epicsUInt8)( value & 0x00000060 );    
+  }
+
+  pasynUser_->timeout = pasynUser->timeout;
+  status = pasynManager->queueLockPort( pasynUser_ );
+  if( asynSuccess != status) {
+    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                   "%s:%s:%s: pasynManager->queueLockPort: status=%d, function=%d", 
+                   driverName, deviceName_, functionName, status, function );
+    return status;
+  }
+  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
+  unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
+  if( asynSuccess != unlockStatus ) {
+    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                   "%s:%s:%s: pasynManager->queueUnlockPort: status=%d, function=%d", 
+                   driverName, deviceName_, functionName, status, function );
+    return unlockStatus;
+  }
+  if ( status ){
+    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                   "%s:%s:%s: status=%d, function=%d %s", 
+                   driverName, deviceName_, functionName, status, function,
+                   pasynUser_->errorMessage );
+    return asynError;
+  }
+
+  status = setUIntDigitalParam( addr, function, value, mask );
+  return status;
+}
 
 //------------------------------------------------------------------------------
 //! @brief   Called when asyn clients call pasynUInt32Digital->read().
@@ -335,8 +350,8 @@ asynStatus drvAsynIsegHv::readUInt32Digital( asynUser *pasynUser, epicsUInt32 *v
   status = getAddress( pasynUser, &addr ); if( status != asynSuccess ) return status;
 
   if ( function == P_Mod_status || function == P_Mod_Ctrl || function == P_Mod_Event_status ) {
-    std::map<int, isegFrame>::const_iterator it = cmdsUInt32D_.find( function );
-    if( it == cmdsUInt32D_.end() ) return asynError;
+    std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
+    if( it == cmds_.end() ) return asynError;
     
     can_frame_t pframe;
     pframe.can_id = can_id_ | 1;
@@ -413,10 +428,19 @@ asynStatus drvAsynIsegHv::writeFloat64( asynUser *pasynUser, epicsFloat64 value 
   int addr = 0;
   const char *functionName = "writeFloat64";
 
+  if ( function == P_Chan_Vmom  || \
+       function == P_Chan_Imom  || \
+       function == P_Chan_Vnom  || \
+       function == P_Chan_Inom  || \
+       function == P_Supply24   || \
+       function == P_Supply5    ||              \
+       function == P_Temperature )
+    return asynSuccess;
+
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
 
-  std::map<int, isegFrame>::const_iterator it = cmdsFloat64_.find( function );
-  if( it == cmdsFloat64_.end() ) return asynError;
+  std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
+  if( it == cmds_.end() ) return asynError;
   
   can_frame_t pframe;
   pframe.can_id = can_id_;
@@ -429,8 +453,8 @@ asynStatus drvAsynIsegHv::writeFloat64( asynUser *pasynUser, epicsFloat64 value 
   myValue.fval = value;
 
   // convert current from uA to A
-  if ( function == P_Chan_Iset ) myValue.fval *= 1.e-6;
-
+  if ( function == P_Chan_Iset || function == P_Chan_Ibounds ) myValue.fval *= 1.e-6;
+  
   pframe.data[ it->second.dlc ]     = myValue.val[3];
   pframe.data[ it->second.dlc + 1 ] = myValue.val[2];
   pframe.data[ it->second.dlc + 2 ] = myValue.val[1];
@@ -499,10 +523,10 @@ asynStatus drvAsynIsegHv::readFloat64( asynUser *pasynUser, epicsFloat64 *value 
        function == P_Supply24   || \
        function == P_Supply5    || \
        function == P_Temperature ) {
-    std::map<int, isegFrame>::const_iterator it = cmdsFloat64_.find( function );
-    if( it == cmdsFloat64_.end() ) return asynError;
+    std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
+    if( it == cmds_.end() ) return asynError;
     can_frame_t pframe;
-    pframe.can_id = can_id_ | 1;
+    pframe.can_id  = can_id_ | 1;
     pframe.can_dlc = it->second.dlc;
     pframe.data[0] = it->second.data0;
     pframe.data[1] = it->second.data1;
@@ -567,23 +591,26 @@ asynStatus drvAsynIsegHv::readFloat64( asynUser *pasynUser, epicsFloat64 *value 
 //------------------------------------------------------------------------------
 drvAsynIsegHv::drvAsynIsegHv( const char *portName,
                               const char *CanPort,
-                              const int module_id ) 
+                              const int module_id,
+                              const int channels ) 
   : asynPortDriver( portName, 
-                    16, /* maxAddr */ 
+                    channels, // maxAddr
                     NUM_ISEGHV_PARAMS,
-                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynFloat64Mask | asynDrvUserMask, /* Interface mask */
-                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynFloat64Mask,  /* Interrupt mask */
-                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, /* asynFlags. */
-                    1, /* Autoconnect */
-                    0, /* Default priority */
-                    0 ) /* Default stack size*/    
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynFloat64Mask | asynDrvUserMask, // Interface mask
+                    asynCommonMask | asynInt32Mask | asynUInt32DigitalMask | asynFloat64Mask,  // Interrupt mask
+                    ASYN_CANBLOCK | ASYN_MULTIDEVICE, // asynFlags.
+                    1, // Autoconnect
+                    0, // Default priority
+                    0 ) // Default stack size
 {
   const char *functionName = "drvAsynIsegHv";
   asynStatus status = asynSuccess;
+  asynStatus unlockStatus = asynSuccess;
   
   deviceName_  = epicsStrDup( portName );
   can_id_      = ( 1 << 9 ) | ( module_id << 3 );
-  
+  for ( int i = 0; i < channels || i < 16; i++ ) chanMsk_ |= ( 1 << i );
+
   // Create parameters
   // Channel related parameters which hold the values
   createParam( P_ISEGHV_CHANSTATUS_STRING,      asynParamUInt32Digital, &P_Chan_status );
@@ -598,17 +625,17 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
   createParam( P_ISEGHV_VNOM_STRING,            asynParamFloat64,       &P_Chan_Inom );
   createParam( P_ISEGHV_INOM_STRING,            asynParamFloat64,       &P_Chan_Inom );
   // Channel related parameters used as commands (no values)
-  createParam( P_ISEGHV_R_CHANSTATUS_STRING,    asynParamUInt32Digital, &P_R_Chan_status );
-  createParam( P_ISEGHV_R_CHAN_CTRL_STRING,     asynParamUInt32Digital, &P_R_Chan_Ctrl );
-  createParam( P_ISEGHV_R_CHANEVTSTATUS_STRING, asynParamUInt32Digital, &P_R_Chan_Event_status );
-  createParam( P_ISEGHV_R_VSET_STRING,          asynParamUInt32Digital, &P_R_Chan_Vset );
-  createParam( P_ISEGHV_R_ISET_STRING,          asynParamUInt32Digital, &P_R_Chan_Iset );
-  createParam( P_ISEGHV_R_VMOM_STRING,          asynParamUInt32Digital, &P_R_Chan_Vmom );
-  createParam( P_ISEGHV_R_IMOM_STRING,          asynParamUInt32Digital, &P_R_Chan_Imom );
-  createParam( P_ISEGHV_R_VBOUNDS_STRING,       asynParamUInt32Digital, &P_R_Chan_Vbounds );
-  createParam( P_ISEGHV_R_IBOUNDS_STRING,       asynParamUInt32Digital, &P_R_Chan_Ibounds );
-  createParam( P_ISEGHV_R_VNOM_STRING,          asynParamUInt32Digital, &P_R_Chan_Vnom );
-  createParam( P_ISEGHV_R_INOM_STRING,          asynParamUInt32Digital, &P_R_Chan_Inom );
+  createParam( P_ISEGHV_R_CHANSTATUS_STRING,    asynParamInt32,         &P_R_Chan_status );
+  createParam( P_ISEGHV_R_CHAN_CTRL_STRING,     asynParamInt32,         &P_R_Chan_Ctrl );
+  createParam( P_ISEGHV_R_CHANEVTSTATUS_STRING, asynParamInt32,         &P_R_Chan_Event_status );
+  createParam( P_ISEGHV_R_VSET_STRING,          asynParamInt32,         &P_R_Chan_Vset );
+  createParam( P_ISEGHV_R_ISET_STRING,          asynParamInt32,         &P_R_Chan_Iset );
+  createParam( P_ISEGHV_R_VMOM_STRING,          asynParamInt32,         &P_R_Chan_Vmom );
+  createParam( P_ISEGHV_R_IMOM_STRING,          asynParamInt32,         &P_R_Chan_Imom );
+  createParam( P_ISEGHV_R_VBOUNDS_STRING,       asynParamInt32,         &P_R_Chan_Vbounds );
+  createParam( P_ISEGHV_R_IBOUNDS_STRING,       asynParamInt32,         &P_R_Chan_Ibounds );
+  createParam( P_ISEGHV_R_VNOM_STRING,          asynParamInt32,         &P_R_Chan_Vnom );
+  createParam( P_ISEGHV_R_INOM_STRING,          asynParamInt32,         &P_R_Chan_Inom );
   // Module related parameters
   createParam( P_ISEGHV_MODSTATUS_STRING,       asynParamUInt32Digital, &P_Mod_status );
   createParam( P_ISEGHV_MODCTRL_STRING,         asynParamUInt32Digital, &P_Mod_Ctrl );
@@ -618,18 +645,19 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
   createParam( P_ISEGHV_SUPPLY24_STRING,        asynParamFloat64,       &P_Supply24 );
   createParam( P_ISEGHV_SUPPLY5_STRING,         asynParamFloat64,       &P_Supply5 );
   createParam( P_ISEGHV_TEMPERATURE_STRING,     asynParamFloat64,       &P_Temperature );
-  createParam( P_ISEGHV_CLEAREVTSTATUS_STRING,  asynParamInt32,         &P_ClearEvtStatus );
 
   // Connect to asyn generic pointer port with asynGenericPointer interface
   pasynUser_ = pasynManager->createAsynUser( NULL, NULL );
-  status = pasynManager->connectDevice( pasynUser_, CanPort, can_id_ );
+  pasynUser_->userPvt = this;
+
+  status = pasynManager->connectDevice( pasynUser_, CanPort, 0 );
   if ( asynSuccess != status ) {
     std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
               << ": Unable to connect Device"
               << std::endl;
     return;
   }
-    
+  
   asynInterface* pasynInterface;
     
   // find the asynCommon interface
@@ -657,7 +685,7 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
   }
   pasynGenericPointer_ = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
   pvtGenericPointer_   = pasynInterface->drvPvt;
-  pasynUser_->reason = 1;
+  pasynUser_->reason = can_id_;
   status = pasynGenericPointer_->registerInterruptUser( pvtGenericPointer_,
                                                         pasynUser_,
                                                         myInterruptCallbackGenericPointer,
@@ -670,54 +698,118 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
               << std::endl;
     return;
   }
+  
+  // Send "log-on" message
+  can_frame_t frame;
+  frame.can_id  = can_id_;
+  frame.can_dlc = 2;
+  frame.data[0] = 0xd8;
+  frame.data[1] = 0x01;
+  pasynUser_->timeout = 0.5;
+  status = pasynManager->queueLockPort( pasynUser_ );
+  if( asynSuccess != status) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynManager->queueLockPort: status=" << status
+              << std::endl;
+    return;
+  }
+  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &frame );
+  unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
+  if( asynSuccess != unlockStatus ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynManager->queueUnlockPort: status=" << status
+              << std::endl;
+    return;
+  }
+  if ( asynSuccess != status ){
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynGenericPointer->write: status=" << status
+              << std::endl;
+    return ;
+  }
+  // Get some initial values
+  frame.can_id  = can_id_ | 1;
+  frame.can_dlc = 5;
+  frame.data[0] = 0x60;
+  frame.data[1] = 0x01;
+  frame.data[2] = (epicsUInt8)( chanMsk_ & 0xff00 );
+  frame.data[3] = (epicsUInt8)( chanMsk_ & 0x00ff );
+  frame.data[4] = 0;
+  pasynUser_->timeout = 0.5;
+  status = pasynManager->queueLockPort( pasynUser_ );
+  if( asynSuccess != status) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynManager->queueLockPort: status=" << status
+              << std::endl;
+    return;
+  }
+  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &frame );
+  unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
+  if( asynSuccess != unlockStatus ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynManager->queueUnlockPort: status=" << status
+              << std::endl;
+    return;
+  }
+  if ( asynSuccess != status ){
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": pasynGenericPointer->write: status=" << status
+              << std::endl;
+    return ;
+  }
+
   // Start polling
   ReadPoller::create( CanPort );
   
-  isegFrame vset_w_cmd   = { 3, 0x41, 0x00 };
-  isegFrame iset_w_cmd   = { 3, 0x41, 0x01 };
-  isegFrame vramp_cmd    = { 2, 0x11, 0x00 };
-  isegFrame iramp_cmd    = { 2, 0x11, 0x01 };
-  isegFrame supply24_cmd = { 2, 0x11, 0x04 };
-  isegFrame supply5_cmd  = { 2, 0x11, 0x05 };
-  isegFrame temp_cmd     = { 2, 0x11, 0x06 };
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Vset,   vset_w_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Chan_Iset,   iset_w_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_VRampSpeed,  vramp_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_IRampSpeed,  iramp_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Supply24,    supply24_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Supply5,     supply5_cmd ) );
-  cmdsFloat64_.insert( std::make_pair( P_Temperature, temp_cmd ) );
+  isegFrame chstat_cmd     = { 3, 0x60, 0x00 };
+  isegFrame chanctrl_r_cmd = { 3, 0x60, 0x01 };
+  isegFrame chesta_cmd     = { 3, 0x60, 0x02 };
+  isegFrame vset_r_cmd     = { 3, 0x61, 0x00 };
+  isegFrame iset_r_cmd     = { 3, 0x61, 0x01 };
+  isegFrame vmom_cmd       = { 3, 0x61, 0x02 };
+  isegFrame imom_cmd       = { 3, 0x61, 0x03 };
+  isegFrame vbounds_r_cmd  = { 3, 0x61, 0x04 };
+  isegFrame ibounds_r_cmd  = { 3, 0x61, 0x05 };
+  isegFrame vnom_cmd       = { 3, 0x61, 0x06 };
+  isegFrame inom_cmd       = { 3, 0x61, 0x07 };
+  isegFrame modstat_cmd    = { 2, 0x10, 0x00 };
+  isegFrame modctrl_cmd    = { 2, 0x10, 0x01 };
+  isegFrame modesta_cmd    = { 2, 0x10, 0x02 };
+  isegFrame vramp_cmd      = { 2, 0x11, 0x00 };
+  isegFrame iramp_cmd      = { 2, 0x11, 0x01 };
+  isegFrame supply24_cmd   = { 2, 0x11, 0x04 };
+  isegFrame supply5_cmd    = { 2, 0x11, 0x05 };
+  isegFrame temp_cmd       = { 2, 0x11, 0x06 };
+  isegFrame chanctrl_w_cmd = { 3, 0x40, 0x01 };
+  isegFrame vset_w_cmd     = { 3, 0x41, 0x00 };
+  isegFrame iset_w_cmd     = { 3, 0x41, 0x01 };
+  isegFrame vbounds_w_cmd  = { 3, 0x41, 0x04 };
+  isegFrame ibounds_w_cmd  = { 3, 0x41, 0x05 };
+  cmds_.insert( std::make_pair( P_R_Chan_status,       chstat_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Ctrl,         chanctrl_r_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Event_status, chesta_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Vset,         vset_r_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Iset,         iset_r_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Vmom,         vmom_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Imom,         imom_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Vbounds,      vbounds_r_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Ibounds,      ibounds_r_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Vnom,         vnom_cmd ) );
+  cmds_.insert( std::make_pair( P_R_Chan_Inom,         inom_cmd ) );
+  cmds_.insert( std::make_pair( P_Mod_status,          modstat_cmd ) );
+  cmds_.insert( std::make_pair( P_Mod_Ctrl,            modctrl_cmd ) );
+  cmds_.insert( std::make_pair( P_Mod_Event_status,    modesta_cmd ) );
+  cmds_.insert( std::make_pair( P_VRampSpeed,          vramp_cmd ) );
+  cmds_.insert( std::make_pair( P_IRampSpeed,          iramp_cmd ) );
+  cmds_.insert( std::make_pair( P_Supply24,            supply24_cmd ) );
+  cmds_.insert( std::make_pair( P_Supply5,             supply5_cmd ) );
+  cmds_.insert( std::make_pair( P_Temperature,         temp_cmd ) );
+  cmds_.insert( std::make_pair( P_Chan_Ctrl,           chanctrl_w_cmd ) );
+  cmds_.insert( std::make_pair( P_Chan_Vset,           vset_w_cmd ) );
+  cmds_.insert( std::make_pair( P_Chan_Iset,           iset_w_cmd ) );
+  cmds_.insert( std::make_pair( P_Chan_Vbounds,        vbounds_w_cmd ) );
+  cmds_.insert( std::make_pair( P_Chan_Ibounds,        ibounds_w_cmd ) );
 
-  isegFrame chstat_cmd      = { 5, 0x60, 0x00 };
-  isegFrame chan_ctrl_s_cmd = { 5, 0x40, 0x01 };
-  isegFrame chan_ctrl_r_cmd = { 5, 0x60, 0x01 };
-  isegFrame chesta_cmd      = { 5, 0x60, 0x02 };
-  isegFrame vset_r_cmd      = { 5, 0x61, 0x00 };
-  isegFrame iset_r_cmd      = { 5, 0x61, 0x01 };
-  isegFrame vmom_cmd        = { 5, 0x61, 0x02 };
-  isegFrame imom_cmd        = { 5, 0x61, 0x03 };
-  isegFrame vbounds_cmd     = { 5, 0x61, 0x04 };
-  isegFrame ibounds_cmd     = { 5, 0x61, 0x05 };
-  isegFrame vnom_cmd        = { 5, 0x61, 0x06 };
-  isegFrame inom_cmd        = { 5, 0x61, 0x07 };
-  isegFrame modstat_cmd     = { 2, 0x10, 0x00 };
-  isegFrame modctrl_cmd     = { 4, 0x10, 0x01 };
-  isegFrame modesta_cmd     = { 2, 0x10, 0x02 };
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_status,       chstat_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_Chan_Ctrl,           chan_ctrl_s_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Ctrl,         chan_ctrl_r_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Event_status, chesta_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Vset,         vset_r_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Iset,         iset_r_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Vmom,         vmom_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Imom,         imom_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Vbounds,      vbounds_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Ibounds,      ibounds_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Vnom,         vnom_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_R_Chan_Inom,         inom_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_Mod_status,          modstat_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_Mod_Ctrl,            modctrl_cmd ) );
-  cmdsUInt32D_.insert( std::make_pair( P_Mod_Event_status,    modesta_cmd ) );
 }
 
 //******************************************************************************

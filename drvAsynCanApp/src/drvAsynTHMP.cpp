@@ -21,7 +21,7 @@
 // brief   Asyn driver for ISEG EHS 8 620p-F and ISEG EHS 8 210p-F
 //          high voltage modules using the RPi Can interface
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -339,6 +339,8 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   
   // Connect to asyn generic pointer port with asynGenericPointer interface
   pasynUser_ = pasynManager->createAsynUser( NULL, NULL );
+  pasynUser_->userPvt = this;
+
   status = pasynManager->connectDevice( pasynUser_, CanPort, can_id_ );
   if ( asynSuccess != status ) {
     std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
@@ -374,7 +376,7 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   }
   pasynGenericPointer_ = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
   pvtGenericPointer_   = pasynInterface->drvPvt;
-  pasynUser_->reason = 1;
+  pasynUser_->reason = can_id_;
   status = pasynGenericPointer_->registerInterruptUser( pvtGenericPointer_,
                                                         pasynUser_,
                                                         myInterruptCallbackGenericPointer,

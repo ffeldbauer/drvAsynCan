@@ -115,15 +115,13 @@
     Therefore the drvAsynRPiCan driver has to be configured before using this driver.
     <br /><br />
     A high voltage module is configured with the <tt>drvAsynIsegHvConfigure</tt> command:</p>
-  <pre>  drvAsynIsegHvConfigure( "portName", "CANport", crate_id, module_id )</pre>
+  <pre>  drvAsynIsegHvConfigure( "portName", "CANport", module_id, channels )</pre>
   <p>where the arguments are:</p>
   <ul>
     <li>portName - The portName that is registered with asynManager.</li>
     <li>CANport - The name of a previous configured drvAsynRPiCan/drvAsynPeakCan driver.</li>
-    <li>crate_id - The unique id for the crate in which this modules is placed.<br />
-      Allowed values are: 0-7</li>
-    <li>module_id - The place of this module inside the crate.<br />
-      Allowed values are: 0-7</li>
+    <li>module_id - For single modules this is the slotnumber, for double modules this is slotnumber * 2 and slotnumber * 2 + 1.</li>
+    <li>channels - Maximum number of channels the board has</li>
   </ul>
   <p>Accessing this driver from the IOC is done by the standard device support from asynDriver.
     The driver parameters (drvParams) are:</p>
@@ -131,28 +129,45 @@
     <thead><tr><th>Parameter</th><th>Type</th><th>Dir</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td>ISEGHV_CHAN_STATUS       </td><td>asynUInt32Digital </td><td> r   </td><td> 16-bit status word of a channel </td></tr>
+      <tr><td>ISEGHV_CHAN_CTRL         </td><td>asynUInt32Digital </td><td> r/w </td><td> 16-bit ctrl word of a channel </td></tr>
       <tr><td>ISEGHV_CHAN_EVENT_STATUS </td><td>asynUInt32Digital </td><td> r   </td><td> 16-bit event status word of a channel </td></tr>
-      <tr><td>ISEGHV_CHAN_VMOM         </td><td>asynFloat64       </td><td> r   </td><td> measured voltage of a channel in V</td></tr>
-      <tr><td>ISEGHV_CHAN_IMOM         </td><td>asynFloat64       </td><td> r   </td><td> measured current of a channel in &mu;A</td></tr>
       <tr><td>ISEGHV_CHAN_VSET         </td><td>asynFloat64       </td><td> r/w </td><td> setpoint for voltage of a channel in V</td></tr>
       <tr><td>ISEGHV_CHAN_ISET         </td><td>asynFloat64       </td><td> r/w </td><td> current limit of a channel in &mu;A</td></tr>
+      <tr><td>ISEGHV_CHAN_VMOM         </td><td>asynFloat64       </td><td> r   </td><td> measured voltage of a channel in V</td></tr>
+      <tr><td>ISEGHV_CHAN_IMOM         </td><td>asynFloat64       </td><td> r   </td><td> measured current of a channel in &mu;A</td></tr>
+      <tr><td>ISEGHV_CHAN_VBOUNDS      </td><td>asynFloat64       </td><td> r/w </td><td> voltage bounds of a channel in V</td></tr>
+      <tr><td>ISEGHV_CHAN_IBOUNDS      </td><td>asynFloat64       </td><td> r/w </td><td> current bounds of a channel in &mu;A</td></tr>
+      <tr><td>ISEGHV_CHAN_VNOMINAL     </td><td>asynFloat64       </td><td> r   </td><td> nominal voltage of a channel in V</td></tr>
+      <tr><td>ISEGHV_CHAN_INOMINAL     </td><td>asynFloat64       </td><td> r   </td><td> nominal current of a channel in &mu;A</td></tr>
+
+      <tr><td>ISEGHV_READ_CHAN_STATUS       </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request ChannelStatus</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_CTRL         </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request ChannelCtrl</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_EVENT_STATUS </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request ChannelEventStatus</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_VSET         </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request VoltageSet</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_ISET         </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request CurrentSet</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_VMOM         </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request VoltageMeasure</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_IMOM         </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request CurrentMeasure</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_VBOUNDS      </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request VoltageBounds</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_IBOUNDS      </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request CurrentBounds</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_VNOMINAL     </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request VoltageNominal</td></tr>
+      <tr><td>ISEGHV_READ_CHAN_INOMINAL     </td><td>asynInt32<sup>1</sup></td><td> r/w </td><td>Send multiple request CurrentNominal</td></tr>
       
       <tr><td>ISEGHV_MOD_STATUS        </td><td>asynUInt32Digital </td><td> r   </td><td> 16-bit status word of the module </td></tr>
+      <tr><td>ISEGHV_MOD_CTRL        </td><td>asynUInt32Digital </td><td> r/w   </td><td> 16-bit ctrl word of the module </td></tr>
       <tr><td>ISEGHV_MOD_EVENT_STATUS  </td><td>asynUInt32Digital </td><td> r   </td><td> 16-bit event status word of the module </td></tr>
+      <tr><td>ISEGHV_V_RAMPSPEED         </td><td>asynFloat64       </td><td> r/w </td><td>Voltage ramp speed of the module in <i>%V</i><sub>O,max</sub><br/>maximum is 20%</td></tr>
+      <tr><td>ISEGHV_I_RAMPSPEED         </td><td>asynFloat64       </td><td> r/w </td><td>Current ramp speed of the module in <i>%I</i><sub>O,max</sub><br/>maximum is 20%</td></tr>
+      <tr><td>ISEGHV_SUPPLY24         </td><td>asynFloat64       </td><td> r </td><td>+24 V Supply voltage</td></tr>
+      <tr><td>ISEGHV_SUPPLY5         </td><td>asynFloat64       </td><td> r </td><td>+5 V Supply voltage</td></tr>
       <tr><td>ISEGHV_TEMPERATURE       </td><td>asynFloat64       </td><td> r   </td><td> measured temperature of the module in &deg;C</td></tr>
-      <tr><td>ISEGHV_RAMPSPEED         </td><td>asynFloat64       </td><td> r/w </td><td> Ramp speed of the module in <i>%V</i><sub>O,max</sub><br/>maximum is 20%</td></tr>
-      <tr><td>ISEGHV_CLEAR_EVENT_STATUS</td><td>asynInt32<sup>1</sup>         </td><td> r/w   </td><td> Clears the event status of the module and all channels</td></tr>
-      
-      <tr><td>ISEGHV_EMERGENCYOFF      </td><td>asynInt32<sup>1</sup>         </td><td> r/w   </td><td> Switch all channels of the module off w/o ramp</td></tr>
-      <tr><td>ISEGHV_SWITCHONOFF       </td><td>asynUInt32Digital </td><td> r/w   </td><td> Switch all channels of the module on or off<br/>(Mask should be 1)</td></tr>
     </tbody>
   </table>
-  <p>The ADDR parameter is used as channel number for the device (0-15).
+  <p>The ADDR parameter is used as channel number for the device (0 - <i>channels-1</i>).
     All module related parameters have ADDR = 0<sup>2</sup>.<br/>
     The TIMEOUT parameter is not really significant because this is a synchronous asyn port driver.</p>
   <p>An additional "global" driver can be used to switch on/off all channels of the whole CAN bus:
     <pre>  drvAsynIsegHvGlobalConfigure( "portName", "CANport" )</pre>
-    This driver has only the parameters ISEGHV_EMERGENCYOFF and ISEGHV_SWITCHONOFF.</p>
+    This driver has only the parameters ISEGHV_EMERGENCYOFF and ISEGHV_SWITCHONOFF as asynInt32.</p>
   <hr />
   <div style="text-align: center">
     <h2 id="drvAsynWienerVme">drvAsynWienerVme</h2>

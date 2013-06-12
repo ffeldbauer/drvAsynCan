@@ -22,7 +22,7 @@
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS)C,$(channel),0xfcfe,1)ISEGHV_CHAN_STATUS")
+  field (INP,  "@asynMask($(BUS),$(channel),0xfcfe,1)ISEGHV_CHAN_STATUS")
 
   # Bit  0: reserved
   # Bit  1: isREG     0: normal error evaluation  1: fast detection of a regulation error         NOT SUPPORTED
@@ -45,7 +45,7 @@ record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS)C,$(channel),0xfcfc,1)ISEGHV_CHAN_EVENT_STATUS")
+  field (INP,  "@asynMask($(BUS),$(channel),0xfcfc,1)ISEGHV_CHAN_EVENT_STATUS")
 
   # Bit  0: reserved
   # Bit  1: reserved
@@ -71,7 +71,7 @@ record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
 record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom") {
   field (DTYP, "asynFloat64")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS)C,$(channel),1)ISEGHV_CHAN_VMOM")
+  field (INP,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_VMOM")
   # display parameters
   field (EGU,  "V")
   field (PREC, "1")
@@ -92,7 +92,7 @@ record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom") {
 record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom") {
   field (DTYP, "asynFloat64")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS)C,$(channel),1)ISEGHV_CHAN_IMOM")
+  field (INP,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_IMOM")
   # display parameters
   field (EGU,  "uA")
   field (PREC, "2")
@@ -115,7 +115,7 @@ record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom") {
 ###################################
 record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset") {
   field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS)C,$(channel),1)ISEGHV_CHAN_VSET")
+  field (OUT,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_VSET")
   field (DRVH, "$(maxV)")
   field (DRVL, "0")
   field (PREC, "1")
@@ -124,7 +124,7 @@ record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset") {
 
 record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Iset") {
   field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS)C,$(channel),1)ISEGHV_CHAN_ISET")
+  field (OUT,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_ISET")
   field (DRVH, "$(maxI)")
   field (DRVL, "0")
   field (PREC, "2")

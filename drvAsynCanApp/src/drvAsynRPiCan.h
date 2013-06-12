@@ -20,7 +20,7 @@
 //
 // brief   Asyn port driver for RPi CAN interface
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 #ifndef __ASYN_RPICAN_H__
@@ -65,8 +65,9 @@ class drvAsynCan : public asynPortDriver {
   int drvRPiCanRead( can_frame_t *pframe, int timeout );
 
   /* Our data */
-  char *deviceName_;
-  int   fd_;
+  char         *deviceName_;
+  int          fd_;
+  can_frame_t  frame_;
 };
 
 

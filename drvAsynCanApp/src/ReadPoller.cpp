@@ -113,7 +113,7 @@ void ReadPoller::poll() {
   can_frame_t *pframe = new can_frame_t;
   // Loop forever
   while (1) {
-    pasynGenericPointerSyncIO->read( pasynUser_, pframe, 1. );
+    pasynGenericPointerSyncIO->read( pasynUser_, pframe, .5 );
   }
 }
 

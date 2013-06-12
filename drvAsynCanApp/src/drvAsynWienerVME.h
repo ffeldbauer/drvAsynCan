@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for Wiener VME crate remote control
 //
-// version 1.0.0; Nov. 27, 2012
+// version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
 #ifndef __ASYN_WIENER_VME_H__

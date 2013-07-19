@@ -74,8 +74,8 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   asynStatus status = asynSuccess;
   const char* functionName = "asynReadHandler";
   can_frame_t* pframe = (can_frame_t *)pointer;
-  if ( pframe->can_id  != can_id_ ) return;
-    
+  //  if ( pframe->can_id  != can_id_ ) return;
+
   switch ( pframe->data[0] ) {
     
   case 0x01: // ADC Conversion
@@ -96,6 +96,11 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
                driverName, deviceName_, functionName, status, P_RawValue,
                ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+
+    asynPrint( pasynUser_, ASYN_TRACEIO_DRIVER, 
+               "%s:%s: function=%d, addr=%d, value=%d\n", 
+               driverName, functionName, P_RawValue, pframe->data[1], ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+    
     callParamCallbacks( pframe->data[1], pframe->data[1] );
     break;
     
@@ -341,7 +346,7 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   pasynUser_ = pasynManager->createAsynUser( NULL, NULL );
   pasynUser_->userPvt = this;
 
-  status = pasynManager->connectDevice( pasynUser_, CanPort, can_id_ );
+  status = pasynManager->connectDevice( pasynUser_, CanPort, 0 );
   if ( asynSuccess != status ) {
     std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
               << ": Unable to connect Device"

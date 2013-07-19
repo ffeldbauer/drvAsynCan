@@ -22,7 +22,7 @@
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xfcfe,1)ISEGHV_CHAN_STATUS")
+  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ISEGHV_CHAN_STATUS")
 
   # Bit  0: reserved
   # Bit  1: isREG     0: normal error evaluation  1: fast detection of a regulation error         NOT SUPPORTED
@@ -45,7 +45,7 @@ record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xfcfc,1)ISEGHV_CHAN_EVENT_STATUS")
+  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ISEGHV_CHAN_EVENT_STATUS")
 
   # Bit  0: reserved
   # Bit  1: reserved

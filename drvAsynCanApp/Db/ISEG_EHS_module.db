@@ -47,7 +47,7 @@ record (seq, "PANDA:$(subsys):HV:$(sector):moduleSCAN") {
 ##########################################################
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xffb5,1)ISEGHV_MOD_STATUS")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_STATUS")
 
   # Bit  0: isADJ              0: fine adjustment off  1: fine adjustment on
   # Bit  1: reserved
@@ -69,7 +69,7 @@ record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
 
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0x6474,1)ISEGHV_MOD_EVENT_STATUS")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_EVENT_STATUS")
 
   # Bit  0: reserved
   # Bit  1: reserved

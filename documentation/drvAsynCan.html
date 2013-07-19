@@ -162,9 +162,9 @@
       <tr><td>ISEGHV_TEMPERATURE       </td><td>asynFloat64       </td><td> r   </td><td> measured temperature of the module in &deg;C</td></tr>
     </tbody>
   </table>
-  <p>The ADDR parameter is used as channel number for the device (0 - <i>channels-1</i>).
-    All module related parameters have ADDR = 0<sup>2</sup>.<br/>
-    The TIMEOUT parameter is not really significant because this is a synchronous asyn port driver.</p>
+  <p>The ADDR parameter is used as channel number for the device (0 - <i>channels-1</i>).<br/>
+    To read channel related parameters use ISEGHV_READ_CHAN_* parameter to send the request.
+    The records using the ISEGHV_CHAN_* parameters should use "I/O Intr".</p>
   <p>An additional "global" driver can be used to switch on/off all channels of the whole CAN bus:
     <pre>  drvAsynIsegHvGlobalConfigure( "portName", "CANport" )</pre>
     This driver has only the parameters ISEGHV_EMERGENCYOFF and ISEGHV_SWITCHONOFF as asynInt32.</p>

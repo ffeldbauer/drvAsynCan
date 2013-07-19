@@ -93,8 +93,40 @@ void myInterruptCallbackGenericPointer( void *userPvt,
 //------------------------------------------------------------------------------
 void drvAsynIsegHv::asynReadHandler( void* pointer ) {
   asynStatus status = asynSuccess;
-  can_frame_t* pframe = (can_frame_t *)pointer;
+  asynStatus unlockStatus = asynSuccess;
+  can_frame_t* pframe = (can_frame_t*)pointer;
 
+  if( pframe->can_id == ( can_id_ | 1 ) ) { 
+    // Send "log-on" message
+    can_frame_t frame;
+    frame.can_id  = can_id_;
+    frame.can_dlc = 2;
+    frame.data[0] = 0xd8;
+    frame.data[1] = 0x01;
+    pasynUser_->timeout = 0.5;
+    status = pasynManager->queueLockPort( pasynUser_ );
+    if( asynSuccess != status) {
+      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": pasynManager->queueLockPort: status=" << status
+                << std::endl;
+      return;
+    }
+    status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &frame );
+    unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
+    if( asynSuccess != unlockStatus ) {
+      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": pasynManager->queueUnlockPort: status=" << status
+                << std::endl;
+      return;
+    }
+    if ( asynSuccess != status ){
+      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": pasynGenericPointer->write: status=" << status
+                << std::endl;
+      return ;
+    }
+    return;
+  }
   int opcode = ( pframe->data[0] << 8 ) | pframe->data[1];
   int addr = pframe->data[2];
   can_float_t myValue;
@@ -698,6 +730,23 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
               << std::endl;
     return;
   }
+
+  // BEGIN "log-off"-message-handling
+  //  memcopy( pasynUserLogOn_, pasynUser_, size_of( *pasynUser_ ) );
+  pasynUser_->reason = can_id_ | 1;
+  status = pasynGenericPointer_->registerInterruptUser( pvtGenericPointer_,
+                                                        pasynUser_,
+                                                        myInterruptCallbackGenericPointer,
+                                                        this,
+                                                        &intrPvtGenericPointer_
+                                                        );
+  if( asynSuccess != status  ) {
+    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+              << ": failed to register interrupt"
+              << std::endl;
+    return;
+  }
+  // END "log-off"-message-handling
   
   // Send "log-on" message
   can_frame_t frame;

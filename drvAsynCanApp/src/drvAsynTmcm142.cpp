@@ -455,6 +455,8 @@ drvAsynTmcm142::drvAsynTmcm142( const char *portName, const char *CanPort,
   createParam( P_TMCM142_GAP_U_STRING,  asynParamUInt32Digital, &P_GAP_U );  // get axis parameter
   createParam( P_TMCM142_STAP_STRING,   asynParamInt32,         &P_STAP ); // store axis parameter
   createParam( P_TMCM142_RSAP_STRING,   asynParamInt32,         &P_RSAP ); // restore axis parameter
+  createParam( P_TMCM142_STAP_U_STRING, asynParamUInt32Digital, &P_STAP_U );  // store axis parameter
+  createParam( P_TMCM142_RSAP_U_STRING, asynParamUInt32Digital, &P_RSAP_U );  // restore axis parameter
   createParam( P_TMCM142_SGP_STRING,    asynParamInt32,         &P_SGP );  // set global parameter
   createParam( P_TMCM142_GGP_STRING,    asynParamInt32,         &P_GGP );  // get global parameter
   createParam( P_TMCM142_STGP_STRING,   asynParamInt32,         &P_STGP ); // store global parameter
@@ -558,6 +560,8 @@ drvAsynTmcm142::drvAsynTmcm142( const char *portName, const char *CanPort,
   cmds_r_.insert( std::make_pair( P_GAP_U, 6 ) );
   cmds_w_.insert( std::make_pair( P_STAP, 7 ) );
   cmds_w_.insert( std::make_pair( P_RSAP, 8 ) );
+  cmds_w_.insert( std::make_pair( P_STAP_U, 7 ) );
+  cmds_w_.insert( std::make_pair( P_RSAP_U, 8 ) );
   cmds_w_.insert( std::make_pair( P_SGP, 9 ) );
   cmds_r_.insert( std::make_pair( P_GGP, 10 ) );
   cmds_w_.insert( std::make_pair( P_STGP, 11 ) );

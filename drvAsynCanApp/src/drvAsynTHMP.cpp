@@ -62,6 +62,15 @@
 static const char *driverName = "drvAsynTHMPDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
+static std::string printTimestamp() {
+  time_t t;
+  struct tm tm;
+  char buffer[40];
+  time( &t );
+  localtime_r( &t, &tm );
+  strftime( buffer, 40, "%Y/%m/%d %H:%M:%S", &tm );
+  return buffer;
+}
 
 static void myInterruptCallbackGenericPointer( void *userPvt,
                                                asynUser *pasynUser,
@@ -72,47 +81,57 @@ static void myInterruptCallbackGenericPointer( void *userPvt,
 
 void drvAsynTHMP::asynReadHandler( void* pointer ) {
   asynStatus status = asynSuccess;
-  const char* functionName = "asynReadHandler";
+  //  const char* functionName = "asynReadHandler";
   can_frame_t* pframe = (can_frame_t *)pointer;
-  //  if ( pframe->can_id  != can_id_ ) return;
 
   switch ( pframe->data[0] ) {
     
   case 0x01: // ADC Conversion
     if ( pframe->can_dlc != 4 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x01: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->can_dlc );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid data length of frame for command 0x01: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     if ( pframe->data[1] >= 64 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x01: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->data[1] );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid channel number for command 0x01: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     // epicsInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
     status = (asynStatus) setIntegerParam( pframe->data[1], P_RawValue,
                                            ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
     if( status ) 
-      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-               driverName, deviceName_, functionName, status, P_RawValue,
-               ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": status=" << status << ", function=" << P_RawValue << ", value="
+                << ( ( pframe->data[2] << 8 ) | ( pframe->data[3] ) )
+                << "\033[0m"
+                << std::endl;
 
-    asynPrint( pasynUser_, ASYN_TRACEIO_DRIVER, 
-               "%s:%s: function=%d, addr=%d, value=%d\n", 
-               driverName, functionName, P_RawValue, pframe->data[1], ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
-    
     callParamCallbacks( pframe->data[1], pframe->data[1] );
     break;
     
   case 0x03: // I/O Board
     if ( pframe->can_dlc != 4 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x03: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->can_dlc );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid data length of frame for command 0x03: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     if ( pframe->data[1] >= 2 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x03: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->data[1] );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid channel number for command 0x03: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     // epicsUInt32 myValue = ( pframe->data[3] << 8 ) | ( pframe->data[4]);
@@ -120,21 +139,30 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                ( pframe->data[2] << 8 ) | ( pframe->data[3]),
                                                0xffff );
     if( status ) 
-      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-               driverName, deviceName_, functionName, status, P_IoBoard,
-               ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": status=" << status << ", function=" << P_IoBoard << ", value="
+                << ( ( pframe->data[2] << 8 ) | ( pframe->data[3] ) )
+                << "\033[0m"
+                << std::endl;
     callParamCallbacks( pframe->data[1], pframe->data[1] );
     break;
     
   case 0x04: // Serials
     if ( pframe->can_dlc != 8 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0x04: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->can_dlc );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid data length of frame for command 0x04: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     if ( pframe->data[1] >= 9 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid channel number for command 0x04: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->data[2] );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid channel number for command 0x04: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     // epicsInt32 myValue = ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4]);
@@ -145,33 +173,45 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                ( pframe->data[5] << 16 ) | ( pframe->data[6] << 8 ) | ( pframe->data[7] ),
                                                0xffffff );
     if( status ) 
-      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-               driverName, deviceName_, functionName, status, P_Serials,
-               ( pframe->data[2] << 8 ) | ( pframe->data[4]));
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": status=" << status << ", function=" << P_Serials << ", value="
+                << ( ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4] ) )
+                << "\033[0m"
+                << std::endl;
     callParamCallbacks( pframe->data[1], pframe->data[1] );
     break;
     
   case 0xff: // Firmware
-    if ( pframe->can_dlc != 3 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xff: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->can_dlc );
+    if ( pframe->can_dlc != 4 ) {
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid data length of frame for command 0xff: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     //epicsUInt32 myValue  = ( pframe->data[2] << 8 ) | ( pframe->data[3]);
     status = (asynStatus) setUIntDigitalParam( 0, P_Firmware,
-                                               ( pframe->data[1] << 8 ) | ( pframe->data[2]),
+                                               ( pframe->data[1] * 10000 ) + ( pframe->data[2] * 100 ) + ( pframe->data[3] ),
                                                0xffff );
     if( status ) 
-      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-               driverName, deviceName_, functionName, status, P_Serials,
-               ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": status=" << status << ", function=" << P_IoBoard << ", value="
+                << pframe->data[1] << "." << pframe->data[2] << "." << pframe->data[3] 
+                << "\033[0m"
+                << std::endl;
     callParamCallbacks( 0, 0 );
     break;
     
   case 0xe0: // Error message
     if ( pframe->can_dlc != 3 ) {
-      fprintf( stderr, "\033[31;1m%s:%s:%s: invalid data length of frame for command 0xe0: %d\033[0m\n", 
-               driverName, deviceName_, functionName, pframe->can_dlc );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": invalid data length of frame for command 0xe0: " << pframe->can_dlc
+                << "\033[0m"
+                << std::endl;
       break;
     }
     //epicsUInt32 myValue  = ( pframe->data[2] << 2 ) | ( pframe->data[3]);
@@ -179,9 +219,12 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                ( pframe->data[1] << 8 ) | ( pframe->data[2]),
                                                0xffff );
     if( status ) 
-      fprintf( stderr, "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m\n", 
-               driverName, deviceName_, functionName, status, P_Error, 
-               ( pframe->data[1] << 8 ) | ( pframe->data[2]) );
+      std::cerr << "\033[31;1m" << printTimestamp() << " "
+                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << ": status=" << status << ", function=" << P_Error << ", value="
+                << ( ( pframe->data[1] << 8 ) | ( pframe->data[2] ) )
+                << "\033[0m"
+                << std::endl;
     callParamCallbacks( 0, 0 );
     break;
   }

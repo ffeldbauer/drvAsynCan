@@ -67,7 +67,17 @@ typedef union{
 static const char *driverName = "drvAsynIsegHVDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
-void myInterruptCallbackGenericPointer( void *userPvt,
+static std::string printTimestamp() {
+  time_t t;
+  struct tm tm;
+  char buffer[40];
+  time( &t );
+  localtime_r( &t, &tm );
+  strftime( buffer, 40, "%Y/%m/%d %H:%M:%S", &tm );
+  return buffer;
+}
+
+static void myInterruptCallbackGenericPointer( void *userPvt,
                                         asynUser *pasynUser,
                                         void *pointer ) {
   drvAsynIsegHv* interface = static_cast<drvAsynIsegHv*>( pasynUser->userPvt );
@@ -106,7 +116,8 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     pasynUser_->timeout = 0.5;
     status = pasynManager->queueLockPort( pasynUser_ );
     if( asynSuccess != status) {
-      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+      std::cerr << printTimestamp() << " " << driverName << ":" <<  deviceName_
+                << ":asynReadHandler"
                 << ": pasynManager->queueLockPort: status=" << status
                 << std::endl;
       return;
@@ -114,13 +125,13 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
     status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &frame );
     unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
     if( asynSuccess != unlockStatus ) {
-      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+      std::cerr << printTimestamp() << " " << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": pasynManager->queueUnlockPort: status=" << status
                 << std::endl;
       return;
     }
     if ( asynSuccess != status ){
-      std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+      std::cerr << printTimestamp() << " " << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": pasynGenericPointer->write: status=" << status
                 << std::endl;
       return ;
@@ -229,7 +240,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
   }
   
   if ( asynSuccess != status ) {
-    std::cerr << driverName << ":" <<  deviceName_ << ":asynReadHandler: Error"
+    std::cerr << printTimestamp() << " " << driverName << ":" <<  deviceName_ << ":asynReadHandler: Error"
               << std::endl;
     return;
   }

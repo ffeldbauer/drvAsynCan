@@ -45,6 +45,8 @@
 #define P_TMCM142_GAP_U_STRING     "TMCM142_GAP_U"      /* asynUInt32Digital, r/w */
 #define P_TMCM142_STAP_STRING      "TMCM142_STAP"       /* asynInt32,         r/w */
 #define P_TMCM142_RSAP_STRING      "TMCM142_RSAP"       /* asynInt32,         r/w */
+#define P_TMCM142_STAP_U_STRING    "TMCM142_STAP_U"     /* asynUInt32Digital, r/w */
+#define P_TMCM142_RSAP_U_STRING    "TMCM142_RSAP_U"     /* asynUInt32Digital, r/w */
 #define P_TMCM142_SGP_STRING       "TMCM142_SGP"        /* asynInt32,         r/w */
 #define P_TMCM142_GGP_STRING       "TMCM142_GGP"        /* asynInt32,         r/w */
 #define P_TMCM142_STGP_STRING      "TMCM142_STGP"       /* asynInt32,         r/w */
@@ -106,6 +108,8 @@ class drvAsynTmcm142 : public asynPortDriver {
   int P_GAP_U;
   int P_STAP;
   int P_RSAP;
+  int P_STAP_U;
+  int P_RSAP_U;
   int P_SGP;
   int P_GGP;
   int P_STGP;

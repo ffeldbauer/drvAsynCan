@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for Capacitec DigitizerBoard using the RPi Can interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 2.0.0; Aug. 27, 2013
 //******************************************************************************
 
 #ifndef __ASYN_THMP_H__

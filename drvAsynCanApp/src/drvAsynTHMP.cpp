@@ -21,7 +21,7 @@
 // brief   Asyn driver for ISEG EHS 8 620p-F and ISEG EHS 8 210p-F
 //          high voltage modules using the RPi Can interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 2.0.2; Aug. 27, 2013
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________

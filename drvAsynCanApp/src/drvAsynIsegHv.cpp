@@ -67,16 +67,6 @@ typedef union{
 static const char *driverName = "drvAsynIsegHVDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
-static std::string printTimestamp() {
-  time_t t;
-  struct tm tm;
-  char buffer[40];
-  time( &t );
-  localtime_r( &t, &tm );
-  strftime( buffer, 40, "%Y/%m/%d %H:%M:%S", &tm );
-  return buffer;
-}
-
 static void myInterruptCallbackGenericPointer( void *userPvt,
                                         asynUser *pasynUser,
                                         void *pointer ) {

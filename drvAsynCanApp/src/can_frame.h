@@ -27,6 +27,9 @@
 #define __ASYN_CAN_FRAME_H__
 
 //_____ I N C L U D E S _______________________________________________________
+#include <iostream>
+#include <string>
+
 #include <epicsTypes.h>
 
 //_____ D E F I N I T I O N S __________________________________________________
@@ -39,6 +42,9 @@ typedef struct {
   epicsUInt8  can_dlc;
   epicsUInt8  data[8] __attribute__ ((aligned(8)));
 } can_frame_t;
+
+std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe );
+std::string printTimestamp();
 
 #endif
 

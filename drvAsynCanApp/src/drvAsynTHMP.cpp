@@ -62,16 +62,6 @@
 static const char *driverName = "drvAsynTHMPDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
-static std::string printTimestamp() {
-  time_t t;
-  struct tm tm;
-  char buffer[40];
-  time( &t );
-  localtime_r( &t, &tm );
-  strftime( buffer, 40, "%Y/%m/%d %H:%M:%S", &tm );
-  return buffer;
-}
-
 static void myInterruptCallbackGenericPointer( void *userPvt,
                                                asynUser *pasynUser,
                                                void *pointer ) {
@@ -91,6 +81,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x01: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -99,6 +90,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid channel number for command 0x01: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -122,6 +114,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x03: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -130,6 +123,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid channel number for command 0x03: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -153,6 +147,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x04: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -161,6 +156,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid channel number for command 0x04: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -187,6 +183,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid data length of frame for command 0xff: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;
@@ -210,6 +207,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
                 << driverName << ":" <<  deviceName_ << ":asynReadHandler"
                 << ": invalid data length of frame for command 0xe0: " << pframe->can_dlc
+                << "\n" << *pframe
                 << "\033[0m"
                 << std::endl;
       break;

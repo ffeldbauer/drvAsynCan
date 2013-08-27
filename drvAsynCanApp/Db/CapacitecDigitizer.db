@@ -1,0 +1,110 @@
+#####################################################
+# ###                                           ### #
+# ### EPICS Database for                        ### #
+# ### DigitizerBoard for Capacitec              ### #
+# ###                                           ### #
+# ### author: F.Feldbauer                       ### #
+# ###                                           ### #
+# ### Ref 1.0; 2013-08-27                       ### #
+# ###                                           ### #
+# ### macros: subsys  PANDA subsystem           ### #
+# ###         ID      Board ID                  ### #
+# ###         sector  Sector of subsys          ### #
+# ###         BUS     Asyn Port                 ### #
+# ###         no      channel number            ### #
+# ###         P0      calibration param 0       ### #
+# ###         P1      calibration param 1       ### # 
+#####################################################
+
+####################
+# ### Triggers ### #
+####################
+record (bo, "PANDA:$(subsys):POSITION:$(ID):TriggerAdcBuffer") {
+  field (DTYP, "asynInt32")
+  field (OUT,  "@asyn($(BUS),0,1)CAPACITEC_TRG_ADC")
+}
+
+record (mbbi, "PANDA:$(subsys):POSITION:$(ID):Error") {
+  field (DTYP, "asynUInt32Digital")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)CAPACITEC_ERROR")
+}
+
+################
+# ### Data ### #
+################
+record (ai, "PANDA:$(subsys):POSITION:$(sector):D") {
+  field (DTYP, "asynInt32")
+  field (SCAN, "I/O Intr")
+  field (INP,  "@asyn($(BUS),$(no),1)CAPACITEC_RAWVALUE")
+
+  # display parameters
+  field (EGU,  "um")
+  field (PREC, "2")
+
+  # Conversion parameters
+  field (ASLO, "$(P1)")
+  field (AOFF, "$(P0)")
+
+  # Alarm Limits
+  field (HIHI, "240")
+  field (HIGH, "200")
+  field (LOW,  "-.2")
+  field (LOLO, "-.5")
+
+  # Alarm Severities
+  field (HHSV, "MAJOR")
+  field (HSV,  "MINOR")
+  field (LSV,  "MINOR")
+  field (LLSV, "MAJOR")
+
+  # Archive and Monitor deadbands
+  field (ADEL, "0.05")
+  field (MDEL, "0.05")
+}
+
+record( mbbo, "PANDA:$(subsys):POSITION:$(ID):SetOverSampling" ) {
+  field( DTYP, "asynInt32" )
+  field( OUT,  "@asyn($(BUS),0,1)CAPACITEC_OS" )
+
+  # state strings
+  field( ZRST, "No OS" )
+  field( ONST, "2" )
+  field( TWST, "4" )
+  field( THST, "8" )
+  field( FRST, "16" )
+  field( FVST, "32" )
+  field( SXST, "64" )
+
+  # state values
+  field( ZRVL, "0" )
+  field( ONVL, "1" )
+  field( TWVL, "2" )
+  field( THVL, "3" )
+  field( FRVL, "4" )
+  field( FVVL, "5" )
+  field( SXVL, "6" )
+}
+
+record( mbbi, "PANDA:$(subsys):POSITION:$(ID):GetOverSampling" ) {
+  field( DTYP, "asynInt32" )
+  field( INP,  "@asyn($(BUS),0,1)CAPACITEC_OS" )
+
+  # state strings
+  field( ZRST, "No OS" )
+  field( ONST, "2" )
+  field( TWST, "4" )
+  field( THST, "8" )
+  field( FRST, "16" )
+  field( FVST, "32" )
+  field( SXST, "64" )
+
+  # state values
+  field( ZRVL, "0" )
+  field( ONVL, "1" )
+  field( TWVL, "2" )
+  field( THVL, "3" )
+  field( FRVL, "4" )
+  field( FVVL, "5" )
+  field( SXVL, "6" )
+}

@@ -141,7 +141,7 @@ void drvAsynIsegHv::asynReadHandler( void* pointer ) {
 
     // Channel Control
   case 0x6001:
-    status = setUIntDigitalParam( addr, P_Chan_Event_status, ( pframe->data[3] << 8 ) | pframe->data[4], 0xffff );
+    status = setUIntDigitalParam( addr, P_Chan_Ctrl, ( pframe->data[3] << 8 ) | pframe->data[4], 0xffff );
     break;
 
     // Channel Event Status
@@ -253,9 +253,12 @@ asynStatus drvAsynIsegHv::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   asynStatus status = asynSuccess;
   asynStatus unlockStatus = asynSuccess;
   const char* functionName = "writeUInt32Digital";
+  static epicsUInt8 offset[] = { 0, 16, 32 };
 
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
-  
+
+  if ( addr >= 3 ) addr = 2;
+
   std::map<int, isegFrame>::const_iterator it = cmds_.find( function );
   if( it == cmds_.end() ) return asynError;
   
@@ -264,9 +267,9 @@ asynStatus drvAsynIsegHv::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   pframe.can_dlc = it->second.dlc + 2;
   pframe.data[0] = it->second.data0;
   pframe.data[1] = it->second.data1;
-  pframe.data[2] = (epicsUInt8)( chanMsk_ & 0xff00 );
+  pframe.data[2] = (epicsUInt8)( ( chanMsk_ & 0xff00 ) >> 8 );
   pframe.data[3] = (epicsUInt8)( chanMsk_ & 0x00ff );
-  pframe.data[4] = 0;
+  pframe.data[4] = offset[addr];
 
   pasynUser_->timeout = pasynUser->timeout;
   status = pasynManager->queueLockPort( pasynUser_ );
@@ -330,7 +333,7 @@ asynStatus drvAsynIsegHv::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 v
     pframe.data[4] = (epicsUInt8)( value & 0x00000024 );
   } else { // if ( function == P_Mod_Ctrl ) {
     pframe.can_id  = can_id_;
-    pframe.data[2] = (epicsUInt8)( value & 0x00005800 );
+    pframe.data[2] = (epicsUInt8)( ( value & 0x00005800 ) >> 8 );
     pframe.data[3] = (epicsUInt8)( value & 0x00000060 );    
   }
 
@@ -643,7 +646,6 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
   deviceName_  = epicsStrDup( portName );
   can_id_      = ( 1 << 9 ) | ( module_id << 3 );
   for ( int i = 0; i < channels || i < 16; i++ ) chanMsk_ |= ( 1 << i );
-
   // Create parameters
   // Channel related parameters which hold the values
   createParam( P_ISEGHV_CHANSTATUS_STRING,      asynParamUInt32Digital, &P_Chan_status );
@@ -782,7 +784,7 @@ drvAsynIsegHv::drvAsynIsegHv( const char *portName,
   frame.can_dlc = 5;
   frame.data[0] = 0x60;
   frame.data[1] = 0x01;
-  frame.data[2] = (epicsUInt8)( chanMsk_ & 0xff00 );
+  frame.data[2] = (epicsUInt8)( ( chanMsk_ & 0xff00 ) >> 8 );
   frame.data[3] = (epicsUInt8)( chanMsk_ & 0x00ff );
   frame.data[4] = 0;
   pasynUser_->timeout = 0.5;

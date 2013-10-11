@@ -138,7 +138,7 @@ class drvAsynIsegHv : public asynPortDriver {
   asynGenericPointer  *pasynGenericPointer_;
   void                *pvtGenericPointer_;
   void                *intrPvtGenericPointer_;
-  epicsUInt16          chanMsk_;
+//  epicsUInt16          chanMsk_;
 
 };
 

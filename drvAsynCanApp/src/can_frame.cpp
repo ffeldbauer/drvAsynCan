@@ -51,15 +51,16 @@ std::string printTimestamp() {
 }
 
 std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe ) {
-  os << "0x" << std::hex << std::setw(8) << std::setfill(0) << rframe.can_id
-     << std::dec << std::setw(1) << rframe.can_dlc
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[0]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[1]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[2]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[3]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[4]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[5]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[6]
-     << "0x" << std::hex << std::setw(2) << std::setfill(0) << rframe.data[7]
+  os << std::hex 
+     << "0x" << std::setw(8) << std::setfill('0') << rframe.can_id
+     << std::setw(1) << rframe.can_dlc
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[0]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[1]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[2]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[3]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[4]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[5]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[6]
+     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[7];
   return os;
 } 

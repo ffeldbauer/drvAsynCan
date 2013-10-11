@@ -55,7 +55,7 @@
 
 //_____ D E F I N I T I O N S __________________________________________________
 typedef union{
-  epicsUInt32  val32;
+  epicsInt32   val32;
   epicsUInt8   val8[4];
 } can_conv_t;
 

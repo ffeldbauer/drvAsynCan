@@ -427,6 +427,17 @@ asynStatus drvAsynIsegHv::readUInt32Digital( asynUser *pasynUser, epicsUInt32 *v
                      driverName, deviceName_, functionName, status, function, pasynUser->timeout );
       return asynTimeout;
     }
+    if ( pframe.can_id  != can_id_                 || \
+         pframe.can_dlc != ( it->second.dlc + 2 )  || \
+         pframe.data[0] != it->second.data0        || \
+         pframe.data[1] != it->second.data1 ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "%s:%s:%s: function=%d, Mismatch in reply.\nGot %08x %d %02x %02x %02x %02x, where %08x %d %02x %02x... was expected", 
+                     driverName, deviceName_, functionName, function,
+                     pframe.can_id, pframe.can_dlc, pframe.data[0], pframe.data[1], pframe.data[2], pframe.data[3],
+                     can_id_, ( it->second.dlc + 2 ), it->second.data0, it->second.data1 );
+      return asynError;
+    }
     status = setUIntDigitalParam( addr, function, ( pframe.data[2] << 8 ) | pframe.data[3], mask );
   }
   
@@ -598,6 +609,18 @@ asynStatus drvAsynIsegHv::readFloat64( asynUser *pasynUser, epicsFloat64 *value 
                      "%s:%s:%s: status=%d, function=%d, No reply from device within %f s", 
                      driverName, deviceName_, functionName, status, function, pasynUser->timeout );
       return asynTimeout;
+    }
+    if ( pframe.can_id  != can_id_                 || \
+         pframe.can_dlc != ( it->second.dlc + 4 )  || \
+         pframe.data[0] != it->second.data0        || \
+         pframe.data[1] != it->second.data1 ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "%s:%s:%s: function=%d, Mismatch in reply.\nGot %08x %d %02x %02x %02x %02x %02x %02x, where %08x %d %02x %02x... was expected", 
+                     driverName, deviceName_, functionName, function,
+                     pframe.can_id, pframe.can_dlc, pframe.data[0], pframe.data[1],
+                     pframe.data[2], pframe.data[3], pframe.data[4], pframe.data[5],
+                     can_id_, ( it->second.dlc + 4 ), it->second.data0, it->second.data1 );
+      return asynError;
     }
     can_float_t myValue;
     myValue.val[3] = pframe.data[2];

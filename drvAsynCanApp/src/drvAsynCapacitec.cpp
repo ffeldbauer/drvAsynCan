@@ -99,10 +99,10 @@ void drvAsynCapacitec::asynReadHandler( void* pointer ) {
                 << "\033[0m" << std::endl;
       break;
     } 
-    myValue.val[3] = pframe->data[3];
-    myValue.val[2] = pframe->data[4];
-    myValue.val[1] = pframe->data[5];
-    myValue.val[0] = pframe->data[6];
+    myValue.val8[3] = pframe->data[3];
+    myValue.val8[2] = pframe->data[4];
+    myValue.val8[1] = pframe->data[5];
+    myValue.val8[0] = pframe->data[6];
 
     status = (asynStatus) setIntegerParam( pframe->data[1], P_RawValue, myValue.val32 );
     if( status ) 
@@ -124,10 +124,10 @@ void drvAsynCapacitec::asynReadHandler( void* pointer ) {
                 << "\033[0m" << std::endl;
       break;
     }
-    myValue.val[3] = 0;
-    myValue.val[2] = 0;
-    myValue.val[1] = pframe->data[1];
-    myValue.val[0] = pframe->data[2];
+    myValue.val8[3] = 0;
+    myValue.val8[2] = 0;
+    myValue.val8[1] = pframe->data[1];
+    myValue.val8[0] = pframe->data[2];
 
     status = (asynStatus) setUIntDigitalParam( 0, P_Error, myValue.val32, 0xffff );
     if( status ) 
@@ -204,6 +204,7 @@ asynStatus drvAsynCapacitec::readInt32( asynUser *pasynUser, epicsInt32 *value )
   int function = pasynUser->reason;
   int addr = 0;
   asynStatus status = asynSuccess;
+  asynStatus unlockStatus = asynSuccess;
   static const char *functionName = "readInt32";
     
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
@@ -351,38 +352,38 @@ drvAsynCapacitec::drvAsynCapacitec( const char *portName, const char *CanPort,
     pframe.can_dlc = 1;
     pframe.data[0] = 0xc1;
 
-    pasynUser_->timeout = pasynUser->timeout;
+    pasynUser_->timeout = 1.;
     status = pasynManager->queueLockPort( pasynUser_ );
     if( asynSuccess != status) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                     "%s:%s:%s: pasynManager->queueLockPort: status=%d, function=%d", 
-                     driverName, deviceName_, functionName, status, P_OS );
-      return status;
+      std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+                << ": pasynManager->queueLockPort: status=" << status
+                << std::endl;
+      return;
     }
     status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
     if ( asynSuccess != status ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                     "%s:%s:%s: pasynGenericPointer->write: status=%d, function=%d", 
-                     driverName, deviceName_, functionName, status, P_OS );
-      return status;
+      std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+                << ": pasynGenericPointer->write: status=" << status
+                << std::endl;
+      return;
     } 
     status = pasynGenericPointer_->read( pvtGenericPointer_, pasynUser_, &pframe );
-    unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
+    asynStatus unlockStatus = pasynManager->queueUnlockPort( pasynUser_ );
     if( asynSuccess != unlockStatus ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                     "%s:%s:%s: pasynManager->queueUnlockPort: status=%d, function=%d", 
-                     driverName, deviceName_, functionName, status, P_OS );
-      return unlockStatus;
+      std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+                << ": pasynManager->queueUnlockPort: status=" << status
+                << std::endl;
+      return;
     }
     
     if ( asynTimeout == status ){
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                     "%s:%s:%s: status=%d, function=%d, No reply from device within %f s", 
-                     driverName, deviceName_, functionName, status, P_OS, pasynUser->timeout );
-      return asynTimeout;
+      std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+                << "No reply from device within 1 s"
+                << std::endl;
+      return;
     }
 
-    status = setIntegerParam( addr, P_OS, pframe.data[1] );
+    status = setIntegerParam( 0, P_OS, pframe.data[1] );
   }
 
   // Start polling

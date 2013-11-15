@@ -23,8 +23,8 @@
 // version 2.0.0; Aug. 27, 2013
 //******************************************************************************
 
-#ifndef __ASYN_THMP_H__
-#define __ASYN_THMP_H__
+#ifndef __ASYN_CAPACITEC_H__
+#define __ASYN_CAPACITEC_H__
 
 //_____ I N C L U D E S _______________________________________________________
 #include "asynPortDriver.h"

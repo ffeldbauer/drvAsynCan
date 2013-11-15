@@ -47,14 +47,14 @@ record (ai, "PANDA:$(subsys):POSITION:$(sector):D") {
   field (AOFF, "$(P0)")
 
   # Alarm Limits
-  field (HIHI, "240")
-  field (HIGH, "200")
-  field (LOW,  "-.2")
-  field (LOLO, "-.5")
+  field (HIHI, "1001")
+  field (HIGH, "1000")
+  field (LOW,  "-1000")
+  field (LOLO, "-1001")
 
   # Alarm Severities
-  field (HHSV, "MAJOR")
-  field (HSV,  "MINOR")
+  field (HHSV, "NO_ALARM")
+  field (HSV,  "NO_ALARM")
   field (LSV,  "MINOR")
   field (LLSV, "MAJOR")
 

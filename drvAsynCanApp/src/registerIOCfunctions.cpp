@@ -42,6 +42,7 @@
 #include <iocsh.h>
 
 // local includes
+#include "drvAsynCapacitec.h"
 #include "drvAsynIsegHv.h"
 #include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
@@ -155,6 +156,28 @@ extern "C" {
 
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
+  //!          for the drvAsynCapacitec class.
+  //!
+  //! @param   [in]  portName    The name of the asyn port driver to be created.
+  //!          [in]  CanPort     The name of the interface 
+  //!          [in]  can_id      The CAN id of this DigitizerBoard
+  //----------------------------------------------------------------------------
+  int drvAsynCapacitecConfigure( const char *portName, const char *CanPort,
+                                 const int can_id ) {
+    new drvAsynTHMP( portName, CanPort, can_id );
+    return( asynSuccess );
+  }
+  static const iocshArg initCapacitecArg0 = { "portName",   iocshArgString };
+  static const iocshArg initCapacitecArg1 = { "CanPort",    iocshArgString };
+  static const iocshArg initCapacitecArg2 = { "can_id",     iocshArgInt };
+  static const iocshArg * const initCapacitecArgs[] = { &initCapacitecArg0, &initCapacitecArg1, &initCapacitecArg2 };
+  static const iocshFuncDef initCapacitecFuncDef = { "drvAsynCapacitecConfigure", 3, initCapacitecArgs };
+  static void initCapacitecCallFunc( const iocshArgBuf *args ) {
+    drvAsynCapacitecConfigure( args[0].sval, args[1].sval, args[2].ival );
+  }
+
+  //----------------------------------------------------------------------------
+  //! @brief   EPICS iocsh callable function to call constructor
   //!          for the drvAsynLedPulser class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
@@ -213,6 +236,7 @@ extern "C" {
       iocshRegister( &initIsegHvGlobalFuncDef, initIsegHvGlobalCallFunc );
       iocshRegister( &initWienerVmeFuncDef,    initWienerVmeCallFunc );
       iocshRegister( &initThmpFuncDef,         initThmpCallFunc );
+      iocshRegister( &initCapacitecFuncDef,    initCapacitecCallFunc );
       iocshRegister( &initLedPulserFuncDef,    initLedPulserCallFunc );
       iocshRegister( &initTmcm142FuncDef,      initTmcm142CallFunc );
       firstTime = 0;

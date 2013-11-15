@@ -164,7 +164,7 @@ extern "C" {
   //----------------------------------------------------------------------------
   int drvAsynCapacitecConfigure( const char *portName, const char *CanPort,
                                  const int can_id ) {
-    new drvAsynTHMP( portName, CanPort, can_id );
+    new drvAsynCapacitec( portName, CanPort, can_id );
     return( asynSuccess );
   }
   static const iocshArg initCapacitecArg0 = { "portName",   iocshArgString };

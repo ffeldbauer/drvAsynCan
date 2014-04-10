@@ -182,9 +182,15 @@ record (bo, "PANDA:$(subsys):HV:EmergencyOff") {
 #         SET CONSTANTLY TO 1
 # Bit 15: reserved
 
-record (bo, "PANDA:$(subsys):HV:$(sector):doCLEAR") {
+record (mbboDirect, "PANDA:$(subsys):HV:$(sector):ModCtrl") {
   field (DTYP, "asynUInt32Digital")
-  field (OUT,  "@asynMask($(BUS),0,0x0040,1)ISEGHV_MOD_CTRL")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_CTRL")
+}
+
+record (bo, "PANDA:$(subsys):HV:$(sector):doCLEAR") {
+  field (DTYP, "Soft Channel")
+  field (VAL,  "1")
+  field (OUT,  "PANDA:$(subsys):HV:$(sector):ModCtrl.B6")
 }
 
 record (ao, "PANDA:$(subsys):HV:$(sector):VoltageRampSpeed") {

@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for Wiener VME crate remote control
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -94,29 +94,29 @@ asynStatus drvAsynWienerVme::readInt32( asynUser *pasynUser, epicsInt32 *value )
   asynStatus status = asynSuccess;
   const char *functionName = "readInt32";
 
-  std::map<int, vme_cmd_t>::const_iterator it = cmds_.find( function );
-  if( it != cmds_.end() ) {
+  std::map<int, vme_cmd_t>::const_iterator it = _cmds.find( function );
+  if( it != _cmds.end() ) {
     can_frame_t pframe;
-    pframe.can_id  = it->second.cmd | crate_id_ | CAN_RTR_FLAG;
+    pframe.can_id  = it->second.cmd | _crateId | CAN_RTR_FLAG;
     pframe.can_dlc = 8;
-    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, pasynUser->timeout );
+    status = pasynGenericPointerSyncIO->writeRead( _pasynGenericPointer, &pframe, &pframe, pasynUser->timeout );
     if ( asynTimeout == status ){
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "%s:%s:%s: status=%d, function=%d, No reply from device within %f s", 
-                     driverName, deviceName_, functionName, status, function, pasynUser->timeout );
+                     driverName, _deviceName, functionName, status, function, pasynUser->timeout );
       return asynTimeout;
     }
     if ( status ){
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "%s:%s:%s: status=%d, function=%d %s", 
-                     driverName, deviceName_, functionName, status, function,
-                     pAsynUserGenericPointer_->errorMessage );
+                     driverName, _deviceName, functionName, status, function,
+                     _pasynGenericPointer->errorMessage );
       return asynError;
     }
-    if ( pframe.can_id != ( it->second.cmd | crate_id_ ) || pframe.can_dlc != 8 ) {
+    if ( pframe.can_id != ( it->second.cmd | _crateId ) || pframe.can_dlc != 8 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d...' where '%x08 8...' was expected.\033[0m", 
-                     driverName, deviceName_, functionName, function, pframe.can_id, pframe.can_dlc, it->second.cmd | crate_id_ );
+                     driverName, _deviceName, functionName, function, pframe.can_id, pframe.can_dlc, it->second.cmd | _crateId );
       return asynError;
     }
     
@@ -144,11 +144,11 @@ asynStatus drvAsynWienerVme::readInt32( asynUser *pasynUser, epicsInt32 *value )
   if ( status )
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%u\033[0m", 
-                   driverName, deviceName_, functionName, status, function, *value );
+                   driverName, _deviceName, functionName, status, function, *value );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DEVICE, 
                "%s:%s:%s: function=%d, value=%u\n", 
-               driverName, deviceName_, functionName, function, *value );
+               driverName, _deviceName, functionName, function, *value );
   
   return status;
 }
@@ -170,7 +170,7 @@ asynStatus drvAsynWienerVme::readInt32( asynUser *pasynUser, epicsInt32 *value )
 asynStatus drvAsynWienerVme::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
+  static const char *functionName = "writeInt32";
   
   if ( ( function != P_FanSpeed ) && ( function != P_Sysreset ) ) return asynSuccess;
   
@@ -180,14 +180,14 @@ asynStatus drvAsynWienerVme::writeInt32( asynUser *pasynUser, epicsInt32 value )
   if( status ) 
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d\033[0m", 
-                   driverName, deviceName_, functionName, status, function, value );
+                   driverName, _deviceName, functionName, status, function, value );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DEVICE, 
                "%s:%s:%s: function=%d, value=%d\n", 
-               driverName, deviceName_, functionName, function, value );
+               driverName, _deviceName, functionName, function, value );
   
   can_frame_t pframe;
-  pframe.can_id  = ( 1 << 7 ) | crate_id_;
+  pframe.can_id  = ( 1 << 7 ) | _crateId;
   if ( function == P_FanSpeed ) {
     pframe.can_dlc = 2;
     pframe.data[0] = 0xc0;
@@ -197,11 +197,11 @@ asynStatus drvAsynWienerVme::writeInt32( asynUser *pasynUser, epicsInt32 value )
     pframe.data[0] = 0x44;
   }
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( _pasynGenericPointer, &pframe, pasynUser->timeout );
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
-                   driverName, deviceName_, functionName, function );
+                   driverName, _deviceName, functionName, function );
     return asynError;
   }
   
@@ -231,27 +231,27 @@ asynStatus drvAsynWienerVme::readUInt32Digital( asynUser *pasynUser, epicsUInt32
 
   if ( function == P_Status0 ) {
     can_frame_t pframe;
-    pframe.can_id  = crate_id_ | CAN_RTR_FLAG;
+    pframe.can_id  = _crateId | CAN_RTR_FLAG;
     pframe.can_dlc = 8;
     
-    status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, pasynUser->timeout );
+    status = pasynGenericPointerSyncIO->writeRead( _pasynGenericPointer, &pframe, &pframe, pasynUser->timeout );
     if ( asynTimeout == status ){
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "%s:%s:%s: status=%d, function=%d, No reply from device within %f s", 
-                     driverName, deviceName_, functionName, status, function, pasynUser->timeout );
+                     driverName, _deviceName, functionName, status, function, pasynUser->timeout );
       return asynTimeout;
     }
     if ( status ){
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "%s:%s:%s: status=%d, function=%d %s", 
-                     driverName, deviceName_, functionName, status, function,
-                     pAsynUserGenericPointer_->errorMessage );
+                     driverName, _deviceName, functionName, status, function,
+                     _pasynGenericPointer->errorMessage );
       return asynError;
     }
-    if ( pframe.can_id != crate_id_ || pframe.can_dlc != 8 ) {
+    if ( pframe.can_id != _crateId || pframe.can_dlc != 8 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d...' where '%x08 8...' was expected.\033[0m", 
-                     driverName, deviceName_, functionName, function, pframe.can_id, pframe.can_dlc, crate_id_  );
+                     driverName, _deviceName, functionName, function, pframe.can_id, pframe.can_dlc, _crateId  );
       return asynError;
     }
 
@@ -272,11 +272,11 @@ asynStatus drvAsynWienerVme::readUInt32Digital( asynUser *pasynUser, epicsUInt32
   if ( status )
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%u mask=%u\033[0m", 
-                   driverName, deviceName_, functionName, status, function, *value, mask );
+                   driverName, _deviceName, functionName, status, function, *value, mask );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DEVICE, 
                "%s:%s:%s: function=%d, value=%u, mask=%u\n", 
-               driverName, deviceName_, functionName, function, *value, mask );
+               driverName, _deviceName, functionName, function, *value, mask );
   return status;
 }
 
@@ -297,7 +297,7 @@ asynStatus drvAsynWienerVme::readUInt32Digital( asynUser *pasynUser, epicsUInt32
 asynStatus drvAsynWienerVme::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask ){
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
+  static const char *functionName = "writeInt32";
   
   if ( function != P_Switch ) return asynSuccess;
 
@@ -310,22 +310,22 @@ asynStatus drvAsynWienerVme::writeUInt32Digital( asynUser *pasynUser, epicsUInt3
   if( status ) 
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%d, mask=%u\033[0m", 
-                   driverName, deviceName_, functionName, status, function, value, mask );
+                   driverName, _deviceName, functionName, status, function, value, mask );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DEVICE, 
                "%s:%s:%s: function=%d, value=%d, mask=%u\n", 
-               driverName, deviceName_, functionName, function, value, mask );
+               driverName, _deviceName, functionName, function, value, mask );
 
   can_frame_t pframe;
-  pframe.can_id  = ( 1 << 7 ) | crate_id_;
+  pframe.can_id  = ( 1 << 7 ) | _crateId;
   pframe.can_dlc = 1;
   pframe.data[0] = value ? 0x67 : 0x65;
 
-  status = pasynGenericPointerSyncIO->write( pAsynUserGenericPointer_, &pframe, pasynUser->timeout );
+  status = pasynGenericPointerSyncIO->write( _pasynGenericPointer, &pframe, pasynUser->timeout );
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
-                   driverName, deviceName_, functionName, function );
+                   driverName, _deviceName, functionName, function );
     return asynError;
   }
   return status;
@@ -353,8 +353,8 @@ drvAsynWienerVme::drvAsynWienerVme( const char *portName, const char *CanPort, c
   const char *functionName = "drvAsynWienerVme";
   asynStatus status = asynSuccess;
 
-  deviceName_  = epicsStrDup( portName );
-  crate_id_    = crate_id;
+  _deviceName  = epicsStrDup( portName );
+  _crateId    = crate_id;
   
   // Create parameters
   createParam( P_WIENERVME_STATUS0_STRING,    asynParamUInt32Digital, &P_Status0 );
@@ -402,49 +402,49 @@ drvAsynWienerVme::drvAsynWienerVme( const char *portName, const char *CanPort, c
   createParam( P_WIENERVME_CHANGEFAN_STRING,  asynParamInt32,         &P_FanSpeed );
 
   /* Connect to asyn generic pointer port with asynGenericPointerSyncIO */
-  status = pasynGenericPointerSyncIO->connect( CanPort, 0, &pAsynUserGenericPointer_, 0 );
+  status = pasynGenericPointerSyncIO->connect( CanPort, 0, &_pasynGenericPointer, 0 );
   if ( status != asynSuccess ) {
     printf( "%s:%s:%s: can't connect to asynGenericPointer on port '%s'\n", 
-            driverName, deviceName_, functionName, CanPort );
+            driverName, _deviceName, functionName, CanPort );
   }
   
   // Get inital value for Switch-Parameter
   can_frame_t pframe;
-  pframe.can_id  = crate_id_ | CAN_RTR_FLAG;
+  pframe.can_id  = _crateId | CAN_RTR_FLAG;
   pframe.can_dlc = 1;
-  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, .5 );
+  status = pasynGenericPointerSyncIO->writeRead( _pasynGenericPointer, &pframe, &pframe, .5 );
   if ( status != asynSuccess ) {
     fprintf( stderr, "\033[31;1m%s:%s:%s: Init %s: No reply from device within 1 s!\033[0m\n",
-             driverName, deviceName_, functionName, P_WIENERVME_SWITCH_STRING );
+             driverName, _deviceName, functionName, P_WIENERVME_SWITCH_STRING );
     return;
   }
   setUIntDigitalParam( P_Switch, pframe.data[0] & 0x01, 1 );
 
   // initial value for nominal fan speed
-  pframe.can_id  = crate_id_ | ( 6 << 7 ) | CAN_RTR_FLAG;
+  pframe.can_id  = _crateId | ( 6 << 7 ) | CAN_RTR_FLAG;
   pframe.can_dlc = 2;
-  status = pasynGenericPointerSyncIO->writeRead( pAsynUserGenericPointer_, &pframe, &pframe, .5 );
+  status = pasynGenericPointerSyncIO->writeRead( _pasynGenericPointer, &pframe, &pframe, .5 );
   if ( status != asynSuccess ) {
     fprintf( stderr, "\033[31;1m%s:%s:%s: Init %s: No reply from device within 1 s!\033[0m\n",
-             driverName, deviceName_, functionName, P_WIENERVME_CHANGEFAN_STRING );
+             driverName, _deviceName, functionName, P_WIENERVME_CHANGEFAN_STRING );
     return;
   }
   setIntegerParam( P_FanSpeed, pframe.data[1] );
 
   vme_cmd_t vc04_cmd = { ( 2 << 7 ), 4, { P_Vmom0, P_Imom0, P_Vmom4, P_Imom4 } };
-  cmds_.insert( std::make_pair( P_Vmom0, vc04_cmd ) );
+  _cmds.insert( std::make_pair( P_Vmom0, vc04_cmd ) );
   vme_cmd_t vc15_cmd = { ( 3 << 7 ), 4, { P_Vmom1, P_Imom1, P_Vmom5, P_Imom5 } };
-  cmds_.insert( std::make_pair( P_Vmom1, vc15_cmd ) );
+  _cmds.insert( std::make_pair( P_Vmom1, vc15_cmd ) );
   vme_cmd_t vc26_cmd = { ( 4 << 7 ), 4, { P_Vmom2, P_Imom2, P_Vmom6, P_Imom6 } };
-  cmds_.insert( std::make_pair( P_Vmom2, vc26_cmd ) );
+  _cmds.insert( std::make_pair( P_Vmom2, vc26_cmd ) );
   vme_cmd_t vc37_cmd = { ( 5 << 7 ), 4, { P_Vmom3, P_Imom3, P_Vmom7, P_Imom7 } };
-  cmds_.insert( std::make_pair( P_Vmom3, vc37_cmd ) );
+  _cmds.insert( std::make_pair( P_Vmom3, vc37_cmd ) );
   vme_cmd_t fan_cmd = { ( 6 << 7 ), 8, { P_FanMiddle, P_FanNominal, P_Fan1,
                                          P_Fan2, P_Fan3, P_Fan4, P_Fan5, P_Fan6 } };
-  cmds_.insert( std::make_pair( P_FanMiddle, fan_cmd ) );
+  _cmds.insert( std::make_pair( P_FanMiddle, fan_cmd ) );
   vme_cmd_t temp_cmd = { ( 7 << 7 ), 8, { P_Temp1, P_Temp2, P_Temp3, P_Temp4,
                                           P_Temp5, P_Temp6, P_Temp7, P_Temp8 } };
-  cmds_.insert( std::make_pair( P_Temp1, temp_cmd ) );
+  _cmds.insert( std::make_pair( P_Temp1, temp_cmd ) );
 
 }
 

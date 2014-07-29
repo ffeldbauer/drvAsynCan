@@ -21,7 +21,7 @@
 // brief   Asyn driver for ISEG EHS 8 620p-F and ISEG EHS 8 210p-F
 //          high voltage modules using the RPi Can interface
 //
-// version 2.0.2; Aug. 27, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -71,7 +71,7 @@ static void myInterruptCallbackGenericPointer( void *userPvt,
 
 void drvAsynTHMP::asynReadHandler( void* pointer ) {
   asynStatus status = asynSuccess;
-  //  const char* functionName = "asynReadHandler";
+  //  static const char *functionName = "asynReadHandler";
   can_frame_t* pframe = (can_frame_t *)pointer;
 
   switch ( pframe->data[0] ) {
@@ -79,7 +79,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   case 0x01: // ADC Conversion
     if ( pframe->can_dlc != 4 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x01: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -88,7 +88,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
     }
     if ( pframe->data[1] >= 64 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid channel number for command 0x01: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -100,7 +100,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                            ( pframe->data[2] << 8 ) | ( pframe->data[3]) );
     if( status ) 
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": status=" << status << ", function=" << P_RawValue << ", value="
                 << ( ( pframe->data[2] << 8 ) | ( pframe->data[3] ) )
                 << "\033[0m"
@@ -112,7 +112,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   case 0x03: // I/O Board
     if ( pframe->can_dlc != 4 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x03: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -121,7 +121,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
     }
     if ( pframe->data[1] >= 2 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid channel number for command 0x03: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -134,7 +134,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                0xffff );
     if( status ) 
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": status=" << status << ", function=" << P_IoBoard << ", value="
                 << ( ( pframe->data[2] << 8 ) | ( pframe->data[3] ) )
                 << "\033[0m"
@@ -145,7 +145,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   case 0x04: // Serials
     if ( pframe->can_dlc != 8 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid data length of frame for command 0x04: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -154,7 +154,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
     }
     if ( pframe->data[1] >= 9 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid channel number for command 0x04: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -170,7 +170,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                0xffffff );
     if( status ) 
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": status=" << status << ", function=" << P_Serials << ", value="
                 << ( ( pframe->data[2] << 16 ) | ( pframe->data[3] << 8 ) | ( pframe->data[4] ) )
                 << "\033[0m"
@@ -181,7 +181,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   case 0xff: // Firmware
     if ( pframe->can_dlc != 4 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid data length of frame for command 0xff: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -194,7 +194,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                0xffff );
     if( status ) 
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": status=" << status << ", function=" << P_IoBoard << ", value="
                 << pframe->data[1] << "." << pframe->data[2] << "." << pframe->data[3] 
                 << "\033[0m"
@@ -205,7 +205,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   case 0xe0: // Error message
     if ( pframe->can_dlc != 3 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": invalid data length of frame for command 0xe0: " << pframe->can_dlc
                 << "\n" << *pframe
                 << "\033[0m"
@@ -218,7 +218,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
                                                0xffff );
     if( status ) 
       std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  deviceName_ << ":asynReadHandler"
+                << driverName << ":" <<  _deviceName << ":asynReadHandler"
                 << ": status=" << status << ", function=" << P_Error << ", value="
                 << ( ( pframe->data[1] << 8 ) | ( pframe->data[2] ) )
                 << "\033[0m"
@@ -244,14 +244,14 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
   int function = pasynUser->reason;
   int addr = 0;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
+  static const char *functionName = "writeInt32";
 
   if ( function == P_RawValue ) return asynSuccess;
 
   status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
   
   can_frame_t pframe;
-  pframe.can_id = can_id_;
+  pframe.can_id = _can_id;
   if ( function == P_ConfigIO ) {
     if ( addr > 1 ) return asynError;
     pframe.can_dlc = 3;
@@ -275,15 +275,15 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
     return asynError;
   }
 
-  pasynUser_->timeout = pasynUser->timeout;
-  pasynManager->lockPort( pasynUser_ );
-  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
-  pasynManager->unlockPort( pasynUser_ );
+  _pasynUser->timeout = pasynUser->timeout;
+  pasynManager->lockPort( _pasynUser );
+  status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+  pasynManager->unlockPort( _pasynUser );
 
   if ( status ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Could not send can frame.\033[0m", 
-                   driverName, deviceName_, functionName, function );
+                   driverName, _deviceName, functionName, function );
     return asynError;
   }
   
@@ -308,7 +308,7 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
   int function = pasynUser->reason;
   int addr = 0;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeUInt32Digital";
+  static const char *functionName = "writeUInt32Digital";
 
   if ( function != P_IoBoard ) return asynSuccess;
   
@@ -324,24 +324,24 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
   if (status) 
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%u, mask=%u\033[0m", 
-                   driverName, deviceName_, functionName, status, function, value, mask );
+                   driverName, _deviceName, functionName, status, function, value, mask );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
                "%s:%s:%s: function=%d, value=%d, mask=%u\n", 
-               driverName, deviceName_, functionName, function, value, mask );
+               driverName, _deviceName, functionName, function, value, mask );
   
   can_frame_t pframe;
-  pframe.can_id = can_id_;
+  pframe.can_id = _can_id;
   pframe.can_dlc = 4;
   pframe.data[0] = 0x02;
   pframe.data[1] = (epicsUInt8)( addr & 0xff );
   pframe.data[2] = (epicsUInt8)( value >> 8 );
   pframe.data[3] = (epicsUInt8)( value & 0xff );
   
-  pasynUser_->timeout = pasynUser->timeout;
-  pasynManager->lockPort( pasynUser_ );
-  status = pasynGenericPointer_->write( pvtGenericPointer_, pasynUser_, &pframe );
-  pasynManager->unlockPort( pasynUser_ );
+  _pasynUser->timeout = pasynUser->timeout;
+  pasynManager->lockPort( _pasynUser );
+  status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+  pasynManager->unlockPort( _pasynUser );
   
   return status;
 }
@@ -380,16 +380,16 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   createParam( P_THMP_TRG_IOBUFFER_STRING,  asynParamInt32,         &P_Trg_IO );
   createParam( P_THMP_TRG_SERIALS_STRING,   asynParamInt32,         &P_Trg_Serials );
   
-  deviceName_  = epicsStrDup( portName );
-  can_id_      = can_id;
+  _deviceName  = epicsStrDup( portName );
+  _can_id      = can_id;
   
   // Connect to asyn generic pointer port with asynGenericPointer interface
-  pasynUser_ = pasynManager->createAsynUser( NULL, NULL );
-  pasynUser_->userPvt = this;
+  _pasynUser = pasynManager->createAsynUser( NULL, NULL );
+  _pasynUser->userPvt = this;
 
-  status = pasynManager->connectDevice( pasynUser_, CanPort, 0 );
+  status = pasynManager->connectDevice( _pasynUser, CanPort, 0 );
   if ( asynSuccess != status ) {
-    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
               << ": Unable to connect Device"
               << std::endl;
     return;
@@ -398,39 +398,39 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   asynInterface* pasynInterface;
     
   // find the asynCommon interface
-  pasynInterface = pasynManager->findInterface( pasynUser_,
+  pasynInterface = pasynManager->findInterface( _pasynUser,
                                                 asynCommonType,
                                                 true );
   if( !pasynInterface ) {
-    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
               << ": bus " << CanPort << " does not support asynCommon interface"
               << std::endl;
     return;
   }
-  pasynCommon_ = static_cast<asynCommon*>( pasynInterface->pinterface );
-  pvtCommon_   = pasynInterface->drvPvt;
+  _pasynCommon = static_cast<asynCommon*>( pasynInterface->pinterface );
+  _pvtCommon   = pasynInterface->drvPvt;
   
   // find the asynGenericPointer interface
-  pasynInterface = pasynManager->findInterface( pasynUser_,
+  pasynInterface = pasynManager->findInterface( _pasynUser,
                                                 asynGenericPointerType,
                                                 true );
   if( !pasynInterface ) {
-    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
               << ": bus " << CanPort << " does not support asynGenericPointer interface"
               << std::endl;
     return;
   }
-  pasynGenericPointer_ = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
-  pvtGenericPointer_   = pasynInterface->drvPvt;
-  pasynUser_->reason = can_id_;
-  status = pasynGenericPointer_->registerInterruptUser( pvtGenericPointer_,
-                                                        pasynUser_,
+  _pasynGenericPointer = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
+  _pvtPointerGeneric   = pasynInterface->drvPvt;
+  _pasynUser->reason = _can_id;
+  status = _pasynGenericPointer->registerInterruptUser( _pvtPointerGeneric,
+                                                        _pasynUser,
                                                         myInterruptCallbackGenericPointer,
                                                         this,
-                                                        &intrPvtGenericPointer_
+                                                        &_intrPvtPointerGeneric
                                                         );
   if( asynSuccess != status  ) {
-    std::cerr << driverName << ":" <<  deviceName_ << ":" << functionName
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
               << ": failed to register interrupt"
               << std::endl;
     return;

@@ -20,7 +20,7 @@
 //
 // brief
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 #ifndef __ASYN_READ_POLLER_H__
@@ -51,14 +51,14 @@ class ReadPoller {
   ReadPoller( const ReadPoller& );
   ~ReadPoller();
 
-  static ReadPoller* pinstance_;
+  static ReadPoller  *_pinstance;
 
-  const char*   portname_;
-  asynUser*     pasynUser_;
-  bool          initialized_;
-  epicsEventId  eventId_;
-  /* asynCommon* pasynCommon_; */
-  /* asynGenericPointer* pasynGenricPointer_; */
+  const char*         _portname;
+  asynUser*           _pasynUser;
+  bool                _initialized;
+  epicsEventId        _eventId;
+  //asynCommon         *_pasynCommon;
+  //asynGenericPointer *_pasynGenricPointer;
 };
 
 #endif

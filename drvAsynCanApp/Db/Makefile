@@ -14,7 +14,7 @@ DB += LEDPulser.db
 DB += THMP_COM.db
 DB += THMP_other.db
 DB += THMP_temp.db
-DB += tmcm.db
+DB += Tmcm142-if.db
 DB += WienerVMEcrate.db
 
 include $(TOP)/configure/RULES

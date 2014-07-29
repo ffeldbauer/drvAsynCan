@@ -17,7 +17,7 @@
 # This record is updated after each read or write command
 record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):STATUS" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),0,1)TMCM142_STATUS" )
+  field( INP,  "@asyn($(BUS),0,1)STATUS" )
   field( SCAN, "I/O Intr" )
 
   # State values
@@ -55,7 +55,7 @@ record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):STATUS" ) {
 # Move to an absolute position
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):MVP:ABS" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),0,1)TMCM142_MVP" )
+  field( OUT,  "@asyn($(BUS),0,1)MVP" )
   # Limits 
   field( DRVH, "+2147483647" )
   field( DRVL, "-2147483648" )
@@ -84,7 +84,7 @@ record( seq, "PANDA:$(subsys):MOTOR:$(sector):RESETRORROL"){
 # Rotate right
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):ROR" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),0,1)TMCM142_ROR" )
+  field( OUT,  "@asyn($(BUS),0,1)ROR" )
   # Limits
   field( DRVH, "+2147483647" )
   field( DRVL, "0" )
@@ -96,7 +96,7 @@ record( longout, "PANDA:$(subsys):MOTOR:$(sector):ROR" ) {
 # Rotate left
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):ROL" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),0,1)TMCM142_ROL" )
+  field( OUT,  "@asyn($(BUS),0,1)ROL" )
   # Limits
   field( DRVH, "+2147483647" )
   field( DRVL, "0" )
@@ -108,7 +108,7 @@ record( longout, "PANDA:$(subsys):MOTOR:$(sector):ROL" ) {
 # Stop motor
 record( bo, "PANDA:$(subsys):MOTOR:$(sector):MST" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),0,1)TMCM142_MST" )
+  field( OUT,  "@asyn($(BUS),0,1)MST" )
 
   field( FLNK, "PANDA:$(subsys):MOTOR:$(sector):RESETRORROL" )
 }
@@ -120,7 +120,7 @@ record( bo, "PANDA:$(subsys):MOTOR:$(sector):MST" ) {
 # set current position
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:ACTUALPOSITION" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),1,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),1,1)SAP" )
   # Limits 
   field( DRVH, "+2147483647" )
   field( DRVL, "-2147483648" )
@@ -133,7 +133,7 @@ record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:ACTUALPOSITION" ) {
 # set max positioning speed
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXSPEED" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),4,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),4,1)SAP" )
   # Limits 
   field( DRVH, "+2147483647" )
   field( DRVL, "0" )
@@ -148,7 +148,7 @@ record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXSPEED" ) {
 # Set max acceleration and deceleration
 record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXACCELERATION" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),5,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),5,1)SAP" )
   # Limits 
   field( DRVH, "16777215" )
   field( DRVL, "1" )
@@ -163,7 +163,7 @@ record( longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:MAXACCELERATION" ) {
 # Set "right limit switch disable"
 record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:RIGHTLIMITSWITCH" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),12,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),12,1)SAP" )
   field( ZNAM, "Enabled" )
   field( ONAM, "Disabled" )
 
@@ -173,7 +173,7 @@ record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:RIGHTLIMITSWITCH" ) {
 # Set "left limit switch disable"
 record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:LEFTLIMITSWITCH" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),13,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),13,1)SAP" )
   field( ZNAM, "Enabled" )
   field( ONAM, "Disabled" )
 
@@ -183,7 +183,7 @@ record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:LEFTLIMITSWITCH" ) {
 # Set stop deceleration
 record(longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:STOPDECELERATION" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),15,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),15,1)SAP" )
   # Limits 
   field( DRVH, "+16777215" )
   field( DRVL, "1" )
@@ -198,7 +198,7 @@ record(longout, "PANDA:$(subsys):MOTOR:$(sector):SAP:STOPDECELERATION" ) {
 # Set µstep resolution
 record( mbbo, "PANDA:$(subsys):MOTOR:$(sector):SAP:USTEPRESOLUTION" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),27,1)TMCM142_SAP" )
+  field( OUT,  "@asyn($(BUS),27,1)SAP" )
 
   # state strings
   field( ZRST, "2048 micro steps" )
@@ -234,7 +234,7 @@ record( mbbo, "PANDA:$(subsys):MOTOR:$(sector):SAP:USTEPRESOLUTION" ) {
 # Set switchmode
 record( mbboDirect, "PANDA:$(subsys):MOTOR:$(sector):SAP:SWITCHMODE" ) {
   field( DTYP, "asynUInt32Digital" )
-  field( OUT,  "@asynMask($(BUS),14,0x1f3c,1)TMCM142_SAP_U" )
+  field( OUT,  "@asynMask($(BUS),14,0x1f3c,1)SAP_U" )
   field( FLNK, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE" )
 }
 
@@ -255,7 +255,7 @@ record( bo, "PANDA:$(subsys):MOTOR:$(sector):SAP:SOFTSTOP" ) {
 # Get target position
 record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:TARGETPOSITION" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),0,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),0,1)GAP" )
   # Display
   field( EGU,  "usteps" )
   field( HOPR, "+2147483647" )
@@ -268,7 +268,7 @@ record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:TARGETPOSITION" ) {
 # Get current position
 record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:ACTUALPOSITION" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),1,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),1,1)GAP" )
   # Display
   field( EGU,  "usteps" )
   field( HOPR, "+2147483647" )
@@ -282,7 +282,7 @@ record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:ACTUALPOSITION" ) {
 # Get max positioning speed
 record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:MAXSPEED" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),4,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),4,1)GAP" )
   # Display
   field( EGU,  "usteps/s" )
   field( HOPR, "+2147483647" )
@@ -293,7 +293,7 @@ record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:MAXSPEED" ) {
 # Get max acceleration and deceleration
 record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:MAXACCELERATION" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),5,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),5,1)GAP" )
   # Limits 
   # Display
   field( EGU,  "usteps/s/s" )
@@ -306,7 +306,7 @@ record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:MAXACCELERATION" ) {
 # Get "right limit switch status"
 record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:RIGHTLIMITSWITCHSTAT" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),10,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),10,1)GAP" )
   #Check for correct values!!!
   field( ONAM, "1" )
   field( ZNAM, "0" )
@@ -318,7 +318,7 @@ record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:RIGHTLIMITSWITCHSTAT" ) {
 # Get "left limit switch status"
 record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:LEFTLIMITSWITCHSTAT" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),11,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),11,1)GAP" )
   #Check for correct values!!!
   field( ONAM, "1" )
   field( ZNAM, "0" )
@@ -329,7 +329,7 @@ record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:LEFTLIMITSWITCHSTAT" ) {
 # Get "right limit switch disable"
 record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:RIGHTLIMITSWITCHDISABLE" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),12,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),12,1)GAP" )
   field( ONAM, "Enabled" )
   field( ZNAM, "Disabled" )
   field( PINI, "YES" )
@@ -338,7 +338,7 @@ record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:RIGHTLIMITSWITCHDISABLE" ) {
 # Get "left limit switch disable"
 record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:LEFTLIMITSWITCHDISABLE" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),13,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),13,1)GAP" )
   field( ONAM, "Enabled" )
   field( ZNAM, "Disabled" )
   field( PINI, "YES" )
@@ -347,7 +347,7 @@ record( bi, "PANDA:$(subsys):MOTOR:$(sector):GAP:LEFTLIMITSWITCHDISABLE" ) {
 # Get stop deceleration
 record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:STOPDECELERATION" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),15,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),15,1)GAP" )
   # Display
   field( EGU,  "usteps/s/s" )
   field( HOPR, "16777215" )
@@ -358,7 +358,7 @@ record( longin, "PANDA:$(subsys):MOTOR:$(sector):GAP:STOPDECELERATION" ) {
 # Get µstep resolution
 record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):GAP:USTEPRESOLUTION" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),27,1)TMCM142_GAP" )
+  field( INP,  "@asyn($(BUS),27,1)GAP" )
 
   field( ZRST, "2048 micro steps" )
   field( ONST, "1024 micro steps" )
@@ -391,7 +391,7 @@ record( mbbi, "PANDA:$(subsys):MOTOR:$(sector):GAP:USTEPRESOLUTION" ) {
 # Set switchmode
 record( mbbiDirect, "PANDA:$(subsys):MOTOR:$(sector):GAP:SWITCHMODE" ) {
   field( DTYP, "asynUInt32Digital" )
-  field( INP,  "@asynMask($(BUS),14,0x1f3c,1)TMCM142_GAP_U" )
+  field( INP,  "@asynMask($(BUS),14,0x1f3c,1)GAP_U" )
   field( PINI, "YES" )
 }
 

@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for PANDA LED Pulser
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -136,7 +136,7 @@ epicsFloat64 drvAsynLedPulser::getIntensity( epicsUInt8 high, epicsUInt8 low ){
 asynStatus drvAsynLedPulser::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
+  static const char *functionName = "writeInt32";
   
   /* Set the parameter in the parameter library. */
   status = (asynStatus) setIntegerParam( function, value );

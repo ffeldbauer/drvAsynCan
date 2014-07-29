@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for ISEG EHS/EDS high voltage modules using the RPi Can interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -77,7 +77,7 @@ static const char *driverName = "drvAsynIsegHvGlobalDriver";
 asynStatus drvAsynIsegHvGlobal::writeInt32( asynUser *pasynUser, epicsInt32 value ) {
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeInt32";
+  static const char *functionName = "writeInt32";
   
   /* Set the parameter in the parameter library. */
   status = (asynStatus) setIntegerParam( function, value );
@@ -133,7 +133,7 @@ asynStatus drvAsynIsegHvGlobal::writeInt32( asynUser *pasynUser, epicsInt32 valu
 asynStatus drvAsynIsegHvGlobal::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask ){
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
-  const char* functionName = "writeUInt32Digital";
+  static const char *functionName = "writeUInt32Digital";
 
   /* Set the parameter in the parameter library. */
   status = (asynStatus) setUIntDigitalParam( function, value, mask );

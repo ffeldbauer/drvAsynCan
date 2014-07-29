@@ -18,42 +18,42 @@
 
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte0") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS0")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS0")
   field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C0:Vmom")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte1") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS1")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS1")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte2") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS,0,0xff,1),0,1)WIENER_VME_STATUS2")
+  field (INP,  "@asynMask($(BUS,0,0xff,1),0,1)STATUS2")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte3") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS3")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS3")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte4") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS4")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS4")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte5") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS5")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS5")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte6") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS6")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS6")
   field (SCAN, "I/O Intr")
 }
 record (mbbiDirect, "PANDA:$(subsys):VME$(ID):Statusbyte7") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xff,1)WIENER_VME_STATUS7")
+  field (INP,  "@asynMask($(BUS),0,0xff,1)STATUS7")
   field (SCAN, "I/O Intr")
 }
 
@@ -393,7 +393,7 @@ record (bi, "PANDA:$(subsys):VME$(ID):LV:C5:PSTflag") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Vmom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM0")
+  field (INP,  "@asyn($(BUS),0,1)VMOM0")
   field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C1:Vmom")
   # Conversion
   field (ASLO, "0.01")
@@ -414,7 +414,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Vmom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Imom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM0")
+  field (INP,  "@asyn($(BUS),0,1)IMOM0")
   field (SCAN, "I/O Intr")
   # Conversion
   field (ASLO, "0.01")
@@ -437,7 +437,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C0:Imom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Vmom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM1")
+  field (INP,  "@asyn($(BUS),0,1)VMOM1")
   field (FLNK, "PANDA:$(subsys):VME$(ID):LV:C3:Vmom")
   # Conversion
   field (ASLO, "0.01")
@@ -458,7 +458,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Vmom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Imom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM1")
+  field (INP,  "@asyn($(BUS),0,1)IMOM1")
   field (SCAN, "I/O Intr")
   # Conversion
   field (ASLO, "0.01")
@@ -480,7 +480,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C1:Imom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Vmom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM5")
+  field (INP,  "@asyn($(BUS),0,1)VMOM5")
   field (SCAN, "I/O Intr")
   # Conversion
   field (ASLO, "0.01")
@@ -501,7 +501,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Vmom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Imom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM5")
+  field (INP,  "@asyn($(BUS),0,1)IMOM5")
   field (SCAN, "I/O Intr")
   # Conversion
   field (ASLO, "0.01")
@@ -526,7 +526,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C5:Imom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Vmom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_VMOM3")
+  field (INP,  "@asyn($(BUS),0,1)VMOM3")
   field (FLNK, "PANDA:$(subsys):VME$(ID):MiddleFanSpeed")
   # Conversion
   field (ASLO, "0.01")
@@ -547,7 +547,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Vmom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Imom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_IMOM3")
+  field (INP,  "@asyn($(BUS),0,1)IMOM3")
   field (SCAN, "I/O Intr")
   # Conversion
   field (ASLO, "0.01")
@@ -572,13 +572,13 @@ record (ai, "PANDA:$(subsys):VME$(ID):LV:C3:Imom") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):MiddleFanSpeed") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FANMIDDLE")
+  field (INP,  "@asyn($(BUS),0,1)FANMIDDLE")
   field (FLNK, "PANDA:$(subsys):VME$(ID):TEMP:Tmom")
 }
 
 record (ai, "PANDA:$(subsys):VME$(ID):C1:FanSpeed") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN1")
+  field (INP,  "@asyn($(BUS),0,1)FAN1")
   field (SCAN, "I/O Intr")
   # Display Parameters
   field (EGU,  "rpm")
@@ -601,7 +601,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):C1:FanSpeed") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):C2:FanSpeed") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN2")
+  field (INP,  "@asyn($(BUS),0,1)FAN2")
   field (SCAN, "I/O Intr")
   # Display Parameters
   field (EGU,  "rpm")
@@ -624,7 +624,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):C2:FanSpeed") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):C3:FanSpeed") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_FAN3")
+  field (INP,  "@asyn($(BUS),0,1)FAN3")
   field (SCAN, "I/O Intr")
   # Display Parameters
   field (EGU,  "rpm")
@@ -652,7 +652,7 @@ record (ai, "PANDA:$(subsys):VME$(ID):C3:FanSpeed") {
 
 record (ai, "PANDA:$(subsys):VME$(ID):TEMP:Tmom") {
   field (DTYP, "asynInt32")
-  field (INP,  "@asyn($(BUS),0,1)WIENER_VME_TEMP1")
+  field (INP,  "@asyn($(BUS),0,1)TEMP1")
   # Alarm Limits
   field (HIHI, "50")
   field (HIGH, "40")
@@ -674,19 +674,19 @@ record (ai, "PANDA:$(subsys):VME$(ID):TEMP:Tmom") {
 
 record (bo, "PANDA:$(subsys):VME$(ID):SwitchCrate") {
   field (DTYP, "asynUInt32Digital")
-  field (OUT,  "@asynMask($(BUS),0,1,1)WIENER_VME_SWITCHONOFF")
+  field (OUT,  "@asynMask($(BUS),0,1,1)SWITCHONOFF")
   field (ZNAM, "Off")
   field (ONAM, "On")
 }
 
 record (bo, "PANDA:$(subsys):VME$(ID):Sysreset") {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)WIENER_VME_SYSRESET")
+  field (OUT,  "@asyn($(BUS),0,1)SYSRESET")
 }
 
 record (ao, "PANDA:$(subsys):VME$(ID):ChangeFanSpeed") {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)WIENER_VME_FANSPEED")
+  field (OUT,  "@asyn($(BUS),0,1)FANSPEED")
   field (EGU,  "rps")
   field (DRVH, "64")
   field (DRVL, "0")

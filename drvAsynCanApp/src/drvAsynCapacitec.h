@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for Capacitec DigitizerBoard using the RPi Can interface
 //
-// version 2.0.0; Aug. 27, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 #ifndef __ASYN_CAPACITEC_H__
@@ -33,11 +33,11 @@
 
 /* These are the drvInfo strings that are used to identify the parameters.
  * They are used by asyn clients, including standard asyn device support */
-#define P_CAPACITEC_ADCBUFFER_STRING       "CAPACITEC_RAWVALUE"          /* asynInt32,          r   */
-#define P_CAPACITEC_ERROR_STRING           "CAPACITEC_ERROR"             /* asynUInt32Digital,  r   */
+#define P_CAPACITEC_ADCBUFFER_STRING       "Value"          //!< asynInt32,          r  
+#define P_CAPACITEC_ERROR_STRING           "Error"             //!< asynUInt32Digital,  r  
 
-#define P_CAPACITEC_TRG_ADCBUFFER_STRING   "CAPACITEC_TRG_ADC"           /* asynInt32,          r/w */
-#define P_CAPACITEC_OS_STRING              "CAPACITEC_OS"                /* asynInt32,          r/w */
+#define P_CAPACITEC_TRG_ADCBUFFER_STRING   "Readout"           //!< asynInt32,          r/w
+#define P_CAPACITEC_OS_STRING              "OS"                //!< asynInt32,          r/w
 
 class drvAsynCapacitec : public asynPortDriver {
  public:
@@ -51,23 +51,23 @@ class drvAsynCapacitec : public asynPortDriver {
 
  protected:
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
-  int P_RawValue;       //!< index of parameter "CAPACITEC_RAWVALUE"
-  int P_Error;          //!< index of parameter "CAPACITEC_ERROR"
-  int P_Trg_ADC;        //!< index of parameter "CAPACITEC_TRG_ADC"
-  int P_OS;             //!< index of parameter "CAPACITEC_OS"
+  int P_RawValue;       //!< index of parameter "Value"
+  int P_Error;          //!< index of parameter "Error"
+  int P_Trg_ADC;        //!< index of parameter "Readout"
+  int P_OS;             //!< index of parameter "OS"
 
 #define FIRST_CAPACITEC_COMMAND P_RawValue
 #define LAST_CAPACITEC_COMMAND  P_OS
 
  private:
-  char                *deviceName_;
-  epicsUInt32          can_id_;
-  asynUser            *pasynUser_;
-  asynCommon          *pasynCommon_;
-  void                *pvtCommon_;
-  asynGenericPointer  *pasynGenericPointer_;
-  void                *pvtGenericPointer_;
-  void                *intrPvtGenericPointer_;
+  char                *_deviceName;
+  epicsUInt32          _can_id;
+  asynUser            *_pasynUser;
+  asynCommon          *_pasynCommon;
+  void                *_pvtCommon;
+  asynGenericPointer  *_pasynGenericPointer;
+  void                *_pvtGenericPointer;
+  void                *_intrPvtGenericPointer;
 };
 
 #define NUM_CAPACITEC_PARAMS (&LAST_CAPACITEC_COMMAND - &FIRST_CAPACITEC_COMMAND + 1)

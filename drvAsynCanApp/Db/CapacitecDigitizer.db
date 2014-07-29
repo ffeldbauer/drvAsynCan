@@ -21,13 +21,13 @@
 ####################
 record (bo, "PANDA:$(subsys):POSITION:$(ID):TriggerAdcBuffer") {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)CAPACITEC_TRG_ADC")
+  field (OUT,  "@asyn($(BUS),0,1)Readout")
 }
 
 record (mbbi, "PANDA:$(subsys):POSITION:$(ID):Error") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),0,0xffff,1)CAPACITEC_ERROR")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)Error")
 }
 
 ################
@@ -36,7 +36,7 @@ record (mbbi, "PANDA:$(subsys):POSITION:$(ID):Error") {
 record (ai, "PANDA:$(subsys):POSITION:$(sector):D") {
   field (DTYP, "asynInt32")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(no),1)CAPACITEC_RAWVALUE")
+  field (INP,  "@asyn($(BUS),$(no),1)Value")
 
   # display parameters
   field (EGU,  "um")
@@ -65,7 +65,7 @@ record (ai, "PANDA:$(subsys):POSITION:$(sector):D") {
 
 record( mbbo, "PANDA:$(subsys):POSITION:$(ID):SetOverSampling" ) {
   field( DTYP, "asynInt32" )
-  field( OUT,  "@asyn($(BUS),0,1)CAPACITEC_OS" )
+  field( OUT,  "@asyn($(BUS),0,1)OS" )
 
   # state strings
   field( ZRST, "No OS" )
@@ -88,7 +88,7 @@ record( mbbo, "PANDA:$(subsys):POSITION:$(ID):SetOverSampling" ) {
 
 record( mbbi, "PANDA:$(subsys):POSITION:$(ID):GetOverSampling" ) {
   field( DTYP, "asynInt32" )
-  field( INP,  "@asyn($(BUS),0,1)CAPACITEC_OS" )
+  field( INP,  "@asyn($(BUS),0,1)OS" )
 
   # state strings
   field( ZRST, "No OS" )

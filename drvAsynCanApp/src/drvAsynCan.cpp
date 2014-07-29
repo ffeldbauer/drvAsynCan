@@ -20,7 +20,7 @@
 //
 // brief   AsynPortDriver for PANDA Raspberry Pi CAN interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -31,9 +31,15 @@
 #include <cstring>
 #include <cerrno>
 #include <fcntl.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <net/if.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/stat.h>
 #include <unistd.h>
-#include <rpi_can.h>
 
 // EPICS includes
 #include <epicsEvent.h>
@@ -46,10 +52,18 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
+#ifdef USELIBSOCKETCAN
+#  include "libsocketcan.h"
+#endif
+
 // local includes
-#include "drvAsynRPiCan.h"
+#include "drvAsynCan.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
+typedef  struct can_frame     can_frame_t;
+typedef  struct sockaddr_can  sockaddr_can_t;
+typedef  struct sockaddr      sockaddr_t;
+typedef  struct ifreq         ifreq_t; 
 
 //_____ G L O B A L S __________________________________________________________
 
@@ -75,29 +89,67 @@ static const char *driverName = "drvAsynCanDriver";
 //! @sa      drvAsynCan::drvRPiCanRead
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
-  const char* functionName = "readGenericPointer";
+  static const char *functionName = "readGenericPointer";
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   can_frame_t* pframe = (can_frame_t *)genericPointer;
-  int err = drvRPiCanRead( pframe, mytimeout );
+
+  int nbytes = 0;
+  if ( 0 > mytimeout ) {
+
+    nbytes = read( _socket, pframe, sizeof(can_frame_t) );
+    if ( 0 > nbytes ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "Error receiving message from device '%s': %d %s", 
+                     _deviceName, errno, strerror( errno ) );
+      return asynError;
+    }
+
+  } else {
+
+    fd_set fdRead;
+    struct timeval t;
+    
+    // calculate timeout values
+    t.tv_sec  = mytimeout / 1000000L;
+    t.tv_usec = mytimeout % 1000000L;
+    
+    FD_ZERO( &fdRead );
+    FD_SET( _socket, &fdRead );
+    
+    // wait until timeout or a message is ready to get read
+    int err = select( _socket + 1, &fdRead, NULL, NULL, &t );
+    
+    // the only one file descriptor is ready for read
+    if ( 0 < err ) {
+      nbytes = read( _socket, pframe, sizeof(can_frame_t) );
+      if ( 0 > nbytes ) {
+        epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                       "Error receiving message from device '%s': %d %s", 
+                       _deviceName, errno, strerror( errno ) );
+        return asynError;
+      }
+    }
+    
+    // nothing is ready, timeout occured
+    if ( 0 == err ) return asynTimeout;
+    if ( 0 > err )  {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "Error receiving message from device '%s': %d %s", 
+                     _deviceName, errno, strerror( errno ) );
+      return asynError;
+    }
+
+  }
   
-  if ( CAN_ERR_QRCVEMPTY == err )  return asynTimeout;
-
-  if ( 0 != err ) {
-    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                   "Error receiving message from device '%s': %d %s", 
-                   deviceName_, err, strerror( err ) );
-    return asynError;
-  }  
-
-  memcpy( &frame_, pframe, sizeof( frame_ ) );
-  doCallbacksGenericPointer( &frame_, frame_.can_id & CAN_EFF_MASK, 0 );
-
+  memcpy( &_frame, pframe, sizeof( can_frame_t ) );
+  doCallbacksGenericPointer( &_frame, _frame.can_id & CAN_EFF_MASK, 0 );
+  
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: received frame '0x%08x %d 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x'\n", 
              driverName, functionName, pframe->can_id, pframe->can_dlc,
              pframe->data[0], pframe->data[1], pframe->data[2], pframe->data[3],
              pframe->data[4], pframe->data[5], pframe->data[6], pframe->data[7] );
-
+  
   return asynSuccess;
 }
 
@@ -118,26 +170,64 @@ asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPoi
 //! @sa      drvAsynCan::drvRPiCanWrite
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
-  const char* functionName = "writeGenericPointer";
+  static const char *functionName = "writeGenericPointer";
   can_frame_t *myFrame = (can_frame_t *)genericPointer;
   int mytimeout = (int)( pasynUser->timeout * 1.e6 );
- 
+  
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: sending frame '0x%08x %d 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x'\n", 
              driverName, functionName, myFrame->can_id, myFrame->can_dlc,
              myFrame->data[0], myFrame->data[1], myFrame->data[2], myFrame->data[3],
              myFrame->data[4], myFrame->data[5], myFrame->data[6], myFrame->data[7] );
+  
+  int nbytes = 0;
+  if ( 0 > mytimeout ) {
+    nbytes = write( _socket, myFrame, sizeof(can_frame_t) );
+    if ( 0 > nbytes ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "Error receiving message from device '%s': %d %s", 
+                     _deviceName, errno, strerror( errno ) );
+      return asynError;
+    }
 
-  int err = drvRPiCanWrite( myFrame, mytimeout );
-  if ( 0 != err ) {
-    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                   "Error sending message to device '%s': %s", 
-                   deviceName_, strerror( err ) );
-    return asynError;
-  }  
+  } else {
+    
+    fd_set fdWrite;
+    struct timeval t;
+    
+    // calculate timeout values
+    t.tv_sec  = mytimeout / 1000000L;
+    t.tv_usec = mytimeout % 1000000L;
+    
+    FD_ZERO( &fdWrite );
+    FD_SET( _socket, &fdWrite );
+    
+    // wait until timeout or a message is ready to get written
+    int err = select( _socket + 1, NULL, &fdWrite, NULL, &t );
+    
+    // the only one file descriptor is ready for write
+    if ( 0 < err ) {
+      nbytes = write( _socket, myFrame, sizeof(can_frame_t) );
+      if ( 0 > nbytes ) {
+        epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                       "Error receiving message from device '%s': %d %s", 
+                       _deviceName, errno, strerror( errno ) );
+        return asynError;
+      }
+    }
+
+    // nothing is ready, timeout occured
+    if ( err == 0 ) return asynTimeout;
+    if ( 0 > err )  {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                     "Error receiving message from device '%s': %d %s", 
+                     _deviceName, errno, strerror( errno ) );
+      return asynError;
+    }
+
+  }
   return asynSuccess;
 }
-
 //------------------------------------------------------------------------------
 //! @brief   Called when asyn clients call pasynOption->read()
 //!
@@ -154,32 +244,34 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
-                                      char *value, int maxChars ) {
-  const char* functionName = "readOption";
+                                   char *value, int maxChars ) {
+  static const char *functionName = "readOption";
+
+#ifdef USELIBSOCKETCAN
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
-    // Get current bitrate
-    TPBTR0BTR1 ratix;
-    int err = ioctl( fd_, CAN_GET_BITRATE, &ratix );
+    
+    struct can_bittiming bt; 
+    int err = can_get_bittiming( _deviceName, &bt );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not read bitrate settings from interface '%s'. %s",
-                     driverName, functionName, deviceName_, strerror( errno ) );
+                     "%s:%s: failed to read bittiming",
+                     driverName, functionName );
       return asynError;
     }
     char dummy[10];
-    sprintf( dummy, "%u", ratix.dwBitRate );
+    sprintf( dummy, "%u", bt.bitrate );
     strcpy(value, dummy);
-
-  } else {
-    // unknown option
-    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                   "%s:%s: Invalid option key '%s'",
-                   driverName, functionName, key );
-    return asynError;
+    return asynSuccess;
   }
-    
-  return asynSuccess;
+
+#endif
+   
+  // unknown option
+  epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                 "%s:%s: Invalid option key '%s'",
+                 driverName, functionName, key );
+  return asynError;
 }
 
 //------------------------------------------------------------------------------
@@ -197,7 +289,9 @@ asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
 //!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
-  const char* functionName = "writeOption";
+  static const char *functionName = "writeOption";
+
+#ifdef USELIBSOCKETCAN
 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
     // Change Bitrate
@@ -208,134 +302,95 @@ asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const 
       return asynError;
     }
     
-    TPBTR0BTR1 ratix = { bitrate, 0 };
-    int err = ioctl( fd_, CAN_BITRATE, &ratix );
+    int err = can_set_bitrate( _deviceName, bitrate );
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not change bitrate for interface '%s'. %s",
-                     driverName, functionName, deviceName_, strerror( err ) );
+                     "%s:%s: Could not change bitrate for interface '%s'.",
+                     driverName, functionName, _deviceName );
       return asynError;
     }
+  }
 
-  } else if ( epicsStrCaseCmp( key, "addfilter" ) == 0 ) {
-    // Add new filter
-    epicsUInt32 FromID = 0;
-    epicsUInt32 ToID = 0;
-    epicsUInt8  MSGTYPE = 0;
-    if( sscanf( value, "%x:%x:%c", &FromID, &ToID, &MSGTYPE ) != 3 ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "Bad value");
-      return asynError;
-    }
-    TPMSGFILTER filter = { FromID, ToID, MSGTYPE };
-    int err = ioctl( fd_, CAN_MSG_FILTER, &filter );
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not add filter for interface '%s'. %s",
-                     driverName, functionName, deviceName_, strerror( err ) );
-      return asynError;
-    }
-
-  } else if ( epicsStrCaseCmp( key, "delfilter" ) == 0 ) {
-    // delete all existing filters
-    int err = ioctl( fd_, CAN_MSG_FILTER, NULL );
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not delete filters for interface '%s'. %s",
-                     driverName, functionName, deviceName_, strerror( err ) );
-      return asynError;
-    }
+#endif
   
-  } else {
-    // unknown option
-    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                   "%s:%s: Invalid option key '%s'",
-                   driverName, functionName, key );
+  // unknown option
+  epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                 "%s:%s: Invalid option key '%s'",
+                 driverName, functionName, key );
+  return asynError;
+}
+
+//------------------------------------------------------------------------------
+//! @brief   Connects driver to device
+//!
+//! @param   [in]  pasynUser       pasynUser structure which contains information about port and address.
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+//------------------------------------------------------------------------------
+asynStatus drvAsynCan::connect( asynUser *pasynUser ) {
+  int addr;
+  asynStatus status;
+  static const char *functionName = "connect";
+    
+  status = getAddress(pasynUser, &addr); if (status != asynSuccess) return(status);
+    
+  pasynManager->exceptionConnect(pasynUser);
+  asynPrint(pasynUser, ASYN_TRACE_FLOW,
+            "%s:%s:, pasynUser=%p\n", 
+            driverName, functionName, pasynUser);
+  return(asynSuccess);
+
+  sockaddr_can_t addr;
+  ifreq_t ifr;
+
+  // open socket
+  _socket = socket( PF_CAN, SOCK_RAW, CAN_RAW );
+  if( _socket < 0 ) {
+    perror( "Error while opening socket" );
     return asynError;
   }
   
+  strcpy( ifr.ifr_name, _deviceName );
+  ioctl( _socket, SIOCGIFINDEX, &ifr );
+ 
+  addr.can_family  = AF_CAN;
+  addr.can_ifindex = ifr.ifr_ifindex; 
+ 
+  if( bind( _socket, (sockaddr_t*)&addr, sizeof( addr ) ) < 0 ) {
+    perror( "Error in socket bind" );
+    return asynError;
+  }
+
+  pasynManager->exceptionConnect( pasynUser );
+  asynPrint( pasynUser, ASYN_TRACE_FLOW,
+             "%s:%s:, pasynUser=%p\n", 
+             driverName, functionName, pasynUser);
   return asynSuccess;
 }
 
 //------------------------------------------------------------------------------
-//! @brief   This functions is the actual interface to the hardware for sending
-//!          CAN frames
+//! @brief   Disconnects driver to device
 //!
-//!          Using the PANDA Raspberry Pi CAN Extension Board this function
-//!          uses ioctl funciton to access the kernel module
+//! @param   [in]  pasynUser       pasynUser structure which contains information about port and address.
 //!
-//! @param   [in]  pframe     CAN frame to send
-//! @param   [in]  timeout    timeout in microseconds
-//!
-//! @return  In case of no error occured 0 is returned. In case of a timeout
-//!          CAN_ERR_QXMTFULL is returned. Otherwise ERRNO is returned
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError is returned. A error message is stored
+//!          in pasynUser->errorMessage.
 //------------------------------------------------------------------------------
-int drvAsynCan::drvRPiCanWrite( can_frame_t *pframe, int timeout ){
+asynStatus drvAsynCan::disconnect( asynUser *pasynUser ) {
+  int addr;
+  asynStatus status;
+  static const char *functionName = "disconnect";
+   
+  status = getAddress(pasynUser, &addr); if (status != asynSuccess) return(status);
 
-  if ( timeout < 0)
-    return ioctl( fd_, CAN_WRITE_MSG, pframe );
-  
-  fd_set fdWrite;
-  struct timeval t;
-  
-  // calculate timeout values
-  t.tv_sec  = timeout / 1000000L;
-  t.tv_usec = timeout % 1000000L;
-  
-  FD_ZERO( &fdWrite );
-  FD_SET( fd_, &fdWrite );
-  
-  // wait until timeout or a message is ready to get written
-  int err = select( fd_ + 1, NULL, &fdWrite, NULL, &t );
-  
-  // the only one file descriptor is ready for write
-  if ( err  > 0 )
-    return ioctl( fd_, CAN_WRITE_MSG, pframe );
-  
-  // nothing is ready, timeout occured
-  if ( err == 0 )
-    return CAN_ERR_QXMTFULL;
-  return err;
-}
-
-//------------------------------------------------------------------------------
-//! @brief   This functions is the actual interface to the hardware for reading
-//!          CAN frames
-//!
-//!          Using the PANDA Raspberry Pi CAN Extension Board this function
-//!          uses ioctl funciton to access the kernel module
-//!
-//! @param   [out] pframe     CAN frame read
-//! @param   [in]  timeout    timeout in microseconds
-//!
-//! @return  In case of no error occured 0 is returned. In case of a timeout
-//!          CAN_ERR_QRCVEMPTY is returned. Otherwise ERRNO is returned
-//------------------------------------------------------------------------------
-int drvAsynCan::drvRPiCanRead( can_frame_t *pframe, int timeout ){
-  if ( timeout < 0)
-    return ioctl( fd_, CAN_READ_MSG, pframe );
-
-  fd_set fdRead;
-  struct timeval t;
-  
-  // calculate timeout values
-  t.tv_sec  = timeout / 1000000L;
-  t.tv_usec = timeout % 1000000L;
-  
-  FD_ZERO( &fdRead );
-  FD_SET( fd_, &fdRead );
-  
-  // wait until timeout or a message is ready to get read
-  int err = select( fd_ + 1, &fdRead, NULL, NULL, &t );
-  
-  // the only one file descriptor is ready for read
-  if ( err  > 0 )
-    return ioctl( fd_, CAN_READ_MSG, pframe );
-  
-  // nothing is ready, timeout occured
-  if ( err == 0 )
-    return CAN_ERR_QRCVEMPTY;
-  return err;
+  pasynManager->exceptionDisconnect(pasynUser);
+  asynPrint(pasynUser, ASYN_TRACE_FLOW,
+            "%s:%s:, pasynUser=%p\n", 
+            driverName, functionName, pasynUser);
+  return(asynSuccess);
 }
 
 //------------------------------------------------------------------------------
@@ -356,55 +411,32 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
                     0,  // Default priority
                     0 ) // Default stack size
 {
-  const char *functionName = "drvAsynCan";
+  //const char *functionName = "drvAsynCan";
     
-  deviceName_ = epicsStrDup( ttyName );
+  _deviceName = epicsStrDup( ttyName );
   P_GENERIC = 1;
 
-  // open interface
-  fd_ = open( deviceName_, O_RDWR );
-  if ( 0 > fd_ ){
-    fprintf( stderr, "\033[31;1m %s:%s: Could not open interface '%s'. %s \033[0m \n",
-             driverName, functionName, deviceName_, strerror( errno ) );
+  sockaddr_can_t addr;
+  ifreq_t ifr;
+
+  // open socket
+  _socket = socket( PF_CAN, SOCK_RAW, CAN_RAW );
+  if( _socket < 0 ) {
+    perror( "Error while opening socket" );
+    return;
+  }
+  
+  strcpy( ifr.ifr_name, _deviceName );
+  ioctl( _socket, SIOCGIFINDEX, &ifr );
+ 
+  addr.can_family  = AF_CAN;
+  addr.can_ifindex = ifr.ifr_ifindex; 
+ 
+  if( bind( _socket, (sockaddr_t*)&addr, sizeof( addr ) ) < 0 ) {
+    perror( "Error in socket bind" );
     return;
   }
 
-}
-
-// Configuration routines.  Called directly, or from the iocsh function below
-extern "C" {
-  
-  //----------------------------------------------------------------------------
-  //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynCan class.
-  //!
-  //! @param   [in]  portName The name of the asyn port driver to be created.
-  //!          [in]  ttyName  The name of the interface 
-  //----------------------------------------------------------------------------
-  int drvAsynCanConfigure( const char *portName, const char *ttyName ) {
-    new drvAsynCan( portName, ttyName );
-    return( asynSuccess );
-  }
-  static const iocshArg initRPiCanArg0 = { "portName", iocshArgString };
-  static const iocshArg initRPiCanArg1 = { "ttyName",  iocshArgString };
-  static const iocshArg * const initRPiCanArgs[] = { &initRPiCanArg0, &initRPiCanArg1 };
-  static const iocshFuncDef initRPiCanFuncDef = { "drvAsynCanConfigure", 2, initRPiCanArgs };
-  static void initRPiCanCallFunc( const iocshArgBuf *args ) {
-    drvAsynCanConfigure( args[0].sval, args[1].sval );
-  }
-  
-  //----------------------------------------------------------------------------
-  //! @brief   Register functions to EPICS
-  //----------------------------------------------------------------------------
-  void drvAsynCanDrvRegister( void ) {
-    static int firstTime = 1;
-    if ( firstTime ) {
-      iocshRegister( &initRPiCanFuncDef, initRPiCanCallFunc );
-      firstTime = 0;
-    }
-  }
-  
-  epicsExportRegistrar( drvAsynCanDrvRegister );
 }
 
 //******************************************************************************

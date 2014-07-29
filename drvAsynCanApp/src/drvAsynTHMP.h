@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for THMP using the RPi Can interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 #ifndef __ASYN_THMP_H__
@@ -33,16 +33,15 @@
 
 /* These are the drvInfo strings that are used to identify the parameters.
  * They are used by asyn clients, including standard asyn device support */
-#define P_THMP_ADCBUFFER_STRING          "THMP_RAWVALUE"          /* asynInt32,          r   */
-#define P_THMP_IOBUFFER_STRING           "THMP_IOBOARD"           /* asynUInt32Digital,  r/w */
-#define P_THMP_SERIALS_STRING            "THMP_SERIALS"           /* asynUInt32Digital,  r   */
-#define P_THMP_FIRMWARE_STRING           "THMP_FIRMWARE"          /* asynUInt32Digital,  r   */
-#define P_THMP_ERROR_STRING              "THMP_ERROR"             /* asynUInt32Digital,  r   */
+#define P_THMP_ADCBUFFER_STRING          "Value"                //!<  asynInt32,          r  
+#define P_THMP_IOBUFFER_STRING           "IOBoard"              //!<  asynUInt32Digital,  r/w
+#define P_THMP_SERIALS_STRING            "Serial"               //!<  asynUInt32Digital,  r  
+#define P_THMP_ERROR_STRING              "Error"                //!<  asynUInt32Digital,  r  
 
-#define P_THMP_CONFIGIO_STRING           "THMP_CONFIG_IO"         /* asynInt32,          r/w */
-#define P_THMP_TRG_ADCBUFFER_STRING      "THMP_TRG_ADC"           /* asynInt32,          w   */
-#define P_THMP_TRG_IOBUFFER_STRING       "THMP_TRG_IO"            /* asynInt32,          w   */
-#define P_THMP_TRG_SERIALS_STRING        "THMP_TRG_SERIALS"       /* asynInt32,          w   */
+#define P_THMP_CONFIGIO_STRING           "ConfigIO"             //!<  asynInt32,          r/w
+#define P_THMP_TRG_ADCBUFFER_STRING      "ReadoutADC"           //!<  asynInt32,          r/w  
+#define P_THMP_TRG_IOBUFFER_STRING       "ReadoutIO"            //!<  asynInt32,          r/w  
+#define P_THMP_TRG_SERIALS_STRING        "ReadoutSerials"       //!<  asynInt32,          r/w  
 
 //! @brief   asynPortDriver for the Temperature and Humidity Monitoring Board for PANDA
 //!
@@ -62,27 +61,26 @@ class drvAsynTHMP : public asynPortDriver {
 
  protected:
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
-  int P_RawValue;       //!< index of parameter "THMP_RAWVALUE"
-  int P_IoBoard;        //!< index of parameter "THMP_IOBOARD"
-  int P_Serials;        //!< index of parameter "THMP_SERIALS"
-  int P_ConfigIO;       //!< index of parameter "THMP_CONFIG_IO"
-  int P_Firmware;       //!< index of parameter "THMP_FIRMWARE"
-  int P_Error;          //!< index of parameter "THMP_ERROR"
-  int P_Trg_ADC;        //!< index of parameter "THMP_TRG_ADC"
-  int P_Trg_IO;         //!< index of parameter "THMP_TRG_IO"
-  int P_Trg_Serials;    //!< index of parameter "THMP_TRG_SERIALS"
+  int P_RawValue;       //!< index of parameter "Value"
+  int P_IoBoard;        //!< index of parameter "IOBoard"
+  int P_Serials;        //!< index of parameter "Serial"
+  int P_ConfigIO;       //!< index of parameter "ConfigIO"
+  int P_Error;          //!< index of parameter "Error"
+  int P_Trg_ADC;        //!< index of parameter "ReadoutADC"
+  int P_Trg_IO;         //!< index of parameter "ReadoutIO"
+  int P_Trg_Serials;    //!< index of parameter "ReadoutSerials"
 #define FIRST_THMP_COMMAND P_RawValue
 #define LAST_THMP_COMMAND  P_Trg_Serials
 
  private:
-  char                *deviceName_;
-  epicsUInt32          can_id_;
-  asynUser            *pasynUser_;
-  asynCommon          *pasynCommon_;
-  void                *pvtCommon_;
-  asynGenericPointer  *pasynGenericPointer_;
-  void                *pvtGenericPointer_;
-  void                *intrPvtGenericPointer_;
+  char                *_deviceName;
+  epicsUInt32          _can_id;
+  asynUser            *_pasynUser;
+  asynCommon          *_pasynCommon;
+  void                *_pvtCommon;
+  asynGenericPointer  *_pasynPointerGeneric;
+  void                *_pvtPointerGeneric;
+  void                *_intrPvtPointerGeneric;
 };
 
 #define NUM_THMP_PARAMS (&LAST_THMP_COMMAND - &FIRST_THMP_COMMAND + 1)

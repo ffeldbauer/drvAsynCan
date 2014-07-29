@@ -47,46 +47,17 @@ record (seq, "PANDA:$(subsys):HV:$(sector):moduleSCAN") {
 ##########################################################
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_STATUS")
-
-  # Bit  0: isADJ              0: fine adjustment off  1: fine adjustment on
-  # Bit  1: reserved
-  # Bit  2: isLVINS            0: no ...               1: Live Insertion mode
-  # Bit  3: reserved
-  # Bit  4: needSrvc           0:                      1: Hardware failure detected
-  # Bit  5: isHwVLIMgd         0: HwVLIM not in range  1: HwVLIM in range
-  # Bit  6: isIERR             0: no error             1: Input error in connection
-  # Bit  7: reserved
-  # Bit  8: isnoSERR           0: Error                1: sum of all channel error flags=0
-  # Bit  9: isnoRAMP           0: channel is ramping   1: no channel is ramping
-  # Bit 10: isSFLPgd           0: safety loop broken   1: Safety loop closed
-  # Bit 11: isEVNTact          0: No Event active      1: any Event active
-  # Bit 12: isMODgd            0: Module not good      1: Module is good
-  # Bit 13: isSPLYgd           0: Supply out of range  1: Supply OK
-  # Bit 14: isTMPgd            0: Temp above 55degC    1: Temperature within range
-  # Bit 15: isKILena           0: state kill disable   1: state kill enable
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ModuleStatus")
 }
 
 record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
   field (DTYP, "asynUInt32Digital")
-  field (INP,  "@asynMask($(BUS),0,0xffff,1)ISEGHV_MOD_EVENT_STATUS")
+  field (INP,  "@asynMask($(BUS),0,0xffff,1)ModuleEventStatus")
+}
 
-  # Bit  0: reserved
-  # Bit  1: reserved
-  # Bit  2: ELVINS             0:                      1: Event live insertion to prepare a hot plug of a module
-  # Bit  3: reserved
-  # Bit  4: ESrvc              0:                      1: Hardware failure detected
-  # Bit  5: EHwVLIMngd         0:                      1: HwVLIM out of range
-  # Bit  6: EIERR              0:                      1: Input Error in connection
-  # Bit  7: reserved
-  # Bit  8: reserved
-  # Bit  9: reserved
-  # Bit 10: ESFLPngd           0:                      1: Safety loop open
-  # Bit 11: reserved
-  # Bit 12: reserved
-  # Bit 13: ESPLYngd           0:                      1: Supply is not good 
-  # Bit 14: ETMPngd            0:                      1: Temperature above 55degC
-  # Bit 15: reserved
+record (mbboDirect, "PANDA:$(subsys):HV:$(sector):ModEventMask") {
+  field (DTYP, "asynUInt32Digital")
+  field (OUT,  "@asynMask($(BUS),0,0xffff,1)ModuleEventMask")
 }
 
 ######################################
@@ -94,7 +65,7 @@ record (mbbiDirect, "PANDA:$(subsys):HV:$(sector):ModEventStatus") {
 ######################################
 record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
   field (DTYP, "asynFloat64")
-  field (INP,  "@asyn($(BUS),0,1)ISEGHV_TEMPERATURE")
+  field (INP,  "@asyn($(BUS),0,1)BoardTemperature")
   # display parameters
   field (EGU,  "degC")
   field (PREC, "2")
@@ -117,19 +88,19 @@ record (ai, "PANDA:$(subsys):HV:$(sector):BoardTemperature") {
 ###########################
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanStat" ) {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_STATUS")
+  field (OUT,  "@asyn($(BUS),0,1)ReadChannelStatus")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanEvtStat" ) {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_EVENT_STATUS")
+  field (OUT,  "@asyn($(BUS),0,1)ReadChannelEventStatus")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanVmom" ) {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_VMOM")
+  field (OUT,  "@asyn($(BUS),0,1)ReadVoltageMeasurement")
 }
 record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanImom" ) {
   field (DTYP, "asynInt32")
-  field (OUT,  "@asyn($(BUS),0,1)ISEGHV_READ_CHAN_IMOM")
+  field (OUT,  "@asyn($(BUS),0,1)ReadCurrentMeasurement")
 }
 
 ####################

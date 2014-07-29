@@ -8,7 +8,7 @@ include $(TOP)/configure/RELEASE
 CONFIG=$(EPICS_BASE)/configure
 include $(CONFIG)/CONFIG
 
-INSTALL_LOCATION = $(TOP)
+INSTALL_LOCATION = /opt/epics/modules/drvAsynCan
 ifdef INSTALL_LOCATION_APP
 INSTALL_LOCATION = $(INSTALL_LOCATION_APP)
 endif

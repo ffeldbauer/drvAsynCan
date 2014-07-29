@@ -20,7 +20,7 @@
 //
 // brief Poll for new CAN frames on the bus
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 //_____ I N C L U D E S _______________________________________________________
@@ -49,7 +49,7 @@
 #include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
-ReadPoller* ReadPoller::pinstance_ = NULL;
+ReadPoller* ReadPoller::_pinstance = NULL;
 
 //_____ G L O B A L S __________________________________________________________
 
@@ -66,17 +66,19 @@ void CANreadPoller() {
   ReadPoller::getInstance()->poll();
 }
 
+//------------------------------------------------------------------------------
+
 ReadPoller::ReadPoller( const char* port )
-  : portname_(port)
+  : _portname(port)
 {
-  if( pasynGenericPointerSyncIO->connect( port, 0, &pasynUser_, 0 ) != asynSuccess ) {
-    initialized_ = false;
+  if( pasynGenericPointerSyncIO->connect( port, 0, &_pasynUser, 0 ) != asynSuccess ) {
+    _initialized = false;
     return;
   }
     
-  initialized_ = true;
+  _initialized = true;
   
-  this->eventId_ = epicsEventCreate( epicsEventEmpty );
+  this->_eventId = epicsEventCreate( epicsEventEmpty );
 
   // Create the thread that polls interface for received messages
   epicsThreadCreate( "ReadPollerTask",
@@ -87,33 +89,43 @@ ReadPoller::ReadPoller( const char* port )
 
 }
 
+//------------------------------------------------------------------------------
+
 ReadPoller::ReadPoller( const ReadPoller& rother ){
-  portname_ = epicsStrDup( rother.portname_ );
-  pasynUser_ = rother.pasynUser_;
+  _portname = epicsStrDup( rother._portname );
+  _pasynUser = rother._pasynUser;
 }
+
+//------------------------------------------------------------------------------
 
 ReadPoller::~ReadPoller(){
 }
 
+//------------------------------------------------------------------------------
+
 void ReadPoller::create( const char* port ){
-  if ( NULL == pinstance_ )  pinstance_ = new ReadPoller( port );
+  if ( NULL == _pinstance )  _pinstance = new ReadPoller( port );
   return;
 }
 
+//------------------------------------------------------------------------------
+
 ReadPoller* ReadPoller::getInstance() {
-  if ( NULL == pinstance_ ) std::cerr << "No instance of ReadPoller" << std::endl;
-  return pinstance_; 
+  if ( NULL == _pinstance ) std::cerr << "No instance of ReadPoller" << std::endl;
+  return _pinstance; 
 }
 
+//------------------------------------------------------------------------------
+
 void ReadPoller::poll() {
-  if ( !initialized_ ) {
+  if ( !_initialized ) {
     std::cerr << "Initialization of ReadPoller failed" << std::endl;
     return;
   }
   can_frame_t *pframe = new can_frame_t;
   // Loop forever
   while (1) {
-    pasynGenericPointerSyncIO->read( pasynUser_, pframe, .5 );
+    pasynGenericPointerSyncIO->read( _pasynUser, pframe, .5 );
   }
 }
 

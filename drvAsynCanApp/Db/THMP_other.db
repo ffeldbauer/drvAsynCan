@@ -30,7 +30,7 @@
 record (ai, "PANDA:$(subsys):$(type):$(sector):$(valtype)mom") {
   field (DTYP, "asynInt32")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(no),1)THMP_RAWVALUE")
+  field (INP,  "@asyn($(BUS),$(no),1)Value")
 
   # display parameters
   field (EGU,  "$(unit)")

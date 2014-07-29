@@ -20,7 +20,7 @@
 //
 // brief   Asyn driver for ISEG EHS/EDS high voltage modules using the RPi Can interface
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 #ifndef __ASYN_ISEG_HV_GLOBAL_H__

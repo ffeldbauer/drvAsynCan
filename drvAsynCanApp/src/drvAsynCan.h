@@ -18,16 +18,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
-// brief   Asyn port driver for Peak Systems CAN interfaces
-//
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
-#ifndef __ASYN_PEAK_CAN_H__
-#define __ASYN_PEAK_CAN_H__
+#ifndef __ASYN_CAN_H__
+#define __ASYN_CAN_H__
 
 //_____ I N C L U D E S _______________________________________________________
-#include <pcan.h>
+#include <linux/can.h>
 
 #include "asynPortDriver.h"
 
@@ -54,19 +52,21 @@ class drvAsynCan : public asynPortDriver {
   virtual asynStatus writeGenericPointer( asynUser *pasynUser, void *pointer );
   virtual asynStatus readOption( asynUser *pasynUser, const char *key, char *value, int maxChars );
   virtual asynStatus writeOption( asynUser *pasynUser, const char *key, const char *value );
+  virtual asynStatus connect( asynUser *pasynUser );
+  virtual asynStatus disconnect( asynUser *pasynUser );
 
  protected:
-  /** Values used for pasynUser->reason, and indexes into the parameter library. */
+  /* Values used for pasynUser->reason, and indexes into the parameter library. */
   int P_GENERIC;
 
  private:
-  int drvPeakCanWrite( TPCANMsg *pframe, int timeout );
-  int drvPeakCanRead( TPCANRdMsg *pframe, int timeout );
 
   /* Our data */
-  char *deviceName_;
-  int   fd_;
+  char             *_deviceName;
+  int               _socket;
+  struct can_frame  _frame;
 };
+
 
 #endif
 

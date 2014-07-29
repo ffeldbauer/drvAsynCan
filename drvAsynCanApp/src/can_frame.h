@@ -20,7 +20,7 @@
 //
 // brief   Definition of socket CAN like can frame structure
 //
-// version 2.0.0; Jun. 05, 2013
+// version 3.0.0; Jul. 29, 2014
 //******************************************************************************
 
 #ifndef __ASYN_CAN_FRAME_H__

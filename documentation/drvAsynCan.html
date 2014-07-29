@@ -8,9 +8,9 @@
   <div style="text-align: center">
     <h1>drvAsynRPiCan: Asynchronous Port Driver Support</h1>
     <h2>For Raspberry Pi CAN bus interface</h2>
-    <p><span style="font-weight: bold; font-size: 14pt">Release 1-00</span></p>
+    <p><span style="font-weight: bold; font-size: 14pt">Release 2-02</span></p>
     <p><span style="font-weight: bold; font-size: 14pt">Florian Feldbauer</span></p>
-    <p><span style="font-weight: bold; font-size: 14pt">November , 2012</span></p>
+    <p><span style="font-weight: bold; font-size: 14pt">August , 2013</span></p>
   </div>
   <hr />
   <div style="text-align: center">
@@ -70,13 +70,12 @@
   <p>where the arguments are:</p>
   <ul>
     <li>portName - The portName that is registered with asynManager.</li>
-    <li>canName - The name of the local CAN interface (e.g. "/dev/can", "COM1").</li>
+    <li>canName - The name of the local socketCAN interface (e.g. "can0").</li>
   </ul>
-  <p><b>NOTE:</b> Building this module for linux-x86(_64) architectures requires the kernel module from
-     <a href="http://www.peak-system.com/fileadmin/media/linux/index.htm">PEAK systems</a>.
-     On linux-arm the kernel module provided in this package is needed.</p>
-  <p>This driver uses asynOption to set the bitrate for CAN messages in bit/s or to add filters for received
-    CAN frames.</p>
+  <p>This driver uses asynOption to set the bitrate for CAN messages in bit/s.<br/>
+    <b>NOTE:</b> <a href="http://git.pengutronix.de/?p=tools/libsocketcan.git">libsocketcan</a>
+    is needed for the options to work.<br/>
+    Define LIBSOCKETCAN_INCLUDE and LIBSOCKETCAN_LIB in configure/RELEASE.Common.&lt;arch&gt;</p>
     <pre>  asynSetOption( "portName", addr, "key", "value" )</pre>
     <table border="1"><thead>
         <th>Key</th><th>Description</th>
@@ -85,26 +84,7 @@
         <tr><td>bitrate</td><td>Change the bitrate of the CAN interface in bit/s<br/>
           Allowed values are: 5000, 10000, 20000, 50000, 100000, 125000, 250000, 500000, and 1000000
           </td></tr>
-        <tr><td>addfilter</td><td>Add a filter for received CAN messages<br/>
-          The value should be of form <tt>"FromID:ToID:MSGTYPE"</tt><br/>
-          Only messages with <tt>FromID &le; message id &le; ToID</tt> and MSGTYPE will be accepted.<br />
-          The CAN ids are in hexadecimal.<br/>
-          Multiple filters can be applied at the same time.
-          </td></tr>
-        <tr><td>delfilter</td><td>Delete all filters for received CAN messages.<br/>
-          The value string is not needed by this option.
-          </td></tr>
       </tbody></table>
-      <p>MSGTYPE is a 2 bit number. Bit 0 represents the IDE flag of the CAN frame, bit 1
-        the RTR flag.<br/>The truth-table for this filtering is given below (1=Accepted):</p>
-      <table border="1">
-        <tr align="center" valign="middle"><td></td><td colspan="2">RTR_Filter = 1</td></td><td colspan="2">RTR_Filter = 0</td><td></td></tr>
-        <tr align="center" valign="middle"><td rowspan="2">IDE_Filter = 1</td><td>0 </td><td> 1 </td><td> 1 </td><td> 1 </td><td> IDE_bit = 0</td></tr>
-        <tr align="center" valign="middle"><td> 0 </td><td>  1 </td><td> 1 </td><td> 1 </td><td rowspan="2">IDE_bit = 1</td></tr>
-      <tr align="center" valign="middle"><td rowspan="2">IDE_Filter = 0</td><td> 0 </td><td>  0 </td><td> 0  </td><td> 0 </td></tr>
-      <tr align="center" valign="middle"><td>0  </td><td> 1  </td><td> 1 </td><td>  1</td><td> IDE_bit = 0</td></tr>
-      <tr align="center" valign="middle"><td></td><td>RTR_bit = 0</td></td><td colspan="2">RTR_bit = 1</td><td>RTR_bit = 0</td><td></td></tr>
-      </table>
 
   <hr />
   <div style="text-align: center">

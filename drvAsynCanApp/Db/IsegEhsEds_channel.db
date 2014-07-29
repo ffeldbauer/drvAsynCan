@@ -22,47 +22,13 @@
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ISEGHV_CHAN_STATUS")
-
-  # Bit  0: reserved
-  # Bit  1: isREG     0: normal error evaluation  1: fast detection of a regulation error         NOT SUPPORTED
-  # Bit  2: IEER      0: no input-error           1: incorrect message to control the module
-  # Bit  3: isON      0: channel is off           1: channel is on (Vo is following Vset)
-  # Bit  4: isRAMP    0: Vo is stable             1: Vo is ramping
-  # Bit  5: isEMCY    0:                          1: channel is in state emergency off
-  # Bit  6: isCC      0:                          1: channel is in state of current control
-  # Bit  7: isCV      0:                          1: channel is in state of voltage control
-  # Bit  8: reserved
-  # Bit  9: reserved  
-  # Bit 10: isCBND    0: channel is ok            1: |Imeas - Iset| > Ibounds
-  # Bit 11: isVBND    0: channel is ok            1: |Vmeas - Vset| > Vbounds
-  # Bit 12: isEINH    0: channel is ok            1: External Inhibit was scanned
-  # Bit 13: isTRP     0: channel is ok            1: Vo is shut off to 0 V without ramp because the channel has been tripped
-  # Bit 14: isCLIM    0: channel is ok            1: the hardware current limit is exceeded
-  # Bit 15: isVLIM    0: channel is ok            1: the hardware voltage limit is exceeded
+  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelStatus")
 }
 
 record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
   field (DTYP, "asynUInt32Digital")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ISEGHV_CHAN_EVENT_STATUS")
-
-  # Bit  0: reserved
-  # Bit  1: reserved
-  # Bit  2: EIER               0:                      1: Input Error occurred
-  # Bit  3: EOn2Off            0:                      1: Channel switched off w/o ramp
-  # Bit  4: EEOR               0:                      1: Ramp ended
-  # Bit  5: EEMCY              0:                      1: emergency off
-  # Bit  6: ECC                0:                      1: current control
-  # Bit  7: EVC                0:                      1: voltage control
-  # Bit  8: reserved
-  # Bit  9: reserved
-  # Bit 10: ECBNDs             0:                      1: current is/was out of bounds
-  # Bit 11: EVBNDs             0:                      1: voltage is/was out of bounds
-  # Bit 12: EEINH              0:                      1: Ext Inhibit signal triggered
-  # Bit 13: ETRP               0:                      1: Channel tripped
-  # Bit 14: ECLIM              0:                      1: current limit is/was exceeded
-  # Bit 15: EVLIM              0:                      1: voltage limit is/was exceeded
+  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelEventStatus")
 }
 
 ########################################
@@ -71,7 +37,7 @@ record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
 record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom") {
   field (DTYP, "asynFloat64")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_VMOM")
+  field (INP,  "@asyn($(BUS),$(channel),1)VoltageMeasurement")
   # display parameters
   field (EGU,  "V")
   field (PREC, "1")
@@ -92,7 +58,7 @@ record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom") {
 record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom") {
   field (DTYP, "asynFloat64")
   field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_IMOM")
+  field (INP,  "@asyn($(BUS),$(channel),1)CurrentMeasurement")
   # display parameters
   field (EGU,  "uA")
   field (PREC, "2")
@@ -115,7 +81,7 @@ record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom") {
 ###################################
 record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset") {
   field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_VSET")
+  field (OUT,  "@asyn($(BUS),$(channel),1)SetVoltage")
   field (DRVH, "$(maxV)")
   field (DRVL, "0")
   field (PREC, "1")
@@ -124,7 +90,7 @@ record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset") {
 
 record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Iset") {
   field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS),$(channel),1)ISEGHV_CHAN_ISET")
+  field (OUT,  "@asyn($(BUS),$(channel),1)SetCurrent")
   field (DRVH, "$(maxI)")
   field (DRVL, "0")
   field (PREC, "2")

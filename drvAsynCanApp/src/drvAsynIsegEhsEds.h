@@ -22,7 +22,7 @@
 //
 // version 3.0.0; Jul. 29, 2014
 //******************************************************************************
-
+//! @file 
 #ifndef __ASYN_ISEG_EHS_EDS_H__
 #define __ASYN_ISEG_EHS_EDS_H__
 
@@ -32,49 +32,55 @@
 
 //_____ D E F I N I T I O N S __________________________________________________
 
-// These are the drvInfo strings that are used to identify the parameters.
-// They are used by asyn clients, including standard asyn device support
-#define P_ISEGEHSEDS_CHANSTATUS_STRING         "ChannelStatus"                //!< asynUInt32Digital,  r   
-#define P_ISEGEHSEDS_CHAN_CTRL_STRING          "ChannelControl"               //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_CHANEVTSTATUS_STRING      "ChannelEventStatus"           //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_CHANEVTMASK_STRING        "ChannelEventMask"             //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_VSET_STRING               "SetVoltage"                   //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_ISET_STRING               "SetCurrent"                   //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_VMOM_STRING               "VoltageMeasurement"           //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_IMOM_STRING               "CurrentMeasurement"           //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_VBOUNDS_STRING            "VoltageBounds"                //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_IBOUNDS_STRING            "CurrentBounds"                //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_VNOM_STRING               "NominalVoltage"               //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_INOM_STRING               "NominalCurrent"               //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_IMOM_RANGE_STRING         "CurrentMeasurementRange"      //!< asynInt32,          r   
+//! @defgroup IsegEhsEdsParameters
+//! These are the drvInfo strings that are used to identify the parameters.
+//! They are used by asyn clients, including standard asyn device support
+//! @{
+#define P_ISEGEHSEDS_CHANSTATUS_STRING         "ChannelStatus"            //!< asynUInt32Digital,  r   
+#define P_ISEGEHSEDS_CHAN_CTRL_STRING          "ChannelControl"           //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_CHANEVTSTATUS_STRING      "ChannelEventStatus"       //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_CHANEVTMASK_STRING        "ChannelEventMask"         //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_VSET_STRING               "VoltageSet"               //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_ISET_STRING               "CurrentSet"               //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_VMOM_STRING               "VoltageMeasure"           //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_IMOM_STRING               "CurrentMeasure"           //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_VBOUNDS_STRING            "VoltageBounds"            //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_IBOUNDS_STRING            "CurrentBounds"            //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_VNOM_STRING               "VoltageNominal"           //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_INOM_STRING               "CurrentNominal"           //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_IMOM_RANGE_STRING         "CurrentMeasureRange"      //!< asynInt32,          r   
 
-#define P_ISEGEHSEDS_R_CHANSTATUS_STRING       "ReadChannelStatus"            //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_CHAN_CTRL_STRING        "ReadChannelControl"           //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_CHANEVTSTATUS_STRING    "ReadChannelEventStatus"       //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_CHANEVTMASK_STRING      "ReadChannelEventMask"         //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_VSET_STRING             "ReadSetVoltage"               //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_ISET_STRING             "ReadSetCurrent"               //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_VMOM_STRING             "ReadVoltageMeasurement"       //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_IMOM_STRING             "ReadCurrentMeasurement"       //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_VBOUNDS_STRING          "ReadVoltageBounds"            //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_IBOUNDS_STRING          "ReadCurrentBounds"            //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_VNOM_STRING             "ReadNominalVoltage"           //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_INOM_STRING             "ReadNominalCurrent"           //!< asynInt32,          r/w 
-#define P_ISEGEHSEDS_R_IMOM_RANGE_STRING       "ReadCurrentMeasurementRange"  //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_CHANSTATUS_STRING       "ReadChannelStatus"        //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_CHAN_CTRL_STRING        "ReadChannelControl"       //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_CHANEVTSTATUS_STRING    "ReadChannelEventStatus"   //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_CHANEVTMASK_STRING      "ReadChannelEventMask"     //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_VSET_STRING             "ReadVoltageSet"           //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_ISET_STRING             "ReadCurrentSet"           //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_VMOM_STRING             "ReadVoltageMeasure"       //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_IMOM_STRING             "ReadCurrentMeasure"       //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_VBOUNDS_STRING          "ReadVoltageBounds"        //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_IBOUNDS_STRING          "ReadCurrentBounds"        //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_VNOM_STRING             "ReadVoltageNominal"       //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_INOM_STRING             "ReadCurrentNominal"       //!< asynInt32,          r/w 
+#define P_ISEGEHSEDS_R_IMOM_RANGE_STRING       "ReadCurrentMeasureRange"  //!< asynInt32,          r/w 
 
-#define P_ISEGEHSEDS_MODSTATUS_STRING          "ModuleStatus"                 //!< asynUInt32Digital,  r   
-#define P_ISEGEHSEDS_MODCTRL_STRING            "ModuleControl"                //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTSTATUS_STRING       "ModuleEventStatus"            //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTMASK_STRING         "ModuleEventMask"              //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTCHANSTATUS_STRING   "ModuleEventChannelStatus"     //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTCHANMASK_STRING     "ModuleEventChannelMask"       //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTGRPSTATUS_STRING    "ModuleEventGroupStatus"       //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_MODEVTGRPMASK_STRING      "ModuleEventGroupMask"         //!< asynUInt32Digital,  r/w 
-#define P_ISEGEHSEDS_VRAMPSPEED_STRING         "VoltageRampSpeed"             //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_IRAMPSPEED_STRING         "CurrentRampSpeed"             //!< asynFloat64,        r/w 
-#define P_ISEGEHSEDS_SUPPLY24_STRING           "Supply24"                     //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_SUPPLY5_STRING            "Supply5"                      //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_TEMPERATURE_STRING        "BoardTemperature"             //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_MODSTATUS_STRING          "ModuleStatus"             //!< asynUInt32Digital,  r   
+#define P_ISEGEHSEDS_MODCTRL_STRING            "ModuleControl"            //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTSTATUS_STRING       "ModuleEventStatus"        //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTMASK_STRING         "ModuleEventMask"          //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTCHANSTATUS_STRING   "ModuleEventChannelStatus" //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTCHANMASK_STRING     "ModuleEventChannelMask"   //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTGRPSTATUS_STRING    "ModuleEventGroupStatus"   //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_MODEVTGRPMASK_STRING      "ModuleEventGroupMask"     //!< asynUInt32Digital,  r/w 
+#define P_ISEGEHSEDS_VRAMPSPEED_STRING         "VoltageRampSpeed"         //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_IRAMPSPEED_STRING         "CurrentRampSpeed"         //!< asynFloat64,        r/w 
+#define P_ISEGEHSEDS_VMAX_STRING               "VoltageMax"               //!< asynFloat64,        r 
+#define P_ISEGEHSEDS_IMAX_STRING               "CurrentMax"               //!< asynFloat64,        r 
+#define P_ISEGEHSEDS_SUPPLY24_STRING           "Supply24"                 //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_SUPPLY5_STRING            "Supply5"                  //!< asynFloat64,        r   
+#define P_ISEGEHSEDS_TEMPERATURE_STRING        "BoardTemperature"         //!< asynFloat64,        r
+
+//! @}
 
 //! @brief   asynPortDriver for ISEG EHS/EDS high voltage modules
 //!
@@ -101,29 +107,29 @@ class drvAsynIsegEhsEds : public asynPortDriver {
   int P_ChanCtrl;            //!< index of Parameter "ChannelControl"
   int P_ChanEventStatus;     //!< index of Parameter "ChannelEventStatus"
   int P_ChanEventMask;       //!< index of Parameter "ChannelEventMask"
-  int P_ChanVset;            //!< index of Parameter "SetVoltage"
-  int P_ChanIset;            //!< index of Parameter "SetCurrent"
-  int P_ChanVmom;            //!< index of Parameter "VoltageMeasurement"
-  int P_ChanImom;            //!< index of Parameter "CurrentMeasurement"
+  int P_ChanVset;            //!< index of Parameter "VoltageSet"
+  int P_ChanIset;            //!< index of Parameter "CurrentSet"
+  int P_ChanVmom;            //!< index of Parameter "VoltageMeasure"
+  int P_ChanImom;            //!< index of Parameter "CurrentMeasure"
   int P_ChanVbounds;         //!< index of Parameter "VoltageBounds"
   int P_ChanIbounds;         //!< index of Parameter "CurrentBounds"
-  int P_ChanVnom;            //!< index of Parameter "NominalVoltage"
-  int P_ChanInom;            //!< index of Parameter "NominalCurrent"
-  int P_ChanImomRange;       //!< index of Parameter "CurrentMeasurementRange"
+  int P_ChanVnom;            //!< index of Parameter "VoltageNominal"
+  int P_ChanInom;            //!< index of Parameter "CurrentNominal"
+  int P_ChanImomRange;       //!< index of Parameter "CurrentMeasureRange"
 
   int P_R_ChanStatus;        //!< index of Parameter "ReadChannelStatus"
   int P_R_ChanCtrl;          //!< index of Parameter "ReadChannelControl"
   int P_R_ChanEventStatus;   //!< index of Parameter "ReadChannelEventStatus"
   int P_R_ChanEventMask;     //!< index of Parameter "ReadChannelEventMask"
-  int P_R_ChanVset;          //!< index of Parameter "ReadSetVoltage"
-  int P_R_ChanIset;          //!< index of Parameter "ReadSetCurrent"
-  int P_R_ChanVmom;          //!< index of Parameter "ReadVoltageMeasurement"
-  int P_R_ChanImom;          //!< index of Parameter "ReadCurrentMeasurement"
+  int P_R_ChanVset;          //!< index of Parameter "ReadVoltageSet"
+  int P_R_ChanIset;          //!< index of Parameter "ReadCurrentSet"
+  int P_R_ChanVmom;          //!< index of Parameter "ReadVoltageMeasure"
+  int P_R_ChanImom;          //!< index of Parameter "ReadCurrentMeasure"
   int P_R_ChanVbounds;       //!< index of Parameter "ReadVoltageBounds"
   int P_R_ChanIbounds;       //!< index of Parameter "ReadCurrentBounds"
-  int P_R_ChanVnom;          //!< index of Parameter "ReadNominalVoltage"
-  int P_R_ChanInom;          //!< index of Parameter "ReadNominalCurrent"
-  int P_R_ChanImomRange;     //!< index of Parameter "ReadCurrentMeasurementRange"
+  int P_R_ChanVnom;          //!< index of Parameter "ReadVoltageNominal"
+  int P_R_ChanInom;          //!< index of Parameter "ReadCurrentNominal"
+  int P_R_ChanImomRange;     //!< index of Parameter "ReadCurrentMeasureRange"
   
   int P_ModStatus;           //!< index of Parameter "ModuleStatus"
   int P_ModCtrl;             //!< index of Parameter "ModuleControl"
@@ -135,6 +141,8 @@ class drvAsynIsegEhsEds : public asynPortDriver {
   int P_ModEventGrpMask;     //!< index of Parameter "ModuleEventGroupMask"
   int P_VRampSpeed;          //!< index of Parameter "VoltageRampSpeed"
   int P_IRampSpeed;          //!< index of Parameter "CurrentRampSpeed"
+  int P_Vmax;                //!< index of Parameter "VoltageMax"
+  int P_Imax;                //!< index of Parameter "CurrentMax"
   int P_Supply24;            //!< index of Parameter "Supply24"
   int P_Supply5;             //!< index of Parameter "Supply5"
   int P_Temperature;         //!< index of Parameter "BoardTemperature"
@@ -158,7 +166,6 @@ class drvAsynIsegEhsEds : public asynPortDriver {
   asynGenericPointer  *_pasynGenericPointer;
   void                *_pvtGenericPointer;
   void                *_intrPvtGenericPointer;
-//  epicsUInt16          _chanMsk;
 
 };
 

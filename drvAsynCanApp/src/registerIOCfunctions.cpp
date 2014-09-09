@@ -97,7 +97,7 @@ extern "C" {
       return( asynError );
     }
     char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
-    new drvAsynIsegHv( portName, CanPort, module_id, channels );
+    new drvAsynIsegEhsEds( portName, CanPort, module_id, channels );
     return( asynSuccess );
   }
   static const iocshArg initIsegEhsEdsArg0 = { "portName",  iocshArgString };

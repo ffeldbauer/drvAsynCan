@@ -342,6 +342,7 @@ asynStatus drvAsynIsegEhsEds::writeUInt32Digital( asynUser *pasynUser, epicsUInt
   pframe.can_dlc = it->second.dlc + 2;
   pframe.data[0] = it->second.data0;
   pframe.data[1] = it->second.data1;
+  epicsUInt8 offset = ( 16 * addr );
   if ( function == P_ChanCtrl ) {
     pframe.can_id  = _can_id;
     pframe.data[2] = (epicsUInt8)addr;
@@ -377,13 +378,13 @@ asynStatus drvAsynIsegEhsEds::writeUInt32Digital( asynUser *pasynUser, epicsUInt
   }
   if ( function == P_ModEventChanStatus ) {
     pframe.can_id  = _can_id;
-    pframe.data[2] = (epicsUInt8)addr;
+    pframe.data[2] = offset;
     pframe.data[3] = (epicsUInt8)( ( value & 0x0000ff00 ) >> 8 );
     pframe.data[4] = (epicsUInt8)(   value & 0x000000ff );    
   }
   if ( function == P_ModEventChanMask ) {
     pframe.can_id  = _can_id;
-    pframe.data[2] = (epicsUInt8)addr;
+    pframe.data[2] = offset;
     pframe.data[3] = (epicsUInt8)( ( value & 0x0000ff00 ) >> 8 );
     pframe.data[4] = (epicsUInt8)(   value & 0x000000ff );    
   }
@@ -540,6 +541,8 @@ asynStatus drvAsynIsegEhsEds::writeFloat64( asynUser *pasynUser, epicsFloat64 va
        function == P_ChanImom  || \
        function == P_ChanVnom  || \
        function == P_ChanInom  || \
+       function == P_Vmax      || \
+       function == P_Imax      || \
        function == P_Supply24  || \
        function == P_Supply5   ||              \
        function == P_Temperature )
@@ -628,6 +631,8 @@ asynStatus drvAsynIsegEhsEds::readFloat64( asynUser *pasynUser, epicsFloat64 *va
 
   if ( function == P_VRampSpeed || \
        function == P_IRampSpeed || \
+       function == P_Vmax       || \
+       function == P_Imax       || \
        function == P_Supply24   || \
        function == P_Supply5    || \
        function == P_Temperature ) {
@@ -773,6 +778,8 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   createParam( P_ISEGEHSEDS_MODEVTGRPMASK_STRING,    asynParamUInt32Digital, &P_ModEventGrpMask );
   createParam( P_ISEGEHSEDS_VRAMPSPEED_STRING,       asynParamFloat64,       &P_VRampSpeed );
   createParam( P_ISEGEHSEDS_IRAMPSPEED_STRING,       asynParamFloat64,       &P_IRampSpeed );
+  createParam( P_ISEGEHSEDS_VMAX_STRING,             asynParamFloat64,       &P_Vmax );
+  createParam( P_ISEGEHSEDS_IMAX_STRING,             asynParamFloat64,       &P_Imax );
   createParam( P_ISEGEHSEDS_SUPPLY24_STRING,         asynParamFloat64,       &P_Supply24 );
   createParam( P_ISEGEHSEDS_SUPPLY5_STRING,          asynParamFloat64,       &P_Supply5 );
   createParam( P_ISEGEHSEDS_TEMPERATURE_STRING,      asynParamFloat64,       &P_Temperature );
@@ -1006,6 +1013,8 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   isegFrame modegrpmsk_cmd = { 2, 0x10, 0x06 }; // TODO ? ask iseg
   isegFrame vramp_cmd      = { 2, 0x11, 0x00 };
   isegFrame iramp_cmd      = { 2, 0x11, 0x01 };
+  isegFrame vmax_cmd       = { 2, 0x11, 0x02 };
+  isegFrame imax_cmd       = { 2, 0x11, 0x03 };
   isegFrame supply24_cmd   = { 2, 0x11, 0x04 };
   isegFrame supply5_cmd    = { 2, 0x11, 0x05 };
   isegFrame temp_cmd       = { 2, 0x11, 0x06 };
@@ -1037,6 +1046,8 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   _cmds.insert( std::make_pair( P_ModEventGrpMask,    modegrpmsk_cmd ) );
   _cmds.insert( std::make_pair( P_VRampSpeed,         vramp_cmd ) );
   _cmds.insert( std::make_pair( P_IRampSpeed,         iramp_cmd ) );
+  _cmds.insert( std::make_pair( P_Vmax,               vmax_cmd ) );
+  _cmds.insert( std::make_pair( P_Imax,               imax_cmd ) );
   _cmds.insert( std::make_pair( P_Supply24,           supply24_cmd ) );
   _cmds.insert( std::make_pair( P_Supply5,            supply5_cmd ) );
   _cmds.insert( std::make_pair( P_Temperature,        temp_cmd ) );
@@ -1048,6 +1059,3 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
 
 }
 
-//******************************************************************************
-//! EOF
-//******************************************************************************

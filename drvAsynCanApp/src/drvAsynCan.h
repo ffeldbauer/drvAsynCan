@@ -31,11 +31,6 @@
 
 //_____ D E F I N I T I O N S __________________________________________________
 
-/* These are the drvInfo strings that are used to identify the parameters.
- * They are used by asyn clients, including standard asyn device support */
-//#define P_GENERIC_String          "RPICAN_FRAME"        /* asynGenericPointer, r/w */
-
-
 //! @brief   asynPortDriver for PANDA Raspberry Pi CAN interface
 //!
 //! This is a lower lever asynPortDriver for communication with
@@ -47,7 +42,7 @@ class drvAsynCan : public asynPortDriver {
  public:
   drvAsynCan( const char *portName, const char *ttyName );
 
-  /* These are the methods that we override from asynPortDriver */
+  // These are the methods that we override from asynPortDriver
   virtual asynStatus readGenericPointer( asynUser *pasynUser, void *pointer );
   virtual asynStatus writeGenericPointer( asynUser *pasynUser, void *pointer );
   virtual asynStatus readOption( asynUser *pasynUser, const char *key, char *value, int maxChars );
@@ -56,12 +51,12 @@ class drvAsynCan : public asynPortDriver {
   virtual asynStatus disconnect( asynUser *pasynUser );
 
  protected:
-  /* Values used for pasynUser->reason, and indexes into the parameter library. */
+  // Values used for pasynUser->reason, and indexes into the parameter library.
   int P_GENERIC;
 
  private:
 
-  /* Our data */
+  // Our data
   char             *_deviceName;
   int               _socket;
   struct can_frame  _frame;

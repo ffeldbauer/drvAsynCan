@@ -437,8 +437,16 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
     return;
   }
 
+  // Set size of CAN socket send buffer to minimum
+  int sndBufNew = 0;
+  if( setsockopt( _socket, SOL_SOCKET, SO_SNDBUF, (void *)&sndBufNew, sizeof( sndBufNew ) ) < 0 ){
+    perror( "Error while set socket option SNDBUF" );
+    return;
+  }
+  // Print minimum value of buffer size
+  //int sndBuf = 0;
+  //unsigned int sndBuf_len = 4;
+  //getsockopt(Socketfd, SOL_SOCKET, SO_SNDBUF, (void *)&sndBuf, &sndBuf_len);
+
 }
 
-//******************************************************************************
-//! EOF
-//******************************************************************************

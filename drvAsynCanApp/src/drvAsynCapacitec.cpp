@@ -182,7 +182,7 @@ asynStatus drvAsynCapacitec::writeInt32( asynUser *pasynUser, epicsInt32 value )
   
   _pasynUser->timeout = pasynUser->timeout;
   pasynManager->lockPort( _pasynUser );
-  status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+  status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
   pasynManager->unlockPort( _pasynUser );
   
   if ( status ) {
@@ -228,14 +228,14 @@ asynStatus drvAsynCapacitec::readInt32( asynUser *pasynUser, epicsInt32 *value )
                      driverName, _deviceName, functionName, status, function );
       return status;
     }
-    status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+    status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
     if ( asynSuccess != status ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "%s:%s:%s: pasynGenericPointer->write: status=%d, function=%d", 
                      driverName, _deviceName, functionName, status, function );
       return status;
     } 
-    status = _pasynGenericPointer->read( _pvtPointerGeneric, _pasynUser, &pframe );
+    status = _pasynGenericPointer->read( _pvtGenericPointer, _pasynUser, &pframe );
     unlockStatus = pasynManager->queueUnlockPort( _pasynUser );
     if( asynSuccess != unlockStatus ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
@@ -336,13 +336,13 @@ drvAsynCapacitec::drvAsynCapacitec( const char *portName, const char *CanPort,
     return;
   }
   _pasynGenericPointer = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
-  _pvtPointerGeneric   = pasynInterface->drvPvt;
+  _pvtGenericPointer   = pasynInterface->drvPvt;
   _pasynUser->reason = _can_id;
-  status = _pasynGenericPointer->registerInterruptUser( _pvtPointerGeneric,
+  status = _pasynGenericPointer->registerInterruptUser( _pvtGenericPointer,
                                                         _pasynUser,
                                                         myInterruptCallbackGenericPointer,
                                                         this,
-                                                        &_intrPvtPointerGeneric
+                                                        &_intrPvtGenericPointer
                                                         );
   if( asynSuccess != status  ) {
     std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
@@ -365,14 +365,14 @@ drvAsynCapacitec::drvAsynCapacitec( const char *portName, const char *CanPort,
                 << std::endl;
       return;
     }
-    status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+    status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
     if ( asynSuccess != status ) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
                 << ": pasynGenericPointer->write: status=" << status
                 << std::endl;
       return;
     } 
-    status = _pasynGenericPointer->read( _pvtPointerGeneric, _pasynUser, &pframe );
+    status = _pasynGenericPointer->read( _pvtGenericPointer, _pasynUser, &pframe );
     asynStatus unlockStatus = pasynManager->queueUnlockPort( _pasynUser );
     if( asynSuccess != unlockStatus ) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName

@@ -146,7 +146,7 @@ class drvAsynIsegEhsEds : public asynPortDriver {
   int P_Supply24;            //!< index of Parameter "Supply24"
   int P_Supply5;             //!< index of Parameter "Supply5"
   int P_Temperature;         //!< index of Parameter "BoardTemperature"
-#define FIRST_ISEGEHSEDS_COMMAND P_Chan_status
+#define FIRST_ISEGEHSEDS_COMMAND P_ChanStatus
 #define LAST_ISEGEHSEDS_COMMAND  P_Temperature
 
  private:

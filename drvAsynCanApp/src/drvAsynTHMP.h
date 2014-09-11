@@ -78,9 +78,9 @@ class drvAsynTHMP : public asynPortDriver {
   asynUser            *_pasynUser;
   asynCommon          *_pasynCommon;
   void                *_pvtCommon;
-  asynGenericPointer  *_pasynPointerGeneric;
-  void                *_pvtPointerGeneric;
-  void                *_intrPvtPointerGeneric;
+  asynGenericPointer  *_pasynGenericPointer;
+  void                *_pvtGenericPointer;
+  void                *_intrPvtGenericPointer;
 };
 
 #define NUM_THMP_PARAMS (&LAST_THMP_COMMAND - &FIRST_THMP_COMMAND + 1)

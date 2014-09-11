@@ -198,7 +198,7 @@ void drvAsynIsegEhsEds::asynReadHandler( void* pointer ) {
     myValue.val[0] = pframe->data[6];
     myValue.fval *= 1.e6;
     status = setDoubleParam( addr, P_ChanImom, myValue.fval );
-    status = setIntegerParam( addr, P_ChanImomRange, pframe.data[7] );
+    status = setIntegerParam( addr, P_ChanImomRange, pframe->data[7] );
     break;
 
     // Voltage bounds
@@ -564,7 +564,7 @@ asynStatus drvAsynIsegEhsEds::writeFloat64( asynUser *pasynUser, epicsFloat64 va
   myValue.fval = value;
 
   // convert current from uA to A
-  if ( function == P_Chan_Iset || function == P_Chan_Ibounds ) myValue.fval *= 1.e-6;
+  if ( function == P_ChanIset || function == P_ChanIbounds ) myValue.fval *= 1.e-6;
   
   pframe.data[ it->second.dlc ]     = myValue.val[3];
   pframe.data[ it->second.dlc + 1 ] = myValue.val[2];

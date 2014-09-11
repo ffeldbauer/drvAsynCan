@@ -261,7 +261,22 @@ asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
     }
     char dummy[10];
     sprintf( dummy, "%u", bt.bitrate );
-    strcpy(value, dummy);
+    strcpy( value, dummy );
+    return asynSuccess;
+  }
+
+  if( epicsStrCaseCmp( key, "restart" ) == 0 ) {
+    epicsUInt32 milliseconds;
+    int err = can_get_restart_ms( _deviceName, &milliseconds ); 
+    if ( err ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                     "%s:%s: Could not set auto restart '%s'.",
+                     driverName, functionName, _deviceName );
+      return asynError;
+    }
+    char dummy[10];
+    sprintf( dummy, "%u", milliseconds );
+    strcpy( value, dummy );
     return asynSuccess;
   }
 
@@ -296,7 +311,7 @@ asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const 
   if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
     // Change Bitrate
     epicsUInt32 bitrate;
-    if( sscanf( value, "%d", &bitrate ) != 1 ) {
+    if( sscanf( value, "%u", &bitrate ) != 1 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "Bad number");
       return asynError;
@@ -306,6 +321,22 @@ asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const 
     if ( err ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
                      "%s:%s: Could not change bitrate for interface '%s'.",
+                     driverName, functionName, _deviceName );
+      return asynError;
+    }
+  }
+
+  if( epicsStrCaseCmp( key, "restart" ) == 0 ) {
+    epicsUInt32 milliseconds;
+    if( sscanf( value, "%u", &milliseconds ) != 1 ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                     "Bad number");
+      return asynError;
+    }
+    int err = can_set_restart_ms( _deviceName, milliseconds ); 
+    if ( err ) {
+      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
+                     "%s:%s: Could not set auto restart '%s'.",
                      driverName, functionName, _deviceName );
       return asynError;
     }
@@ -334,14 +365,9 @@ asynStatus drvAsynCan::connect( asynUser *pasynUser ) {
   asynStatus status;
   static const char *functionName = "connect";
     
-  status = getAddress(pasynUser, &addr); if (status != asynSuccess) return(status);
-    
-  pasynManager->exceptionConnect(pasynUser);
-  asynPrint(pasynUser, ASYN_TRACE_FLOW,
-            "%s:%s:, pasynUser=%p\n", 
-            driverName, functionName, pasynUser);
-  return(asynSuccess);
-
+  status = getAddress( pasynUser, &addr ); if( status != asynSuccess ) return status;
+   
+  /* 
   sockaddr_can_t addr;
   ifreq_t ifr;
 
@@ -362,7 +388,7 @@ asynStatus drvAsynCan::connect( asynUser *pasynUser ) {
     perror( "Error in socket bind" );
     return asynError;
   }
-
+  */
   pasynManager->exceptionConnect( pasynUser );
   asynPrint( pasynUser, ASYN_TRACE_FLOW,
              "%s:%s:, pasynUser=%p\n", 
@@ -384,13 +410,14 @@ asynStatus drvAsynCan::disconnect( asynUser *pasynUser ) {
   asynStatus status;
   static const char *functionName = "disconnect";
    
-  status = getAddress(pasynUser, &addr); if (status != asynSuccess) return(status);
+  status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
+  // close( _socket );
 
-  pasynManager->exceptionDisconnect(pasynUser);
-  asynPrint(pasynUser, ASYN_TRACE_FLOW,
-            "%s:%s:, pasynUser=%p\n", 
-            driverName, functionName, pasynUser);
-  return(asynSuccess);
+  pasynManager->exceptionDisconnect( pasynUser );
+  asynPrint( pasynUser, ASYN_TRACE_FLOW,
+             "%s:%s:, pasynUser=%p\n", 
+             driverName, functionName, pasynUser );
+  return asynSuccess;
 }
 
 //------------------------------------------------------------------------------

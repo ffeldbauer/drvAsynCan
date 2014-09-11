@@ -178,30 +178,6 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
     callParamCallbacks( pframe->data[1], pframe->data[1] );
     break;
     
-  case 0xff: // Firmware
-    if ( pframe->can_dlc != 4 ) {
-      std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  _deviceName << ":asynReadHandler"
-                << ": invalid data length of frame for command 0xff: " << pframe->can_dlc
-                << "\n" << *pframe
-                << "\033[0m"
-                << std::endl;
-      break;
-    }
-    //epicsUInt32 myValue  = ( pframe->data[2] << 8 ) | ( pframe->data[3]);
-    status = (asynStatus) setUIntDigitalParam( 0, P_Firmware,
-                                               ( pframe->data[1] * 10000 ) + ( pframe->data[2] * 100 ) + ( pframe->data[3] ),
-                                               0xffff );
-    if( status ) 
-      std::cerr << "\033[31;1m" << printTimestamp() << " "
-                << driverName << ":" <<  _deviceName << ":asynReadHandler"
-                << ": status=" << status << ", function=" << P_IoBoard << ", value="
-                << pframe->data[1] << "." << pframe->data[2] << "." << pframe->data[3] 
-                << "\033[0m"
-                << std::endl;
-    callParamCallbacks( 0, 0 );
-    break;
-    
   case 0xe0: // Error message
     if ( pframe->can_dlc != 3 ) {
       std::cerr << "\033[31;1m" << printTimestamp() << " "
@@ -277,7 +253,7 @@ void drvAsynTHMP::asynReadHandler( void* pointer ) {
 
   _pasynUser->timeout = pasynUser->timeout;
   pasynManager->lockPort( _pasynUser );
-  status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+  status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
   pasynManager->unlockPort( _pasynUser );
 
   if ( status ) {
@@ -340,7 +316,7 @@ asynStatus drvAsynTHMP::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 val
   
   _pasynUser->timeout = pasynUser->timeout;
   pasynManager->lockPort( _pasynUser );
-  status = _pasynGenericPointer->write( _pvtPointerGeneric, _pasynUser, &pframe );
+  status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
   pasynManager->unlockPort( _pasynUser );
   
   return status;
@@ -374,7 +350,6 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
   createParam( P_THMP_IOBUFFER_STRING,      asynParamUInt32Digital, &P_IoBoard );
   createParam( P_THMP_CONFIGIO_STRING,      asynParamInt32,         &P_ConfigIO );
   createParam( P_THMP_SERIALS_STRING,       asynParamUInt32Digital, &P_Serials );
-  createParam( P_THMP_FIRMWARE_STRING,      asynParamUInt32Digital, &P_Firmware );
   createParam( P_THMP_ERROR_STRING,         asynParamUInt32Digital, &P_Error );
   createParam( P_THMP_TRG_ADCBUFFER_STRING, asynParamInt32,         &P_Trg_ADC );
   createParam( P_THMP_TRG_IOBUFFER_STRING,  asynParamInt32,         &P_Trg_IO );
@@ -421,13 +396,13 @@ drvAsynTHMP::drvAsynTHMP( const char *portName, const char *CanPort,
     return;
   }
   _pasynGenericPointer = static_cast<asynGenericPointer*>( pasynInterface->pinterface );
-  _pvtPointerGeneric   = pasynInterface->drvPvt;
+  _pvtGenericPointer   = pasynInterface->drvPvt;
   _pasynUser->reason = _can_id;
-  status = _pasynGenericPointer->registerInterruptUser( _pvtPointerGeneric,
+  status = _pasynGenericPointer->registerInterruptUser( _pvtGenericPointer,
                                                         _pasynUser,
                                                         myInterruptCallbackGenericPointer,
                                                         this,
-                                                        &_intrPvtPointerGeneric
+                                                        &_intrPvtGenericPointer
                                                         );
   if( asynSuccess != status  ) {
     std::cerr << driverName << ":" <<  _deviceName << ":" << functionName

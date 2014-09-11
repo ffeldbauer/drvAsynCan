@@ -117,7 +117,7 @@ extern "C" {
     return( asynSuccess );
   }
   static const iocshArg * const initIsegHvGlobalArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1 };
-  static const iocshFuncDef initIsegHvGlobalFuncDef = { "drvAsynIsegHvGlobalConfigure", 2, initIsegHvArgs };
+  static const iocshFuncDef initIsegHvGlobalFuncDef = { "drvAsynIsegHvGlobalConfigure", 2, initIsegEhsEdsArgs };
   static void initIsegHvGlobalCallFunc( const iocshArgBuf *args ) {
     drvAsynIsegHvGlobalConfigure( args[0].sval, args[1].sval );
   }

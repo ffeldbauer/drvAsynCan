@@ -52,10 +52,6 @@
 #include <epicsTypes.h>
 #include <iocsh.h>
 
-#ifdef USELIBSOCKETCAN
-#  include "libsocketcan.h"
-#endif
-
 // local includes
 #include "drvAsynCan.h"
 
@@ -85,8 +81,6 @@ static const char *driverName = "drvAsynCanDriver";
 //! @return  in case of no error occured asynSuccess is returned. Otherwise
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
-//!
-//! @sa      drvAsynCan::drvRPiCanRead
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   static const char *functionName = "readGenericPointer";
@@ -166,13 +160,10 @@ asynStatus drvAsynCan::readGenericPointer( asynUser *pasynUser, void *genericPoi
 //! @return  in case of no error occured asynSuccess is returned. Otherwise
 //!          asynError or asynTimeout is returned. A error message is stored
 //!          in pasynUser->errorMessage.
-//!
-//! @sa      drvAsynCan::drvRPiCanWrite
 //------------------------------------------------------------------------------
 asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPointer ) {
   static const char *functionName = "writeGenericPointer";
   can_frame_t *myFrame = (can_frame_t *)genericPointer;
-  int mytimeout = (int)( pasynUser->timeout * 1.e6 );
   
   asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
              "%s:%s: sending frame '0x%08x %d 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x'\n", 
@@ -181,8 +172,38 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
              myFrame->data[4], myFrame->data[5], myFrame->data[6], myFrame->data[7] );
   
   int nbytes = 0;
+  nbytes = write( _socket, myFrame, sizeof(can_frame_t) );
+  if ( 0 > nbytes ) {
+    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                   "Error sending message to device '%s': %d %s", 
+                   _deviceName, errno, strerror( errno ) );
+    return asynError;
+  }
+  return asynSuccess;
+}
+
+//------------------------------------------------------------------------------
+//! @brief   Called when asyn clients call pasynOctet->read().
+//!
+//!          Reads a CAN frame from the interface and converts it into c-string
+//!          THIS FUNCITON IS UNTESTED!!!
+//!
+//! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address.
+//! @param   [out] value      Address of the string to read.
+//! @param   [in]  maxChars   Maximum number of characters to read.
+//! @param   [out] nActual    Number of characters actually read.
+//! @param   [out] eomReason  Reason that read terminated.
+//------------------------------------------------------------------------------
+asynStatus drvAsynCan::readOctet( asynUser *pasynUser, char *value, size_t maxChars,
+                                  size_t *nActual, int *eomReason ) {
+  static const char *functionName = "readOctet";
+  int mytimeout = (int)( pasynUser->timeout * 1.e6 );
+  can_frame_t* pframe = new can_frame_t;
+
+  int nbytes = 0;
   if ( 0 > mytimeout ) {
-    nbytes = write( _socket, myFrame, sizeof(can_frame_t) );
+
+    nbytes = read( _socket, pframe, sizeof(can_frame_t) );
     if ( 0 > nbytes ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "Error receiving message from device '%s': %d %s", 
@@ -191,23 +212,23 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
     }
 
   } else {
-    
-    fd_set fdWrite;
+
+    fd_set fdRead;
     struct timeval t;
     
     // calculate timeout values
     t.tv_sec  = mytimeout / 1000000L;
     t.tv_usec = mytimeout % 1000000L;
     
-    FD_ZERO( &fdWrite );
-    FD_SET( _socket, &fdWrite );
+    FD_ZERO( &fdRead );
+    FD_SET( _socket, &fdRead );
     
-    // wait until timeout or a message is ready to get written
-    int err = select( _socket + 1, NULL, &fdWrite, NULL, &t );
+    // wait until timeout or a message is ready to get read
+    int err = select( _socket + 1, &fdRead, NULL, NULL, &t );
     
-    // the only one file descriptor is ready for write
+    // the only one file descriptor is ready for read
     if ( 0 < err ) {
-      nbytes = write( _socket, myFrame, sizeof(can_frame_t) );
+      nbytes = read( _socket, pframe, sizeof(can_frame_t) );
       if ( 0 > nbytes ) {
         epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                        "Error receiving message from device '%s': %d %s", 
@@ -215,208 +236,91 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
         return asynError;
       }
     }
-
+    
     // nothing is ready, timeout occured
-    if ( err == 0 ) return asynTimeout;
+    if ( 0 == err ) return asynTimeout;
     if ( 0 > err )  {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "Error receiving message from device '%s': %d %s", 
                      _deviceName, errno, strerror( errno ) );
       return asynError;
     }
-
   }
-  return asynSuccess;
-}
-//------------------------------------------------------------------------------
-//! @brief   Called when asyn clients call pasynOption->read()
-//!
-//!          If key is equal to "bitrate" the bitrate settings of the CAN bus
-//!          interface is read out.
-//!
-//! @param   [in]  pasynUser       pasynUser structure that encodes the reason and address.
-//! @param   [in]  key             Name of option
-//! @param   [out] value           String containing the value for the option
-//! @param   [in]  maxChars        Size of value string
-//!
-//! @return  in case of no error occured asynSuccess is returned. Otherwise
-//!          asynError is returned. An error message is stored
-//!          in pasynUser->errorMessage.
-//------------------------------------------------------------------------------
-asynStatus drvAsynCan::readOption( asynUser *pasynUser, const char *key,
-                                   char *value, int maxChars ) {
-  static const char *functionName = "readOption";
-
-#ifdef USELIBSOCKETCAN
-
-  if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
-    
-    struct can_bittiming bt; 
-    int err = can_get_bittiming( _deviceName, &bt );
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: failed to read bittiming",
-                     driverName, functionName );
-      return asynError;
-    }
-    char dummy[10];
-    sprintf( dummy, "%u", bt.bitrate );
-    strcpy( value, dummy );
-    return asynSuccess;
-  }
-
-  if( epicsStrCaseCmp( key, "restart" ) == 0 ) {
-    epicsUInt32 milliseconds;
-    int err = can_get_restart_ms( _deviceName, &milliseconds ); 
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not set auto restart '%s'.",
-                     driverName, functionName, _deviceName );
-      return asynError;
-    }
-    char dummy[10];
-    sprintf( dummy, "%u", milliseconds );
-    strcpy( value, dummy );
-    return asynSuccess;
-  }
-
-#endif
-   
-  // unknown option
-  epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                 "%s:%s: Invalid option key '%s'",
-                 driverName, functionName, key );
-  return asynError;
-}
-
-//------------------------------------------------------------------------------
-//! @brief   Called when asyn clients call pasynOption->write()
-//!
-//!          If key is equal to "bitrate" the bitrate settings of the CAN bus
-//!          interface is changed to value.
-//!
-//! @param   [in]  pasynUser       pasynUser structure that encodes the reason and address.
-//! @param   [in]  key             Name of option
-//! @param   [in]  value           String containing the value for the option
-//!
-//! @return  in case of no error occured asynSuccess is returned. Otherwise
-//!          asynError is returned. A error message is stored
-//!          in pasynUser->errorMessage.
-//------------------------------------------------------------------------------
-asynStatus drvAsynCan::writeOption( asynUser *pasynUser, const char *key, const char *value ) {
-  static const char *functionName = "writeOption";
-
-#ifdef USELIBSOCKETCAN
-
-  if( epicsStrCaseCmp( key, "bitrate" ) == 0 ) {
-    // Change Bitrate
-    epicsUInt32 bitrate;
-    if( sscanf( value, "%u", &bitrate ) != 1 ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "Bad number");
-      return asynError;
-    }
-    
-    int err = can_set_bitrate( _deviceName, bitrate );
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not change bitrate for interface '%s'.",
-                     driverName, functionName, _deviceName );
-      return asynError;
+ 
+  char msg[55];
+  sprintf( msg, "0x%08x %1d", pframe->can_id, pframe->can_dlc );
+  if( ( pframe->can_id & CAN_RTR_FLAG ) == 0 ) {
+    for ( epicsUInt8 i = 0; i < pframe->can_dlc; i++ ) {
+      char dummy[6];
+      sprintf( dummy, " 0x%02x", pframe->data[i] );
+      strcat( msg, dummy );
     }
   }
+  *nActual = strlen( msg );
 
-  if( epicsStrCaseCmp( key, "restart" ) == 0 ) {
-    epicsUInt32 milliseconds;
-    if( sscanf( value, "%u", &milliseconds ) != 1 ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "Bad number");
-      return asynError;
-    }
-    int err = can_set_restart_ms( _deviceName, milliseconds ); 
-    if ( err ) {
-      epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                     "%s:%s: Could not set auto restart '%s'.",
-                     driverName, functionName, _deviceName );
-      return asynError;
-    }
-  }
+  strncpy( value, msg, maxChars );
 
-#endif
+  if ( strlen( msg ) >= maxChars )
+    if ( eomReason ) *eomReason = ASYN_EOM_CNT;
+
+  asynPrint( pasynUser, ASYN_TRACEIO_DRIVER, 
+             "%s:%s: received frame: %s",
+             driverName, functionName, msg );
   
-  // unknown option
-  epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize,
-                 "%s:%s: Invalid option key '%s'",
-                 driverName, functionName, key );
-  return asynError;
+  return asynSuccess; 
 }
 
 //------------------------------------------------------------------------------
-//! @brief   Connects driver to device
+//! @brief   Called when asyn clients call pasynOctet->write().
 //!
-//! @param   [in]  pasynUser       pasynUser structure which contains information about port and address.
+//!          Parses a cString to fill a struct can_frame and send it to the socket
+//!          THIS FUNCITON IS UNTESTED!!!
 //!
-//! @return  in case of no error occured asynSuccess is returned. Otherwise
-//!          asynError is returned. A error message is stored
-//!          in pasynUser->errorMessage.
+//! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address.
+//! @param   [in]  value      Address of the string to write.
+//! @param   [in]  nChars     Number of characters to write.
+//! @param   [out] nActual    Number of characters actually written.
 //------------------------------------------------------------------------------
-asynStatus drvAsynCan::connect( asynUser *pasynUser ) {
-  int addr;
-  asynStatus status;
-  static const char *functionName = "connect";
-    
-  status = getAddress( pasynUser, &addr ); if( status != asynSuccess ) return status;
-   
-  /* 
-  sockaddr_can_t addr;
-  ifreq_t ifr;
+asynStatus drvAsynCan::writeOctet( asynUser *pasynUser, const char *value, size_t maxChars,
+                                   size_t *nActual ){
+  char *p;
+  char *ptr = const_cast<char*>( value );
+  can_frame_t *pframe = new can_frame_t;
 
-  // open socket
-  _socket = socket( PF_CAN, SOCK_RAW, CAN_RAW );
-  if( _socket < 0 ) {
-    perror( "Error while opening socket" );
+  // remove blanks or tabs
+  while( ( *ptr == ' ' ) || ( *ptr == '\t' ) ) ptr++;
+  // parse CAN id
+  p = ptr;
+  pframe->can_id = strtoul( p, &ptr, 0); 
+  if( p == ptr ) return asynError;
+
+  // remove blanks or tabs
+  while( ( *ptr == ' ' ) || ( *ptr == '\t' ) ) ptr++;
+  // parse CAN dlc
+  p = ptr;
+  pframe->can_dlc = (epicsUInt8)( strtoul( p, &ptr, 0) );
+  if( p == ptr ) return asynError;
+
+  if( ( pframe->can_id & CAN_RTR_FLAG ) == 0 ) {
+    for( epicsUInt8 i = 0; i < pframe->can_dlc; i++ ) {
+      // remove blanks or tabs
+      while( ( *ptr == ' ' ) || ( *ptr == '\t' ) ) ptr++;
+      // parse data byte
+      p = ptr;
+      pframe->data[i] = (epicsUInt8)( strtoul( p, &ptr, 0) );
+      if( p == ptr ) return asynError;
+    }
+  }
+
+  int nbytes = 0;
+  nbytes = write( _socket, pframe, sizeof(can_frame_t) );
+  if ( 0 > nbytes ) {
+    epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                   "Error sending message to device '%s': %d %s", 
+                   _deviceName, errno, strerror( errno ) );
     return asynError;
   }
-  
-  strcpy( ifr.ifr_name, _deviceName );
-  ioctl( _socket, SIOCGIFINDEX, &ifr );
- 
-  addr.can_family  = AF_CAN;
-  addr.can_ifindex = ifr.ifr_ifindex; 
- 
-  if( bind( _socket, (sockaddr_t*)&addr, sizeof( addr ) ) < 0 ) {
-    perror( "Error in socket bind" );
-    return asynError;
-  }
-  */
-  pasynManager->exceptionConnect( pasynUser );
-  asynPrint( pasynUser, ASYN_TRACE_FLOW,
-             "%s:%s:, pasynUser=%p\n", 
-             driverName, functionName, pasynUser);
-  return asynSuccess;
-}
-
-//------------------------------------------------------------------------------
-//! @brief   Disconnects driver to device
-//!
-//! @param   [in]  pasynUser       pasynUser structure which contains information about port and address.
-//!
-//! @return  in case of no error occured asynSuccess is returned. Otherwise
-//!          asynError is returned. A error message is stored
-//!          in pasynUser->errorMessage.
-//------------------------------------------------------------------------------
-asynStatus drvAsynCan::disconnect( asynUser *pasynUser ) {
-  int addr;
-  asynStatus status;
-  static const char *functionName = "disconnect";
-   
-  status = getAddress( pasynUser, &addr ); if ( status != asynSuccess ) return status;
-  // close( _socket );
-
-  pasynManager->exceptionDisconnect( pasynUser );
-  asynPrint( pasynUser, ASYN_TRACE_FLOW,
-             "%s:%s:, pasynUser=%p\n", 
-             driverName, functionName, pasynUser );
+  *nActual = (size_t)( ptr - value );
   return asynSuccess;
 }
 
@@ -474,6 +378,7 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
   //int sndBuf = 0;
   //unsigned int sndBuf_len = 4;
   //getsockopt(Socketfd, SOL_SOCKET, SO_SNDBUF, (void *)&sndBuf, &sndBuf_len);
+  //std::cout << driverName << ": New SNDBUF " << sndBuf << std::endl;
 
 }
 

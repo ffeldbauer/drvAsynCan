@@ -25,12 +25,13 @@
 
 //_____ I N C L U D E S _______________________________________________________
 
-// ANSI C includes
+// ANSI C/C++ includes
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
+// local includes
 #include "can_frame.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
@@ -54,13 +55,13 @@ std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe ) {
   os << std::hex 
      << "0x" << std::setw(8) << std::setfill('0') << rframe.can_id
      << std::setw(1) << rframe.can_dlc
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[0]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[1]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[2]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[3]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[4]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[5]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[6]
-     << "0x" << std::setw(2) << std::setfill('0') << rframe.data[7];
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[0]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[1]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[2]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[3]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[4]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[5]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[6]
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[7];
   return os;
 } 

@@ -48,7 +48,7 @@
 #define P_ISEGEHSEDS_IBOUNDS_STRING            "CurrentBounds"            //!< asynFloat64,        r/w 
 #define P_ISEGEHSEDS_VNOM_STRING               "VoltageNominal"           //!< asynFloat64,        r   
 #define P_ISEGEHSEDS_INOM_STRING               "CurrentNominal"           //!< asynFloat64,        r   
-#define P_ISEGEHSEDS_IMOM_RANGE_STRING         "CurrentMeasureRange"      //!< asynInt32,          r   
+#define P_ISEGEHSEDS_IMOM_RANGE_STRING         "CurrentMeasureRange"      //!< asynUInt32Digital,  r   
 
 #define P_ISEGEHSEDS_R_CHANSTATUS_STRING       "ReadChannelStatus"        //!< asynInt32,          r/w 
 #define P_ISEGEHSEDS_R_CHAN_CTRL_STRING        "ReadChannelControl"       //!< asynInt32,          r/w 
@@ -156,17 +156,21 @@ class drvAsynIsegEhsEds : public asynPortDriver {
     epicsUInt8    data1;
   };
 
-  std::map<int, isegFrame> _cmds;
+  asynStatus getFirmware();
+  asynStatus initEhsEds( std::map<int, isegFrame>::const_iterator& it );
 
-  char                *_deviceName;
-  epicsUInt32          _can_id;
-  asynUser            *_pasynUser;
-  asynCommon          *_pasynCommon;
-  void                *_pvtCommon;
-  asynGenericPointer  *_pasynGenericPointer;
-  void                *_pvtGenericPointer;
-  void                *_intrPvtGenericPointer;
-
+  char                     *_deviceName;
+  epicsUInt32               _can_id;
+  asynUser                 *_pasynUser;
+  asynCommon               *_pasynCommon;
+  void                     *_pvtCommon;
+  asynGenericPointer       *_pasynGenericPointer;
+  void                     *_pvtGenericPointer;
+  void                     *_intrPvtGenericPointer;
+  bool                      _shortMBR;
+  epicsUInt8                _firmwareRelease[4];
+  char                      _firmwareName[6];
+  std::map<int, isegFrame>  _cmds;
 };
 
 #define NUM_ISEGEHSEDS_PARAMS (&LAST_ISEGEHSEDS_COMMAND - &FIRST_ISEGEHSEDS_COMMAND + 1)

@@ -34,20 +34,36 @@
 
 //_____ D E F I N I T I O N S __________________________________________________
 #ifndef CAN_RTR_FLAG
-#define CAN_RTR_FLAG 0x40000000U /* remote transmission request */
+# define CAN_RTR_FLAG 0x40000000U /* remote transmission request */
+#endif
+#ifndef CAN_EFF_FLAG
+# define CAN_EFF_FLAG 0x80000000U /* EFF/SFF is set in the MSB */
+#endif
+#ifndef CAN_SFF_MASK
+# define CAN_SFF_MASK 0x000007FFU /* standard frame format (SFF) */
+#endif
+#ifndef CAN_EFF_MASK
+# define CAN_EFF_MASK 0x1FFFFFFFU /* extended frame format (EFF) */
 #endif
 
+//! @brief socketCAN like definition of CAN frame structure
 typedef struct {
   epicsUInt32 can_id;
   epicsUInt8  can_dlc;
   epicsUInt8  data[8] __attribute__ ((aligned(8)));
 } can_frame_t;
 
+//! @brief structure to easily convert data for CAN frame 
+typedef union{
+  epicsFloat32 fval;
+  epicsUInt32  uval32;
+  epicsInt32   ival32;
+  epicsUInt16  uval16[2];
+  epicsUInt8   can[4];
+} can_data_t;
+
 std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe );
 std::string printTimestamp();
 
 #endif
 
-//******************************************************************************
-//! EOF
-//******************************************************************************

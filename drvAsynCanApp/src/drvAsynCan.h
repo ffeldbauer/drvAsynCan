@@ -45,10 +45,10 @@ class drvAsynCan : public asynPortDriver {
   // These are the methods that we override from asynPortDriver
   virtual asynStatus readGenericPointer( asynUser *pasynUser, void *pointer );
   virtual asynStatus writeGenericPointer( asynUser *pasynUser, void *pointer );
-  virtual asynStatus readOption( asynUser *pasynUser, const char *key, char *value, int maxChars );
-  virtual asynStatus writeOption( asynUser *pasynUser, const char *key, const char *value );
-  virtual asynStatus connect( asynUser *pasynUser );
-  virtual asynStatus disconnect( asynUser *pasynUser );
+  virtual asynStatus readOctet( asynUser *pasynUser, char *value, size_t maxChars,
+                                size_t *nActual, int *eomReason );
+  virtual asynStatus writeOctet( asynUser *pasynUser, const char *value, size_t maxChars,
+                                 size_t *nActual );
 
  protected:
   // Values used for pasynUser->reason, and indexes into the parameter library.
@@ -65,6 +65,3 @@ class drvAsynCan : public asynPortDriver {
 
 #endif
 
-//******************************************************************************
-//! EOF
-//******************************************************************************

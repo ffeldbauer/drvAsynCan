@@ -44,6 +44,7 @@
 // local includes
 #include "drvAsynCan.h"
 #include "drvAsynCapacitec.h"
+#include "drvAsynIsegEch44a.h"
 #include "drvAsynIsegEhsEds.h"
 #include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
@@ -68,7 +69,7 @@ extern "C" {
   //!          for the drvAsynCan class.
   //!
   //! @param   [in]  portName The name of the asyn port driver to be created.
-  //!          [in]  ttyName  The name of the interface 
+  //! @param   [in]  ttyName  The name of the interface 
   //----------------------------------------------------------------------------
   int drvAsynCanConfigure( const char *portName, const char *ttyName ) {
     new drvAsynCan( portName, ttyName );
@@ -87,8 +88,8 @@ extern "C" {
   //!          for the drvAsynIsegEhsEds class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  module_id   The id of the module
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  module_id   The id of the module
   //----------------------------------------------------------------------------
   int drvAsynIsegEhsEdsConfigure( const char *portName, const char *CanPort,
                                   const int module_id, const int channels ) {
@@ -124,11 +125,28 @@ extern "C" {
 
   //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
+  //!          for the drvAsynIsegEch44a class.
+  //!
+  //! @param   [in]  portName    The name of the asyn port driver to be created.
+  //! @param   [in]  CanPort     The name of the interface 
+  //----------------------------------------------------------------------------
+  int drvAsynIsegEch44aConfigure( const char *portName, const char *CanPort ) {
+    new drvAsynIsegEch44a( portName, CanPort );
+    return( asynSuccess );
+  }
+  static const iocshArg * const initIsegEch44aArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1 };
+  static const iocshFuncDef initIsegEch44aFuncDef = { "drvAsynIsegEch44aConfigure", 2, initIsegEch44aArgs };
+  static void initIsegEch44aCallFunc( const iocshArgBuf *args ) {
+    drvAsynIsegEch44aConfigure( args[0].sval, args[1].sval );
+  }
+
+  //----------------------------------------------------------------------------
+  //! @brief   EPICS iocsh callable function to call constructor
   //!          for the drvAsynWienerVme class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  crate_id    The id of the crate
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  crate_id    The id of the crate
   //----------------------------------------------------------------------------
   int drvAsynWienerVmeConfigure( const char *portName, const char *CanPort,
                                  const int crate_id ) {
@@ -154,8 +172,8 @@ extern "C" {
   //!          for the drvAsynTHMP class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  can_id      The CAN id of this THMP
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  can_id      The CAN id of this THMP
   //----------------------------------------------------------------------------
   int drvAsynTHMPConfigure( const char *portName, const char *CanPort,
                             const int can_id ) {
@@ -180,8 +198,8 @@ extern "C" {
   //!          for the drvAsynCapacitec class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  can_id      The CAN id of this DigitizerBoard
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  can_id      The CAN id of this DigitizerBoard
   //----------------------------------------------------------------------------
   int drvAsynCapacitecConfigure( const char *portName, const char *CanPort,
                                  const int can_id ) {
@@ -202,9 +220,9 @@ extern "C" {
   //!          for the drvAsynLedPulser class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  can_id      The CAN id of this Led Pulser
-  //!          [in]  filename    The Name of the file containing DAC and Intensity values
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  can_id      The CAN id of this Led Pulser
+  //! @param   [in]  filename    The Name of the file containing DAC and Intensity values
   //----------------------------------------------------------------------------
   int drvAsynLedPulserConfigure( const char *portName, const char *CanPort,
                                  const int can_id, const char *filename ) {
@@ -222,14 +240,14 @@ extern "C" {
     drvAsynLedPulserConfigure( args[0].sval, args[1].sval, args[2].ival, args[3].sval );
   }
   
-    //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
   //! @brief   EPICS iocsh callable function to call constructor
   //!          for the drvAsynLedPulser2 class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  can_id      The CAN id of this Led Pulser
-  //!          [in]  filename    The Name of the file containing DAC and Intensity values
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  can_id      The CAN id of this Led Pulser
+  //! @param   [in]  filename    The Name of the file containing DAC and Intensity values
   //----------------------------------------------------------------------------
   int drvAsynLedPulser2Configure( const char *portName, const char *CanPort,
                                  const int can_id ) {
@@ -251,9 +269,9 @@ extern "C" {
   //!          for the drvAsynTmcm142 class.
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //!          [in]  CanPort     The name of the interface 
-  //!          [in]  can_id_w    The CAN id of this TMCM142 driver
-  //!          [in]  can_id_r    The CAN Reply id of this TMCM142 driver
+  //! @param   [in]  CanPort     The name of the interface 
+  //! @param   [in]  can_id_w    The CAN id of this TMCM142 driver
+  //! @param   [in]  can_id_r    The CAN Reply id of this TMCM142 driver
   //----------------------------------------------------------------------------
   int drvAsynTmcm142Configure( const char *portName, const char *CanPort,
                                const int can_id_w, const int can_id_r ) {
@@ -280,6 +298,7 @@ extern "C" {
       iocshRegister( &initCanFuncDef,          initCanCallFunc );
       iocshRegister( &initIsegEhsEdsFuncDef,   initIsegEhsEdsCallFunc );
       iocshRegister( &initIsegHvGlobalFuncDef, initIsegHvGlobalCallFunc );
+      iocshRegister( &initIsegEch44aFuncDef,   initIsegEch44aCallFunc );
       iocshRegister( &initWienerVmeFuncDef,    initWienerVmeCallFunc );
       iocshRegister( &initThmpFuncDef,         initThmpCallFunc );
       iocshRegister( &initCapacitecFuncDef,    initCapacitecCallFunc );

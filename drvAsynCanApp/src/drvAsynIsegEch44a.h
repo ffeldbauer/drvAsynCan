@@ -23,49 +23,75 @@
 // version 2.0.0; Jun. 05, 2013
 //******************************************************************************
 
-#ifndef __ASYN_ISEG_HV_GLOBAL_H__
-#define __ASYN_ISEG_HV_GLOBAL_H__
+#ifndef __ASYN_ISEG_ECH44A_H__
+#define __ASYN_ISEG_ECH44A_H__
 
 //_____ I N C L U D E S _______________________________________________________
+#include <map>
 #include "asynPortDriver.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
 
 /* These are the drvInfo strings that are used to identify the parameters.
  * They are used by asyn clients, including standard asyn device support */
-#define P_ISEGHV_EMO_STRING                "EMERGENCYOFF"        /* asynInt32,          w   */
-#define P_ISEGHV_SWITCH_STRING             "SWITCHONOFF"         /* asynInt32,          w   */
+#define P_ISEGECH44A_CRATE_STATUS_STRING         "ISEGECH44A_STATUS"        /* asynUInt32Digital, r   */
+#define P_ISEGECH44A_CRATE_CONTROL_STRING        "ISEGECH44A_CONTROL"       /* asynUInt32Digital, r/w */
+#define P_ISEGECH44A_CRATE_EVENT_STATUS_STRING   "ISEGECH44A_EVT_STATUS"    /* asynUInt32Digital, r   */
+#define P_ISEGECH44A_CRATE_EVENT_MASK_STRING     "ISEGECH44A_EVT_MASK"      /* asynUInt32Digital, r/w */
+#define P_ISEGECH44A_CRATE_FAN_SPEED_STRING      "ISEGECH44A_FAN_SPEED"     /* asynFloat64,       r/w */
+#define P_ISEGECH44A_CRATE_ON_OFF_STRING         "ISEGECH44A_ON_OFF"        /* asynInt32,         r/w */
 
-//! @brief   asynPortDriver for ISEG EDS/EHS high voltage modules
+//! @brief   asynPortDriver for ISEG ECH44A crate controller
 //!
 //! This asynPortDriver is a higher level driver used as device support for the
-//! EDS/EHS high voltage modules of ISEG Spezialelektronik GmbH.\n
-//! It provides two parameters to switch all high voltage channels connected to
-//! the CAN bus on and off, respectively.\n
+//! ECH44A crate controller from ISEG Spezialelektronik GmbH.\n
 //! It needs a lower level driver with a asynGenericPointer interface for
 //! accessing the hardware of the CAN bus interface.
-class drvAsynIsegHvGlobal : public asynPortDriver {
+class drvAsynIsegEch44a : public asynPortDriver {
  public:
-  drvAsynIsegHvGlobal( const char *portName, const char *CanPort );
+  drvAsynIsegEch44a( const char *portName, const char *CanPort );
 
   /* These are the methods that we override from asynPortDriver */
   virtual asynStatus writeInt32( asynUser *pasynUser, epicsInt32 value );
+  virtual asynStatus readInt32( asynUser *pasynUser, epicsInt32 *value );
   virtual asynStatus writeUInt32Digital( asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask );
+  virtual asynStatus readUInt32Digital( asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask );
+  virtual asynStatus readFloat64( asynUser *pasynUser, epicsFloat64 *value );
+
+  void asynReadHandler( void* pframe );
 
  protected:
   /** Values used for pasynUser->reason, and indexes into the parameter library. */
 
-  int P_EmergencyOff;      //!< index of Parameter "ISEGHV_EMERGENCYOFF"
-#define FIRST_ISEGHVGLOBAL_COMMAND P_EmergencyOff
-  int P_SwitchOnOff;       //!< index of Parameter "ISEGHV_SWITCHONOFF"
-#define LAST_ISEGHVGLOBAL_COMMAND P_SwitchOnOff
+  int P_CrateStatus;
+#define FIRST_ISEGECH44A_COMMAND P_CrateStatus
+  int P_CrateControl;
+  int P_CrateEvtStatus;
+  int P_CrateEvtMask;
+  int P_CrateFanSpeed;
+  int P_CrateOnOff;
+#define LAST_ISEGECH44A_COMMAND P_CrateOnOff
 
  private:
-  char           *deviceName_;
-  asynUser       *pAsynUserGenericPointer_;
+
+  struct isegFrame {
+    epicsUInt8    dlc;
+    epicsUInt8    data0;
+    epicsUInt8    data1;
+  };
+
+  std::map<int, isegFrame> _cmds;
+
+  char                *_deviceName;
+  asynUser            *_pasynUser;
+  asynCommon          *_pasynCommon;
+  void                *_pvtCommon;
+  asynGenericPointer  *_pasynGenericPointer;
+  void                *_pvtGenericPointer;
+  void                *_intrPvtGenericPointer;
 };
 
-#define NUM_ISEGHVGLOBAL_PARAMS (&LAST_ISEGHVGLOBAL_COMMAND - &FIRST_ISEGHVGLOBAL_COMMAND + 1)
+#define NUM_ISEGECH44A_PARAMS (&LAST_ISEGECH44A_COMMAND - &FIRST_ISEGECH44A_COMMAND + 1)
 
 #endif
 

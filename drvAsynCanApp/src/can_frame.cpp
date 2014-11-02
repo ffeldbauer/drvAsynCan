@@ -62,6 +62,41 @@ std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe ) {
      << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[4]
      << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[5]
      << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[6]
-     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[7];
+     << " 0x" << std::setw(2) << std::setfill('0') << rframe.data[7]
+     << std::dec;
   return os;
-} 
+}
+
+bool operator==( const can_frame_t& lhs, const can_frame_t& rhs ) {
+  if ( ( lhs.can_id != rhs.can_id ) || ( lhs.can_dlc != rhs.can_dlc ) )
+    return false;
+
+  for ( epicsUInt8 i = 0; i < lhs.can_dlc; i++ ) {
+    if( lhs.data[i] != rhs.data[i] ) return false;
+  }
+  return true;
+}
+
+//------------------------------------------------------------------------------
+//! @brief   compare two can frames
+//!
+//! Compares two can frames with each other. Number of data bytes which should
+//! be included in comparison can be set by the user.
+//!
+//! @param   [in]  lhs  Left hand sind of == operator
+//! @param   [in]  rhs  Right hand side of == operator
+//! @param   [in]  dlc  how many data bytes should be compared
+//!
+//! @return  true if can_id, can_dlc and up to `dlc` data bytes are equal.
+//!          Otherwise false
+//------------------------------------------------------------------------------
+bool compCanFrame( const can_frame_t& lhs, const can_frame_t& rhs, epicsUInt8 dlc ){
+  if ( ( lhs.can_id != rhs.can_id ) || ( lhs.can_dlc != rhs.can_dlc ) )
+    return false;
+  
+  epicsUInt8 myDlc = ( lhs.can_dlc <= dlc ) ? lhs.can_dlc : dlc;
+  for ( epicsUInt8 i = 0; i < myDlc; i++ ) {
+    if( lhs.data[i] != rhs.data[i] ) return false;
+  }
+  return true;
+}

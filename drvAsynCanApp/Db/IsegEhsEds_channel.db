@@ -12,287 +12,305 @@
 # ###         dev     detector subtype     (e.g. APD)        ### #
 # ###         sector  sector inside subsys (e.g. Q1:X4:Y2:F) ### #
 # ###         channel channel number                         ### #
-# ###         maxV    Max Value for Vset                     ### #
-# ###         maxI    Max Value for Iset                     ### #
+# ###         module  sector of module                       ### #
 ##################################################################
 
 ############################################################
 # ### Read out channel status and channel event status ### #
 ############################################################
-record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status") {
-  field (DTYP, "asynUInt32Digital")
-  field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelStatus")
+record( mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):Status" ) {
+  field( DTYP, "asynUInt32Digital" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelStatus" )
 }
 
-record (mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus") {
-  field (DTYP, "asynUInt32Digital")
-  field (SCAN, "I/O Intr")
-  field (INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelEventStatus")
+record( mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus" ) {
+  field( DTYP, "asynUInt32Digital" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelEventStatus" )
+}
+
+###########################################################
+# ### Records to devine DRVH limits for vset and iset ### #
+###########################################################
+record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):MaxVoltage__" )
+  field( DOL,  "PANDA:$(subsys):HV:$(module):MaxVoltage CP" )
+  field( OMSL, "closed_loop" )
+  field( OUT,  "PANDA:$(subsys):$(dev):HV:$(sector):Vset.DRVH NPP" )
+}
+
+record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):MaxCurrent__" )
+  field( DOL,  "PANDA:$(subsys):HV:$(module):MaxCurrent CP" )
+  field( OMSL, "closed_loop" )
+  field( OUT,  "PANDA:$(subsys):$(dev):HV:$(sector):Iset.DRVH NPP" )
 }
 
 ########################################
 # ### Read out voltage and current ### #
 ########################################
-record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom") {
-  field (DTYP, "asynFloat64")
-  field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(channel),1)VoltageMeasurement")
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Vmom" ) {
+  field( DTYP, "asynFloat64" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asyn($(BUS),$(channel),1)VoltageMeasure" )
   # display parameters
-  field (EGU,  "V")
-  field (PREC, "1")
-  # alarm parameters
-  field (HIHI, "$(maxV)")
-  field (HIGH, "$(maxV)")
-  field (LOW,  "-1")
-  field (LOLO, "-1")
-  field (HHSV, "MAJOR")
-  field (HSV,  "MINOR")
-  field (LSV,  "MINOR")
-  field (LLSV, "MAJOR")
+  field( EGU,  "V" )
+  field( PREC, "1" )
+  # alarm parameters (Limits are set by ext config tool)
+  field( HIHI, "6000" )
+  field( HIGH, "5999" )
+  field( LOW,  "-1" )
+  field( LOLO, "-2" )
+  field( HHSV, "MAJOR" )
+  field( HSV,  "MINOR" )
+  field( LSV,  "MINOR" )
+  field( LLSV, "MAJOR" )
   # thresholds
-  field (ADEL, "0.1")
-  field (MDEL, "0")
+  field( ADEL, "0.1" )
+  field( MDEL, "0" )
 }
 
-record (ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom") {
-  field (DTYP, "asynFloat64")
-  field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(channel),1)CurrentMeasurement")
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom" ) {
+  field( DTYP, "asynFloat64" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asyn($(BUS),$(channel),1)CurrentMeasure" )
   # display parameters
-  field (EGU,  "uA")
-  field (PREC, "2")
-  # alarm parameters
-  field (HIHI, "$(maxI)")
-  field (HIGH, "$(maxI)")
-  field (LOW,  "-1")
-  field (LOLO, "-1")
-  field (HHSV, "MAJOR")
-  field (HSV,  "MINOR")
-  field (LSV,  "MINOR")
-  field (LLSV, "MAJOR")
+  field( EGU,  "uA" )
+  field( PREC, "2" )
+  # alarm parameters (Limits are set by ext config tool)
+  field( HIHI, "10000" )
+  field( HIGH, "9999" )
+  field( LOW,  "-1" )
+  field( LOLO, "-2" )
+  field( HHSV, "MAJOR" )
+  field( HSV,  "MINOR" )
+  field( LSV,  "MINOR" )
+  field( LLSV, "MAJOR" )
   # thresholds
-  field (ADEL, "0.5")
-  field (MDEL, "0")
+  field( ADEL, "0.5" )
+  field( MDEL, "0" )
 }
 
 ###################################
 # ### Set voltage and current ### #
 ###################################
-record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset") {
-  field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS),$(channel),1)SetVoltage")
-  field (DRVH, "$(maxV)")
-  field (DRVL, "0")
-  field (PREC, "1")
-  field (EGU,  "V")
+record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):Vset" ) {
+  field( DTYP, "asynFloat64" )
+  field( DISV, "0" )
+  field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
+  field( OUT,  "@asyn($(BUS),$(channel),1)VoltageSet" )
+  field( DRVH, "6000" )
+  field( DRVL, "0" )
+  field( PREC, "1" )
+  field( EGU,  "V" )
 }
 
-record (ao, "PANDA:$(subsys):$(dev):HV:$(sector):Iset") {
-  field (DTYP, "asynFloat64")
-  field (OUT,  "@asyn($(BUS),$(channel),1)SetCurrent")
-  field (DRVH, "$(maxI)")
-  field (DRVL, "0")
-  field (PREC, "2")
-  field (EGU,  "uA")
+record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):Iset" ) {
+  field( DTYP, "asynFloat64" )
+  field( DISV, "0" )
+  field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
+  field( OUT,  "@asyn($(BUS),$(channel),1)CurrentSet" )
+  field( DRVH, "10000" )
+  field( DRVL, "0" )
+  field( PREC, "2" )
+  field( EGU,  "uA" )
 }
 
 ##########################
 # ### Channel status ### #
 ##########################
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):IEER") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B2 CP")
-  field (ZNAM, "OK")
-  field (ONAM, "Input Error")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MINOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):IEER" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B2 CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "Input Error" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MINOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isOn") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B3 CP")
-  field (ZNAM, "off")
-  field (ONAM, "on")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isOn" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B3 CP" )
+  field( ZNAM, "off" )
+  field( ONAM, "on" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isRamp") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B4 CP")
-  field (ZNAM, "stable")
-  field (ONAM, "ramping")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isRamp" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B4 CP" )
+  field( ZNAM, "stable" )
+  field( ONAM, "ramping" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isEMCY") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B5 CP")
-  field (ZNAM, "-")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isEMCY" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B5 CP" )
+  field( ZNAM, "-" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCC") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B6 CP")
-  field (ZNAM, "-")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCC" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B6 CP" )
+  field( ZNAM, "-" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCV") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B7 CP")
-  field (ZNAM, "-")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCV" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.B7 CP" )
+  field( ZNAM, "-" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCBND") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BA CP")
-  field (ZNAM, "OK")
-  field (ONAM, "Out of bounds")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCBND" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BA CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "Out of bounds" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isVBND") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BB CP")
-  field (ZNAM, "OK")
-  field (ONAM, "Out of bounds")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isVBND" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BB CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "Out of bounds" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isEINH") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BC CP")
-  field (ZNAM, "no")
-  field (ONAM, "yes")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isEINH" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BC CP" )
+  field( ZNAM, "no" )
+  field( ONAM, "yes" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isTRP") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BD CP")
-  field (ZNAM, "OK")
-  field (ONAM, "tripped")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isTRP" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BD CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "tripped" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCLIM") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BE CP")
-  field (ZNAM, "OK")
-  field (ONAM, "exceeded")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isCLIM" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BE CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "exceeded" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):isVLIM") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BF CP")
-  field (ZNAM, "OK")
-  field (ONAM, "exceeded")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):isVLIM" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):Status.BF CP" )
+  field( ZNAM, "OK" )
+  field( ONAM, "exceeded" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
 ################################
 # ### Channel event status ### #
 ################################
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EIER") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B2 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MINOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EIER" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B2 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MINOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EOn2Off") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B3 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EOn2Off" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B3 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEOR") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B4 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEOR" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B4 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEMCY") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B5 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEMCY" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B5 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECC") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B6 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECC" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B6 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECV") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B7 CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "NO_ALARM")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECV" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.B7 CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "NO_ALARM" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECBNDs") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BA CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECBNDs" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BA CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EVBNDs") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BB CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EVBNDs" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BB CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEINH") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BC CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EEINH" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BC CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):ETRP") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BD CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):ETRP" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BD CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECLIM") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BE CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):ECLIM" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BE CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
-record (bi, "PANDA:$(subsys):$(dev):HV:$(sector):EVLIM") {
-  field (INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BF CP")
-  field (ZNAM, "--")
-  field (ONAM, "active")
-  field (ZSV,  "NO_ALARM")
-  field (OSV,  "MAJOR")
+record( bi, "PANDA:$(subsys):$(dev):HV:$(sector):EVLIM" ) {
+  field( INP,  "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus.BF CP" )
+  field( ZNAM, "--" )
+  field( ONAM, "active" )
+  field( ZSV,  "NO_ALARM" )
+  field( OSV,  "MAJOR" )
 }
 
 ###############

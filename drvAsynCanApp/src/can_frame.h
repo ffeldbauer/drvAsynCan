@@ -63,6 +63,8 @@ typedef union{
 } can_data_t;
 
 std::ostream& operator<<( std::ostream& os, const can_frame_t& rframe );
+bool operator==( const can_frame_t& lhs, const can_frame_t& rhs );
+bool compCanFrame( const can_frame_t& lhs, const can_frame_t& rhs, int dlc );
 std::string printTimestamp();
 
 #endif

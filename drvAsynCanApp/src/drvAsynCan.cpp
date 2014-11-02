@@ -193,7 +193,11 @@ asynStatus drvAsynCan::writeGenericPointer( asynUser *pasynUser, void *genericPo
 //! @param   [in]  maxChars   Maximum number of characters to read.
 //! @param   [out] nActual    Number of characters actually read.
 //! @param   [out] eomReason  Reason that read terminated.
-//------------------------------------------------------------------------------
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError or asynTimeout is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+///------------------------------------------------------------------------------
 asynStatus drvAsynCan::readOctet( asynUser *pasynUser, char *value, size_t maxChars,
                                   size_t *nActual, int *eomReason ) {
   static const char *functionName = "readOctet";
@@ -280,7 +284,11 @@ asynStatus drvAsynCan::readOctet( asynUser *pasynUser, char *value, size_t maxCh
 //! @param   [in]  value      Address of the string to write.
 //! @param   [in]  nChars     Number of characters to write.
 //! @param   [out] nActual    Number of characters actually written.
-//------------------------------------------------------------------------------
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError or asynTimeout is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+///------------------------------------------------------------------------------
 asynStatus drvAsynCan::writeOctet( asynUser *pasynUser, const char *value, size_t maxChars,
                                    size_t *nActual ){
   char *p;
@@ -335,8 +343,8 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
   : asynPortDriver( portName,
                     1, // maxAddr
                     0,
-                    asynCommonMask | asynGenericPointerMask | asynOptionMask | asynDrvUserMask, // Interface mask
-                    asynCommonMask | asynGenericPointerMask,  // Interrupt mask
+                    asynCommonMask | asynOctetMask | asynGenericPointerMask | asynDrvUserMask, // Interface mask
+                    asynCommonMask | asynOctetMask | asynGenericPointerMask,  // Interrupt mask
                     ASYN_CANBLOCK | ASYN_MULTIDEVICE, // asynFlags
                     1,  // Autoconnect
                     0,  // Default priority
@@ -369,11 +377,11 @@ drvAsynCan::drvAsynCan( const char *portName, const char *ttyName )
   }
 
   // Set size of CAN socket send buffer to minimum
-  int sndBufNew = 0;
-  if( setsockopt( _socket, SOL_SOCKET, SO_SNDBUF, (void *)&sndBufNew, sizeof( sndBufNew ) ) < 0 ){
-    perror( "Error while set socket option SNDBUF" );
-    return;
-  }
+  //int sndBufNew = 0;
+  //if( setsockopt( _socket, SOL_SOCKET, SO_SNDBUF, (void *)&sndBufNew, sizeof( sndBufNew ) ) < 0 ){
+  //  perror( "Error while set socket option SNDBUF" );
+  //  return;
+  //}
   // Print minimum value of buffer size
   //int sndBuf = 0;
   //unsigned int sndBuf_len = 4;

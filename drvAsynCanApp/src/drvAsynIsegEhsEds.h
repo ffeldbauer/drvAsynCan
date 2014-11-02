@@ -98,6 +98,7 @@ class drvAsynIsegEhsEds : public asynPortDriver {
   virtual asynStatus readUInt32Digital( asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask );
   virtual asynStatus writeFloat64( asynUser *pasynUser, epicsFloat64 value );
   virtual asynStatus readFloat64( asynUser *pasynUser, epicsFloat64 *value );
+  virtual asynStatus getBoundsFloat( asynUser *pasynUser, epicsFloat64 *low, epicsFloat64 *high );
 
   void asynReadHandler( void* pframe );
 
@@ -158,6 +159,7 @@ class drvAsynIsegEhsEds : public asynPortDriver {
 
   asynStatus getFirmware();
   asynStatus initEhsEds( std::map<int, isegFrame>::const_iterator& it );
+  asynStatus initEhsEdsModule( std::map<int, isegFrame>::const_iterator& it );
 
   char                     *_deviceName;
   epicsUInt32               _can_id;

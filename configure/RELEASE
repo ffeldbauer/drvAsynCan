@@ -6,13 +6,13 @@
 
 # If you don't want to install files into $(TOP) then define
 # INSTALL_LOCATION_APP here:
-INSTALL_LOCATION_APP = /opt/epics/modules/drvAsynCan
+#INSTALL_LOCATION_APP = 
 
 # Define path to sequencer if needed
 #SNCSEQ = /opt/epics/modules/seq
 
 # Asyn
-ASYN = /opt/epics/modules/asyn
+ASYN = /etc/epics/asyn
 
 # EPICS_BASE usually appears last so other apps can preempt definitions
-EPICS_BASE = /opt/epics/base
+EPICS_BASE = /etc/epics/base

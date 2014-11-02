@@ -34,12 +34,12 @@
 
 /* These are the drvInfo strings that are used to identify the parameters.
  * They are used by asyn clients, including standard asyn device support */
-#define P_ISEGECH44A_CRATE_STATUS_STRING         "ISEGECH44A_STATUS"        /* asynUInt32Digital, r   */
-#define P_ISEGECH44A_CRATE_CONTROL_STRING        "ISEGECH44A_CONTROL"       /* asynUInt32Digital, r/w */
-#define P_ISEGECH44A_CRATE_EVENT_STATUS_STRING   "ISEGECH44A_EVT_STATUS"    /* asynUInt32Digital, r   */
-#define P_ISEGECH44A_CRATE_EVENT_MASK_STRING     "ISEGECH44A_EVT_MASK"      /* asynUInt32Digital, r/w */
-#define P_ISEGECH44A_CRATE_FAN_SPEED_STRING      "ISEGECH44A_FAN_SPEED"     /* asynFloat64,       r/w */
-#define P_ISEGECH44A_CRATE_ON_OFF_STRING         "ISEGECH44A_ON_OFF"        /* asynInt32,         r/w */
+#define P_ISEGECH44A_CRATE_STATUS_STRING         "STATUS"        /* asynUInt32Digital, r   */
+#define P_ISEGECH44A_CRATE_CONTROL_STRING        "CONTROL"       /* asynUInt32Digital, r/w */
+#define P_ISEGECH44A_CRATE_EVENT_STATUS_STRING   "EVT_STATUS"    /* asynUInt32Digital, r   */
+#define P_ISEGECH44A_CRATE_EVENT_MASK_STRING     "EVT_MASK"      /* asynUInt32Digital, r/w */
+#define P_ISEGECH44A_CRATE_FAN_SPEED_STRING      "FAN_SPEED"     /* asynFloat64,       r/w */
+#define P_ISEGECH44A_CRATE_ON_OFF_STRING         "ON_OFF"        /* asynInt32,         r/w */
 
 //! @brief   asynPortDriver for ISEG ECH44A crate controller
 //!

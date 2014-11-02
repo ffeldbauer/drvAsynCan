@@ -89,21 +89,22 @@ extern "C" {
   //!
   //! @param   [in]  portName    The name of the asyn port driver to be created.
   //! @param   [in]  CanPort     The name of the interface 
-  //! @param   [in]  module_id   The id of the module
+  //! @param   [in]  can_id      The CAN id of this module/board
+  //! @param   [in]  channels    Number of channels of this module/board
   //----------------------------------------------------------------------------
   int drvAsynIsegEhsEdsConfigure( const char *portName, const char *CanPort,
-                                  const int module_id, const int channels ) {
-    if ( module_id < 0 || module_id > 129 ) {
-      printf("ERROR: Could not configure drvAsynIsegHv: invalid module id: %d\n", module_id );
-      return( asynError );
-    }
-    char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
-    new drvAsynIsegEhsEds( portName, CanPort, module_id, channels );
+                                  const int can_id, const int channels ) {
+    //if ( module_id < 0 || module_id > 129 ) {
+    //  printf("ERROR: Could not configure drvAsynIsegHv: invalid module id: %d\n", module_id );
+    //  return( asynError );
+    //}
+    //char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
+    new drvAsynIsegEhsEds( portName, CanPort, can_id, channels );
     return( asynSuccess );
   }
   static const iocshArg initIsegEhsEdsArg0 = { "portName",  iocshArgString };
   static const iocshArg initIsegEhsEdsArg1 = { "CanPort",   iocshArgString };
-  static const iocshArg initIsegEhsEdsArg2 = { "module_id", iocshArgInt };
+  static const iocshArg initIsegEhsEdsArg2 = { "can_id",    iocshArgInt };
   static const iocshArg initIsegEhsEdsArg3 = { "channels",  iocshArgInt };
   static const iocshArg * const initIsegEhsEdsArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1,
                                                          &initIsegEhsEdsArg2, &initIsegEhsEdsArg3 };

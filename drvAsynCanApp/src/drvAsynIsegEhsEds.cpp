@@ -58,7 +58,7 @@
 //_____ G L O B A L S __________________________________________________________
 
 //_____ L O C A L S ____________________________________________________________
-static const char *driverName = "drvAsynIsegHVDriver";
+static const char *driverName = "drvAsynIsegEhsEdsDriver";
 
 //_____ F U N C T I O N S ______________________________________________________
 static void myInterruptCallbackGenericPointer( void *userPvt,
@@ -201,7 +201,7 @@ void drvAsynIsegEhsEds::asynReadHandler( void* pointer ) {
   case 0x6109:
     myValue.fval *= 1.e6;
     status = setDoubleParam( addr, P_ChanImom, myValue.fval );
-    status = setIntegerParam( addr, P_ChanImomRange, pframe->data[7] );
+    status = setUIntDigitalParam( addr, P_ChanImomRange, pframe->data[7], 0x0001 );
     break;
 
   default:
@@ -209,7 +209,9 @@ void drvAsynIsegEhsEds::asynReadHandler( void* pointer ) {
   }
   
   if ( asynSuccess != status ) {
-    std::cerr << printTimestamp() << " " << driverName << ":" <<  _deviceName << ":asynReadHandler: Error"
+    std::cerr << printTimestamp() << " " << driverName << ":" <<  _deviceName
+              << ":asynReadHandler: Error while setting value for "
+              << opcode
               << std::endl;
     return;
   }
@@ -677,6 +679,8 @@ asynStatus drvAsynIsegEhsEds::readFloat64( asynUser *pasynUser, epicsFloat64 *va
        function == P_Supply24   || \
        function == P_Supply5    || \
        function == P_Temperature ) {
+    addr = 0;
+
     std::map<int, isegFrame>::const_iterator it = _cmds.find( function );
     if( it == _cmds.end() ) return asynError;
     can_frame_t pframe;
@@ -749,6 +753,44 @@ asynStatus drvAsynIsegEhsEds::readFloat64( asynUser *pasynUser, epicsFloat64 *va
 }
 
 //------------------------------------------------------------------------------
+//! @brief   Called when asyn clients call pasynFloat64->getBoundsFloat().
+//!
+//!          Return the hardware limits for Vset and Iset. All other 
+//! @param   [in]  pasynUser  pasynUser structure that encodes the reason and address
+//! @param   [out] low        Address of the low limit.
+//! @param   [out] high       Address of the high limit.
+//!
+//! @return  in case of no error occured asynSuccess is returned. Otherwise
+//!          asynError or asynTimeout is returned. A error message is stored
+//!          in pasynUser->errorMessage.
+//------------------------------------------------------------------------------
+asynStatus drvAsynIsegEhsEds::getBoundsFloat( asynUser *pasynUser, epicsFloat64 *low, epicsFloat64 *high) {
+  int function = pasynUser->reason;
+  asynStatus status = asynSuccess;
+
+  epicsFloat64 myLow  = -1e300;
+  epicsFloat64 myHigh = 1e300;
+
+  if ( function == P_Vmax ) {
+    myLow = 0.;
+    status = (asynStatus) getDoubleParam( 0, P_Vmax, &myHigh );
+  }
+  if ( function == P_Imax ) {
+    myLow = 0.;
+    status = (asynStatus) getDoubleParam( 0, P_Imax, &myHigh );
+    myHigh *= 1.e6;
+  }
+
+  *low  = myLow;
+  *high = myHigh;
+
+  asynPrint( pasynUser, ASYN_TRACEIO_DRIVER,
+             "%s::getBoundsFloat, function=%d, status=%d, low=%f, high=%f\n", 
+             driverName, function, status, *low, *high );
+  return asynSuccess;
+}
+
+//------------------------------------------------------------------------------
 //! @brief   Get Firmware release and name of the module
 //------------------------------------------------------------------------------
 asynStatus drvAsynIsegEhsEds::getFirmware(){
@@ -805,7 +847,8 @@ asynStatus drvAsynIsegEhsEds::getFirmware(){
   if ( pframe.can_id  != _can_id || \
        pframe.can_dlc != 6       || \
        pframe.data[0] != 0x12    || \
-       pframe.data[1] != 0x00    ){
+       pframe.data[1] != 0x00 ) {
+
     std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
               << ": Mismatch in reply. Got " << pframe
               << " where " << _can_id << " 6 0x12 0x00 ... was expected"
@@ -887,6 +930,83 @@ asynStatus drvAsynIsegEhsEds::getFirmware(){
 }
 
 //------------------------------------------------------------------------------
+//! @brief   Get initial values for module related parameters of type epicsFloat64
+//------------------------------------------------------------------------------
+asynStatus drvAsynIsegEhsEds::initEhsEdsModule( std::map<int, isegFrame>::const_iterator& it ) {
+  can_frame_t pframe;
+  asynStatus status = asynSuccess;
+  asynStatus unlockStatus = asynSuccess;
+  static const char *functionName = "initEhsEdsModule";
+  
+  pframe.can_id  = _can_id | 1;
+  pframe.can_dlc = it->second.dlc;
+  pframe.data[0] = it->second.data0;
+  pframe.data[1] = it->second.data1;
+
+  _pasynUser->timeout = 0.5;
+  status = pasynManager->queueLockPort( _pasynUser );
+  if( asynSuccess != status) {
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
+              << ": pasynManager->queueLockPort: funciton=" << it->first
+              << " status=" << status << " "
+              << _pasynUser->errorMessage
+              << std::endl;
+    return status;
+  }
+  status = _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe );
+  if ( asynSuccess != status ) {
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
+              << ": pasynGenericPointer->write: funciton=" << it->first
+              << " status=" << status << " "
+              << _pasynUser->errorMessage
+              << std::endl;
+  } else {
+    status = _pasynGenericPointer->read( _pvtGenericPointer, _pasynUser, &pframe );
+  }
+  unlockStatus = pasynManager->queueUnlockPort( _pasynUser );
+  if( asynSuccess != unlockStatus ) {
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
+              << ": pasynManager->queueUnlockPort: funciton=" << it->first 
+              << " status=" << status << " "
+              << _pasynUser->errorMessage
+              << std::endl;
+    return unlockStatus;
+  }
+    
+  if ( asynTimeout == status ){
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
+              << ": pasynGenericPointer->read: funciton=" << it->first << " status=" << status << " "
+              << "No reply from device" 
+              << std::endl;
+    return asynTimeout;
+  }
+
+  if ( pframe.can_id  != _can_id                 || \
+       pframe.can_dlc != ( it->second.dlc + 4 )  || \
+       pframe.data[0] != it->second.data0        || \
+       pframe.data[1] != it->second.data1 ) {
+    std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
+              << ": Mismatch in reply. Got " << pframe
+              << " where " << _can_id << " " << ( it->second.dlc + 4 ) << " 0x"
+              << std::hex << it->second.data0 << " 0x"
+              << std::hex << it->second.data1 << " "
+              << std::dec << "... was expected"
+              << std::endl;
+    return asynError;
+  }
+  can_data_t myValue;
+  myValue.can[3] = pframe.data[2];
+  myValue.can[2] = pframe.data[3];
+  myValue.can[1] = pframe.data[4];
+  myValue.can[0] = pframe.data[5];
+  if( it->first == P_Imax ) myValue.fval *= 1.e6;
+  status = setDoubleParam( 0, it->first, myValue.fval );
+
+  return status;
+}
+
+
+//------------------------------------------------------------------------------
 //! @brief   Get initial values for channel related parameters
 //------------------------------------------------------------------------------
 asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterator& it ) {
@@ -912,7 +1032,8 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
     status = pasynManager->queueLockPort( _pasynUser );
     if( asynSuccess != status) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                << ": pasynManager->queueLockPort: status=" << status << " "
+                << ": pasynManager->queueLockPort: funciton=" << it->first
+                << " status=" << status << " "
                 << _pasynUser->errorMessage
                 << std::endl;
       return status;
@@ -921,7 +1042,8 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
     // write request to CANbus 
     if( _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe ) != asynSuccess ) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                << ": pasynGenericPointer->write: status=" << status << " "
+                << ": pasynGenericPointer->write: funciton=" << it->first
+                << " status=" << status << " "
                 << _pasynUser->errorMessage
                 << std::endl;
       status = asynError;
@@ -930,7 +1052,9 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
       for( int i = 0; i < maxAddr; i++ ){
         if( _pasynGenericPointer->read( _pvtGenericPointer, _pasynUser, &pframe ) != asynSuccess ){
           std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                    << ": pasynGenericPointer->read: status=" << status << " "
+                    << ": pasynGenericPointer->read: funciton=" << it->first
+                    << "," << i
+                    << " status=" << status << " "
                     << _pasynUser->errorMessage
                     << std::endl;
           status = asynError;
@@ -942,7 +1066,8 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
     unlockStatus = pasynManager->queueUnlockPort( _pasynUser );
     if( asynSuccess != unlockStatus ) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                << ": pasynManager->queueUnlockPort: status=" << unlockStatus << " "
+                << ": pasynManager->queueUnlockPort: funciton=" << it->first
+                << " status=" << unlockStatus << " "
                 << _pasynUser->errorMessage
                 << std::endl;
       return unlockStatus;
@@ -956,7 +1081,7 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
     status = pasynManager->queueLockPort( _pasynUser );
     if( asynSuccess != status) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                << ": pasynManager->queueLockPort: status=" << status << " "
+                << ": pasynManager->queueLockPort: funciton=" << it->first << " status=" << status << " "
                 << _pasynUser->errorMessage
                 << std::endl;
       return status;
@@ -978,7 +1103,7 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
       // write request to CANbus 
       if( _pasynGenericPointer->write( _pvtGenericPointer, _pasynUser, &pframe ) != asynSuccess ) {
         std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                  << ": pasynGenericPointer->write: status=" << status << " "
+                  << ": pasynGenericPointer->write: funciton=" << it->first << " status=" << status << " "
                   << _pasynUser->errorMessage
                   << std::endl;
         status = asynError;
@@ -987,7 +1112,7 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
       for( int i = 0; i < num && i < 16; i++ ){
         if( _pasynGenericPointer->read( _pvtGenericPointer, _pasynUser, &pframe ) != asynSuccess ){
           std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                    << ": pasynGenericPointer->read: status=" << status << " "
+                    << ": pasynGenericPointer->read: funciton=" << it->first << " status=" << status << " "
                     << _pasynUser->errorMessage
                     << std::endl;
           status = asynError;
@@ -1000,7 +1125,7 @@ asynStatus drvAsynIsegEhsEds::initEhsEds( std::map<int, isegFrame>::const_iterat
     unlockStatus = pasynManager->queueUnlockPort( _pasynUser );
     if( asynSuccess != unlockStatus ) {
       std::cerr << driverName << ":" <<  _deviceName << ":" << functionName
-                << ": pasynManager->queueUnlockPort: status=" << unlockStatus << " "
+                << ": pasynManager->queueUnlockPort: funciton=" << it->first << " status=" << unlockStatus << " "
                 << _pasynUser->errorMessage
                 << std::endl;
       return unlockStatus;
@@ -1054,7 +1179,7 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   createParam( P_ISEGEHSEDS_IMOM_STRING,             asynParamFloat64,       &P_ChanImom );
   createParam( P_ISEGEHSEDS_VBOUNDS_STRING,          asynParamFloat64,       &P_ChanVbounds );
   createParam( P_ISEGEHSEDS_IBOUNDS_STRING,          asynParamFloat64,       &P_ChanIbounds );
-  createParam( P_ISEGEHSEDS_VNOM_STRING,             asynParamFloat64,       &P_ChanInom );
+  createParam( P_ISEGEHSEDS_VNOM_STRING,             asynParamFloat64,       &P_ChanVnom );
   createParam( P_ISEGEHSEDS_INOM_STRING,             asynParamFloat64,       &P_ChanInom );
   createParam( P_ISEGEHSEDS_IMOM_RANGE_STRING,       asynParamUInt32Digital, &P_ChanImomRange );
   // Channel related parameters used as commands (no values)
@@ -1197,12 +1322,13 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   }
 
   // Start polling
+  // Polling is now only needed for handling of "log-off" message handling...
   ReadPoller::create( CanPort );
  
   // Get Firmware release and name
   status = getFirmware();
   if ( status ) return;
-  _shortMBR = true;
+  _shortMBR = false;
 
   isegFrame chstat_cmd     = { 5, 0x60, 0x00 };
   isegFrame chanctrl_r_cmd = { 5, 0x60, 0x01 };
@@ -1283,6 +1409,11 @@ drvAsynIsegEhsEds::drvAsynIsegEhsEds( const char *portName,
   _cmds.insert( std::make_pair( P_ChanIset,           iset_w_cmd ) );
   _cmds.insert( std::make_pair( P_ChanVbounds,        vbounds_w_cmd ) );
   _cmds.insert( std::make_pair( P_ChanIbounds,        ibounds_w_cmd ) );
+
+  std::map<int, isegFrame>::const_iterator maxVals = _cmds.find( P_Vmax );
+  status = initEhsEdsModule( maxVals );
+  maxVals = _cmds.find( P_Imax );
+  status = initEhsEdsModule( maxVals );
 
 }
 

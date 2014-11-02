@@ -21,48 +21,48 @@
 # ### Calibration ### #
 #######################
 
-record (ai, "PANDA:$(subsys):TEMP:$(sector):Traw") {
-  field (DTYP, "asynInt32")
-  field (SCAN, "I/O Intr")
-  field (INP,  "@asyn($(BUS),$(no),1)Value")
-  field (FLNK, "PANDA:$(subsys):TEMP:$(sector):Tmom.PROC")
-  field (ADEL, "1")
-  field (MDEL, "1")
+record( ai, "PANDA:$(subsys):TEMP:$(sector):Traw" ) {
+  field( DTYP, "asynInt32" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asyn($(BUS),$(no),1)Value" )
+  field( FLNK, "PANDA:$(subsys):TEMP:$(sector):Tmom.PROC" )
+  field( ADEL, "1" )
+  field( MDEL, "1" )
 }
 
-record (calc, "PANDA:$(subsys):TEMP:$(sector):Tmom") {
+record( calc, "PANDA:$(subsys):TEMP:$(sector):Tmom" ) {
 
-  # calculation
-  #  RTD/PT100
-  field (CALC, "A + B*E + C*E^2 + D*E^3")
-  #  NTC
-  #field (CALC, "1 / ( A + B*ln(E) + D*ln(E)^3 )")
+  ## calculation
+  ##  RTD/PT100
+  field( CALC, "A + B*E + C*E^2 + D*E^3" )
+  ##  NTC
+  #field( CALC, "1 / ( A + B*ln(E/F) + D*ln(E/F)^3 )" )
 
-  # display parameters
-  field (HOPR, "40")
-  field (LOPR, "-40")
-  field (EGU,  "degC")
-  field (PREC, "2")
+  ## display parameters
+  field( HOPR, "40" )
+  field( LOPR, "-40" )
+  field( EGU,  "degC" )
+  field( PREC, "2" )
 
-  # alarm/warning parameters
-  field (HIHI, "40")
-  field (HIGH, "35")
-  field (LOW,  "-35")
-  field (LOLO, "-30")
-  field (HHSV, "NO_ALARM")
-  field (HSV,  "NO_ALARM")
-  field (LSV,  "NO_ALARM")
-  field (LLSV, "NO_ALARM")
+  ## alarm/warning parameters
+  field( HIHI, "40" )
+  field( HIGH, "35" )
+  field( LOW,  "-35" )
+  field( LOLO, "-30" )
+  field( HHSV, "NO_ALARM" )
+  field( HSV,  "NO_ALARM" )
+  field( LSV,  "NO_ALARM" )
+  field( LLSV, "NO_ALARM" )
 
-  # inputs
-  field (INPA, "$(P0)")
-  field (INPB, "$(P1)")
-  field (INPC, "$(P2)")
-  field (INPD, "$(P3)")
-  field (INPE, "PANDA:$(subsys):TEMP:$(sector):Traw.VAL NPP")
+  ## inputs
+  field( INPA, "$(P0)" )
+  field( INPB, "$(P1)" )
+  field( INPC, "$(P2)" )
+  field( INPD, "$(P3)" )
+  field( INPE, "PANDA:$(subsys):TEMP:$(sector):Traw.VAL NPP" )
 
-  # Archive and Monitor deadbands
-  field (ADEL, "0.05")
-  field (MDEL, "0.05")
+  ## Archive and Monitor deadbands
+  field( ADEL, "0.05" )
+  field( MDEL, "0.05" )
 }
 

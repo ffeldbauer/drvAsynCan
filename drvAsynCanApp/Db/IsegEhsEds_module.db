@@ -10,6 +10,7 @@
 # ### macros: subsys  PANDA subsystem      (e.g. FEMC)       ### #
 # ###         BUS     AsynPort                               ### #
 # ###         sector  sector inside subsys (e.g. Q1:X4:Y2)   ### #
+# ###         crate   sector used for IsegEch44a             ### #
 ##################################################################
 
 ##########################################################
@@ -71,14 +72,14 @@ record( ai, "PANDA:$(subsys):HV:$(sector):MaxVoltage" ) {
   field( DTYP, "asynFloat64" )
   field( DISV, "0" )
   field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
-  field( INP,  "@asyn($(BUS),0,1)VoltageMax" 
+  field( INP,  "@asyn($(BUS),0,1)VoltageMax" )
 }
 
 record( ai, "PANDA:$(subsys):HV:$(sector):MaxCurrent" ) {
   field( DTYP, "asynFloat64" )
   field( DISV, "0" )
   field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
-  field( INP,  "@asyn($(BUS),0,1)CurrentMax" 
+  field( INP,  "@asyn($(BUS),0,1)CurrentMax" )
 }
 
 ###########################

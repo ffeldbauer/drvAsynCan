@@ -12,7 +12,7 @@
 # ###         dev     detector subtype     (e.g. APD)        ### #
 # ###         sector  sector inside subsys (e.g. Q1:X4:Y2:F) ### #
 # ###         channel channel number                         ### #
-# ###         module  sector of module                       ### #
+# ###         crate   sector used for IsegEch44a             ### #
 ##################################################################
 
 ############################################################
@@ -28,21 +28,6 @@ record( mbbiDirect, "PANDA:$(subsys):$(dev):HV:$(sector):EventStatus" ) {
   field( DTYP, "asynUInt32Digital" )
   field( SCAN, "I/O Intr" )
   field( INP,  "@asynMask($(BUS),$(channel),0xffff,1)ChannelEventStatus" )
-}
-
-###########################################################
-# ### Records to devine DRVH limits for vset and iset ### #
-###########################################################
-record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):MaxVoltage__" )
-  field( DOL,  "PANDA:$(subsys):HV:$(module):MaxVoltage CP" )
-  field( OMSL, "closed_loop" )
-  field( OUT,  "PANDA:$(subsys):$(dev):HV:$(sector):Vset.DRVH NPP" )
-}
-
-record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):MaxCurrent__" )
-  field( DOL,  "PANDA:$(subsys):HV:$(module):MaxCurrent CP" )
-  field( OMSL, "closed_loop" )
-  field( OUT,  "PANDA:$(subsys):$(dev):HV:$(sector):Iset.DRVH NPP" )
 }
 
 ########################################

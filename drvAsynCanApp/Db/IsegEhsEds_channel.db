@@ -5,7 +5,7 @@
 # ###                                                        ### #
 # ### author: F.Feldbauer                                    ### #
 # ###                                                        ### #
-# ### Ref 1.0; 2013-02-19                                    ### #
+# ### Ref 1.2; 2015-03-29                                    ### #
 # ###                                                        ### #
 # ### macros: subsys  PANDA subsystem      (e.g. FEMC)       ### #
 # ###         BUS     AsynPort                               ### #
@@ -98,6 +98,30 @@ record( ao, "PANDA:$(subsys):$(dev):HV:$(sector):Iset" ) {
   field( DRVL, "0" )
   field( PREC, "2" )
   field( EGU,  "uA" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):VsetR" ) {
+  field( DTYP, "asynFloat64" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asyn($(BUS),$(channel),1)VoltageSet" )
+  # display parameters
+  field( EGU,  "V" )
+  field( PREC, "1" )
+  # thresholds
+  field( ADEL, "0.1" )
+  field( MDEL, "0" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):IsetR" ) {
+  field( DTYP, "asynFloat64" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asyn($(BUS),$(channel),1)CurrentSet" )
+  # display parameters
+  field( EGU,  "uA" )
+  field( PREC, "2" )
+  # thresholds
+  field( ADEL, "0.5" )
+  field( MDEL, "0" )
 }
 
 ##########################

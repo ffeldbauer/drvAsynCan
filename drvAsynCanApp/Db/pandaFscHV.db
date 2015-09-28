@@ -1,0 +1,93 @@
+##################################################################
+# ###                                                        ### #
+# ### EPICS Database for                                     ### #
+# ### PANDA FSC HV Supply Communication                      ### #
+# ###                                                        ### #
+# ### author: F.Feldbauer                                    ### #
+# ###                                                        ### #
+# ### Ref 1.0; 2015-09-28                                    ### #
+# ###                                                        ### #
+# ### macros: dev     detector subtype     (e.g. APD)        ### #
+# ###         sector  sector inside subsys (e.g. Q1:X4:Y2:F) ### #
+# ###         BUS     AsynPort                               ### #
+##################################################################
+
+record( mbbiDirect, "PANDA:FSC:$(dev):HV:$(sector):Status" ) {
+  field( DTYP, "asynUInt32Digital" )
+  field( SCAN, "2 second" )
+  field( INP,  "@asynMask($(BUS),0,0xff,1)STATUS" )
+}
+
+## This record can be used to display if HV is on/off
+record( bi, "PANDA:FSC:$(dev):HV:$(sector):SwitchRead" ) {
+  field( DTYP, "asynUInt32Digital" )
+  field( SCAN, "I/O Intr" )
+  field( INP,  "@asynMask($(BUS),0,0x1,1)SWITCH" )
+  field( ZNAM, "OFF" )
+  field( ONAM, "ON" )
+}
+
+record( bo, "PANDA:FSC:$(dev):HV:$(sector):Switch" ) {
+  field( DTYP, "asynUInt32Digital" )
+  field( OUT,  "@asynMask($(BUS),0,0x1,1)SWITCH" )
+  field( ZNAM, "OFF" )
+  field( ONAM, "ON" )
+}
+
+record( ai, "PANDA:FSC:$(dev):HV:$(sector):Vmom:0" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)VOLTAGE0" )
+  # display parameters
+  field( EGU,  "V" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom:0" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)CURRENT0" )
+  # display parameters
+  field( EGU,  "A" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:FSC:$(dev):HV:$(sector):Vmom:1" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)VOLTAGE1" )
+  # display parameters
+  field( EGU,  "V" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom:1" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)CURRENT1" )
+  # display parameters
+  field( EGU,  "A" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:FSC:$(dev):HV:$(sector):Vmom:2" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)VOLTAGE2" )
+  # display parameters
+  field( EGU,  "V" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Imom:2" ) {
+  field( DTYP, "asynFloat64" )
+  field( INP,  "@asyn($(BUS),0,1)CURRENT2" )
+  # display parameters
+  field( EGU,  "A" )
+  field( PREC, "3" )
+}
+
+record( ai, "PANDA:$(subsys):$(dev):HV:$(sector):Temp" ) {
+  field( DTYP, "asynInt32" )
+  field( INP,  "@asyn($(BUS),0,1)TEMPERATURE" )
+  # display parameters
+  field( EGU,  "degC" )
+  field( ASLO, "1" )
+  field( AOFF, "0" )
+}
+

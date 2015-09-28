@@ -52,6 +52,7 @@
 #include "drvAsynLedPulser.h"
 #include "drvAsynLedPulser2.h"
 #include "drvAsynTmcm142.h"
+#include "drvAsynFscHV.h"
 
 //_____ D E F I N I T I O N S __________________________________________________
 
@@ -260,7 +261,7 @@ extern "C" {
   static const iocshArg initLedPulser2Arg2 = { "can_id",     iocshArgInt };
   static const iocshArg * const initLedPulser2Args[] = { &initLedPulser2Arg0, &initLedPulser2Arg1,
                                                         &initLedPulser2Arg2 };
-  static const iocshFuncDef initLedPulser2FuncDef = { "drvAsynLedPulser2Configure", 4, initLedPulser2Args };
+  static const iocshFuncDef initLedPulser2FuncDef = { "drvAsynLedPulser2Configure", 3, initLedPulser2Args };
   static void initLedPulser2CallFunc( const iocshArgBuf *args ) {
     drvAsynLedPulser2Configure( args[0].sval, args[1].sval, args[2].ival );
   }
@@ -291,6 +292,30 @@ extern "C" {
   }
 
   //----------------------------------------------------------------------------
+  //! @brief   EPICS iocsh callable function to call constructor
+  //!          for the drvAsynFscHV class.
+  //!
+  //! @param   [in]  portName    The name of the asyn port driver to be created.
+  //! @param   [in]  CanPort     The name of the CAN bus interface 
+  //! @param   [in]  crate_id    power supply address
+  //----------------------------------------------------------------------------
+  int drvAsynPandaFscHvConfigure( const char *portName, const char *CanPort,
+                                  const int crate_id ) {
+    new drvAsynFscHV( portName, CanPort, crate_id );
+    return( asynSuccess );
+  }
+  static const iocshArg initPandaFscHvArg0 = { "portName",   iocshArgString };
+  static const iocshArg initPandaFscHvArg1 = { "CanPort",    iocshArgString };
+  static const iocshArg initPandaFscHvArg2 = { "crate_id",   iocshArgInt };
+  static const iocshArg * const initPandaFscHvArgs[] = { &initPandaFscHvArg0, &initPandaFscHvArg1,
+                                                         &initPandaFscHvArg2 };
+  static const iocshFuncDef initPandaFscHvFuncDef = { "drvAsynPandaFscHvConfigure", 3, initPandaFscHvArgs };
+  static void initPandaFscHvCallFunc( const iocshArgBuf *args ) {
+    drvAsynPandaFscHvConfigure( args[0].sval, args[1].sval, args[2].ival );
+  }
+  
+
+  //----------------------------------------------------------------------------
   //! @brief   Register functions to EPICS
   //----------------------------------------------------------------------------
   void drvAsynCanRegister( void ) {
@@ -306,6 +331,7 @@ extern "C" {
       iocshRegister( &initLedPulserFuncDef,    initLedPulserCallFunc );
       iocshRegister( &initLedPulser2FuncDef,   initLedPulser2CallFunc );
       iocshRegister( &initTmcm142FuncDef,      initTmcm142CallFunc );
+      iocshRegister( &initPandaFscHvFuncDef,   initPandaFscHvCallFunc );
       firstTime = 0;
     }
   }

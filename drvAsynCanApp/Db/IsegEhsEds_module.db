@@ -112,6 +112,18 @@ record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanImom" ) {
   field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
   field( OUT,  "@asyn($(BUS),0,1)ReadCurrentMeasure" )
 }
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanVset" ) {
+  field( DTYP, "asynInt32" )
+  field( DISV, "0" )
+  field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
+  field( OUT,  "@asyn($(BUS),0,1)ReadVoltageSet" )
+}
+record( bo, "PANDA:$(subsys):HV:$(sector):ReadChanIset" ) {
+  field( DTYP, "asynInt32" )
+  field( DISV, "0" )
+  field( SDIS, "PANDA:$(subsys):HVCRATE:$(crate):PowerOn.VAL NPP MS" )
+  field( OUT,  "@asyn($(BUS),0,1)ReadCurrentSet" )
+}
 
 ####################
 # ### switches ### #

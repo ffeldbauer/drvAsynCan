@@ -44,9 +44,6 @@
 // local includes
 #include "drvAsynCan.h"
 #include "drvAsynCapacitec.h"
-#include "drvAsynIsegEch44a.h"
-#include "drvAsynIsegEhsEds.h"
-#include "drvAsynIsegHvGlobal.h"
 #include "drvAsynWienerVME.h"
 #include "drvAsynTHMP.h"
 #include "drvAsynLedPulser.h"
@@ -82,64 +79,6 @@ extern "C" {
   static const iocshFuncDef initCanFuncDef = { "drvAsynCanConfigure", 2, initCanArgs };
   static void initCanCallFunc( const iocshArgBuf *args ) {
     drvAsynCanConfigure( args[0].sval, args[1].sval );
-  }
-
-  //----------------------------------------------------------------------------
-  //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynIsegEhsEds class.
-  //!
-  //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //! @param   [in]  CanPort     The name of the interface 
-  //! @param   [in]  can_id      The CAN id of this module/board
-  //! @param   [in]  channels    Number of channels of this module/board
-  //----------------------------------------------------------------------------
-  int drvAsynIsegEhsEdsConfigure( const char *portName, const char *CanPort,
-                                  const int can_id, const int channels ) {
-    //if ( module_id < 0 || module_id > 129 ) {
-    //  printf("ERROR: Could not configure drvAsynIsegHv: invalid module id: %d\n", module_id );
-    //  return( asynError );
-    //}
-    //char portNameChan[20]; strcpy( portNameChan, portName ); strcat( portNameChan, "C" );
-    new drvAsynIsegEhsEds( portName, CanPort, can_id, channels );
-    return( asynSuccess );
-  }
-  static const iocshArg initIsegEhsEdsArg0 = { "portName",  iocshArgString };
-  static const iocshArg initIsegEhsEdsArg1 = { "CanPort",   iocshArgString };
-  static const iocshArg initIsegEhsEdsArg2 = { "can_id",    iocshArgInt };
-  static const iocshArg initIsegEhsEdsArg3 = { "channels",  iocshArgInt };
-  static const iocshArg * const initIsegEhsEdsArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1,
-                                                         &initIsegEhsEdsArg2, &initIsegEhsEdsArg3 };
-  static const iocshFuncDef initIsegEhsEdsFuncDef = { "drvAsynIsegEhsEdsConfigure", 4, initIsegEhsEdsArgs };
-  static void initIsegEhsEdsCallFunc( const iocshArgBuf *args ) {
-    drvAsynIsegEhsEdsConfigure( args[0].sval, args[1].sval, args[2].ival, args[3].ival );
-  }
-  
-  // For global ISEG HV driver
-  int drvAsynIsegHvGlobalConfigure( const char *portName, const char *CanPort ) {
-    new drvAsynIsegHvGlobal( portName, CanPort );
-    return( asynSuccess );
-  }
-  static const iocshArg * const initIsegHvGlobalArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1 };
-  static const iocshFuncDef initIsegHvGlobalFuncDef = { "drvAsynIsegHvGlobalConfigure", 2, initIsegEhsEdsArgs };
-  static void initIsegHvGlobalCallFunc( const iocshArgBuf *args ) {
-    drvAsynIsegHvGlobalConfigure( args[0].sval, args[1].sval );
-  }
-
-  //----------------------------------------------------------------------------
-  //! @brief   EPICS iocsh callable function to call constructor
-  //!          for the drvAsynIsegEch44a class.
-  //!
-  //! @param   [in]  portName    The name of the asyn port driver to be created.
-  //! @param   [in]  CanPort     The name of the interface 
-  //----------------------------------------------------------------------------
-  int drvAsynIsegEch44aConfigure( const char *portName, const char *CanPort ) {
-    new drvAsynIsegEch44a( portName, CanPort );
-    return( asynSuccess );
-  }
-  static const iocshArg * const initIsegEch44aArgs[] = { &initIsegEhsEdsArg0, &initIsegEhsEdsArg1 };
-  static const iocshFuncDef initIsegEch44aFuncDef = { "drvAsynIsegEch44aConfigure", 2, initIsegEch44aArgs };
-  static void initIsegEch44aCallFunc( const iocshArgBuf *args ) {
-    drvAsynIsegEch44aConfigure( args[0].sval, args[1].sval );
   }
 
   //----------------------------------------------------------------------------

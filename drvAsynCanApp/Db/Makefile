@@ -9,9 +9,6 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install)
 # databases, templates, substitutions like this
 DB += CapacitecDigitizer.db
-DB += IsegEch44a.db
-DB += IsegEhsEds_channel.db
-DB += IsegEhsEds_module.db
 DB += LEDPulser.db
 DB += THMP_COM.db
 DB += THMP_other.db

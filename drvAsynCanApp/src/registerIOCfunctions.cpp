@@ -261,9 +261,6 @@ extern "C" {
     static int firstTime = 1;
     if ( firstTime ) {
       iocshRegister( &initCanFuncDef,          initCanCallFunc );
-      iocshRegister( &initIsegEhsEdsFuncDef,   initIsegEhsEdsCallFunc );
-      iocshRegister( &initIsegHvGlobalFuncDef, initIsegHvGlobalCallFunc );
-      iocshRegister( &initIsegEch44aFuncDef,   initIsegEch44aCallFunc );
       iocshRegister( &initWienerVmeFuncDef,    initWienerVmeCallFunc );
       iocshRegister( &initThmpFuncDef,         initThmpCallFunc );
       iocshRegister( &initCapacitecFuncDef,    initCapacitecCallFunc );

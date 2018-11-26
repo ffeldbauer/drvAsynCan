@@ -79,7 +79,7 @@ asynStatus drvAsynFscHV::readInt32( asynUser *pasynUser, epicsInt32 *value ) {
   if( function == _temp ) { // Parameter "TEMPERATURE" should be read
     // Create the CAN frame to send command to HV
     can_frame_t frame;
-    frame.can_id  = 0x480 | _createId; // 0x480 = 1001 000 0000
+    frame.can_id  = 0x480 | _crateId; // 0x480 = 1001 000 0000
     frame.can_dlc = 1;
     frame.data[0] = 0x05; 
 
@@ -107,12 +107,12 @@ asynStatus drvAsynFscHV::readInt32( asynUser *pasynUser, epicsInt32 *value ) {
     if ( frame.can_id != ( 0x400 | _crateId ) || frame.can_dlc != 2 || frame.data[0] != 0x05 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d %02x...' where '%x08 2 0x05...' was expected.\033[0m", 
-                     driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], (0x400 | _createId) );
+                     driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], (0x400 | _crateId) );
       return asynError;
     }
    
     // Update the parameter in our local buffer
-    status = setIntegerParam( _temp, pframe.data[1] );
+    status = setIntegerParam( _temp, frame.data[1] );
     // Call parameter callbacks (if someone registered to monitor changes)
     status = (asynStatus) callParamCallbacks();
   }
@@ -152,7 +152,7 @@ asynStatus drvAsynFscHV::readUInt32Digital( asynUser *pasynUser, epicsUInt32 *va
   if ( function == _status ) { // Parameter "STATUS" should be read
     // Create the CAN frame to send command to HV
     can_frame_t frame;
-    frame.can_id  = 0x480 | _createId; // 0x480 = 1001 000 0000
+    frame.can_id  = 0x480 | _crateId; // 0x480 = 1001 000 0000
     frame.can_dlc = 1;
     frame.data[0] = 0x01;
 
@@ -180,15 +180,15 @@ asynStatus drvAsynFscHV::readUInt32Digital( asynUser *pasynUser, epicsUInt32 *va
     if ( frame.can_id != ( 0x400 | _crateId ) || frame.can_dlc != 3 || frame.data[0] != 0x01 ) {
       epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                      "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d %02x...' where '%x08 3 0x01...' was expected.\033[0m", 
-                     driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], (0x400 | _createId) );
+                     driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], (0x400 | _crateId) );
       return asynError;
     }
    
     // Update the parameter in our local buffer
     // data byte 1 is value for switch (3rd param is a bitmask (switch is only 1 bit)
-    status = setUIntDigitalParam( _switch, pframe.data[1], 0x01 );
+    status = setUIntDigitalParam( _switch, frame.data[1], 0x01 );
     // byte 2 is the error byte. 
-    status = setUIntDigitalParam( _status, pframe.data[2], mask );
+    status = setUIntDigitalParam( _status, frame.data[2], mask );
 
     // Call parameter callbacks (if someone registered to monitor changes)
     status = (asynStatus) callParamCallbacks();
@@ -243,7 +243,7 @@ asynStatus drvAsynFscHV::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 va
 
   // Create the CAN frame to send command to HV
   can_frame_t frame;
-  frame.can_id  = 0x480 | _createId; // 0x480 = 1001 000 0000
+  frame.can_id  = 0x480 | _crateId; // 0x480 = 1001 000 0000
   frame.can_dlc = 2;
   frame.data[0] = 0x02;
   frame.data[1] = ( value & 0x01 );
@@ -272,7 +272,7 @@ asynStatus drvAsynFscHV::writeUInt32Digital( asynUser *pasynUser, epicsUInt32 va
   if ( frame.can_id != ( 0x400 | _crateId ) || frame.can_dlc != 3 || frame.data[0] != 0x02 || frame.data[1] != (value & 0x01) ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d %02x %02x ...' where '%x08 3 0x01 %02x...' was expected.\033[0m", 
-                   driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], frame.data[1], (0x400 | _createId), (value & 0x01) );
+                   driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], frame.data[1], (0x400 | _crateId), (value & 0x01) );
     return asynError;
   }
 
@@ -306,7 +306,7 @@ asynStatus drvAsynFscHV::readFloat64( asynUser *pasynUser, epicsFloat64 *value )
 
   // Create the CAN frame to send command to HV
   can_frame_t frame;
-  frame.can_id  = 0x480 | _createId; // 0x480 = 1001 000 0000
+  frame.can_id  = 0x480 | _crateId; // 0x480 = 1001 000 0000
   frame.can_dlc = 2;
   frame.data[0] = 0x03;
   frame.data[1] = addr;
@@ -335,7 +335,7 @@ asynStatus drvAsynFscHV::readFloat64( asynUser *pasynUser, epicsFloat64 *value )
   if ( frame.can_id != ( 0x400 | _crateId ) || frame.can_dlc != 6 || frame.data[0] != 0x03 || frame.data[1] != addr ) {
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
                    "\033[31;1m%s:%s:%s: function=%d, Mismatch in reply.\n Got '%08x %d %02x %02x...' where '%x08 6 0x03 %02x...' was expected.\033[0m", 
-                   driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], frame.data[1], (0x400 | _createId), addr );
+                   driverName, _deviceName, functionName, function, frame.can_id, frame.can_dlc, frame.data[0], frame.data[1], (0x400 | _crateId), addr );
     return asynError;
   }
  
@@ -356,12 +356,12 @@ asynStatus drvAsynFscHV::readFloat64( asynUser *pasynUser, epicsFloat64 *value )
   status = (asynStatus) getDoubleParam( function, value );
   if ( status )
     epicsSnprintf( pasynUser->errorMessage, pasynUser->errorMessageSize, 
-                   "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%u mask=%u\033[0m", 
-                   driverName, _deviceName, functionName, status, function, *value, mask );
+                   "\033[31;1m%s:%s:%s: status=%d, function=%d, value=%f[0m", 
+                   driverName, _deviceName, functionName, status, function, *value );
   else        
     asynPrint( pasynUser, ASYN_TRACEIO_DEVICE, 
-               "%s:%s:%s: function=%d, value=%u, mask=%u\n", 
-               driverName, _deviceName, functionName, function, *value, mask );
+               "%s:%s:%s: function=%d, value=%f\n", 
+               driverName, _deviceName, functionName, function, *value );
   return status;
 }
 

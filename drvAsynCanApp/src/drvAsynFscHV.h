@@ -70,8 +70,8 @@ class drvAsynFscHV : public asynPortDriver {
   int _curr2;
   int _temp;
 
-#define FIRST_PANDAFSCHV_COMMAND P_Status
-#define LAST_PANDAFSCHV_COMMAND  P_temp
+#define FIRST_PANDAFSCHV_COMMAND _status
+#define LAST_PANDAFSCHV_COMMAND  _temp
 
  private:
   char           *_deviceName;

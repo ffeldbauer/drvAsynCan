@@ -17,6 +17,7 @@ drvAsynCan_SRCS += drvAsynTHMP.cpp
 drvAsynCan_SRCS += drvAsynLedPulser.cpp
 drvAsynCan_SRCS += drvAsynLedPulser2.cpp
 drvAsynCan_SRCS += drvAsynTmcm142.cpp
+drvAsynCan_SRCS += drvAsynFscHV.cpp
 drvAsynCan_SRCS += ReadPoller.cpp
 drvAsynCan_SRCS += registerIOCfunctions.cpp
 

@@ -10,3 +10,9 @@ ASYN = $(SUPPORT)/asyn-4-33
 EPICS_BASE = /usr/local/epics/base-3.16.1
 -include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
 
+# These lines allow developers to override these RELEASE settings
+# without having to modify this file directly.
+-include $(TOP)/../RELEASE.local
+-include $(TOP)/../RELEASE.$(EPICS_HOST_ARCH).local
+-include $(TOP)/configure/RELEASE.local
+
